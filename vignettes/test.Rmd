@@ -1,0 +1,91 @@
+---
+title: "test"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{test}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(srlmcell)
+```
+
+
+
+
+```{r}
+###need to set original values better
+data = srlmcell::genevar(n = 100, e = 0.05, p = 20, df = 0,r = 0, outtype = "cellwise")
+ximp <- suppressMessages(cellWise::DDC(data$x)$Ximp)
+x = data$x
+y = data$y
+
+```
+
+```{r}
+t1 = system.time({fit1 = srlmcell::srlms(data$y, data$x, initial = "rlars", crit = "bic", iter = TRUE)})
+t2 = system.time({fit2 = srlmcell::srlmm(data$y, data$x, initial = "ddc",   crit = "bic", iter = TRUE)})
+t3 = system.time({fit3 = shootings::sparseshooting(data$x,data$y)})
+t4 = system.time(({fit4 = slm(y,ximp, crit = "logbic")}))
+t5 = system.time(({fit5 = Rlars(y,x)}))
+```
+
+```{r}
+fit2$betahat[1:20]
+fit3$coef_ln
+fit4$betahat[1:20]
+fit5$betahat[1:20]
+
+fit4$sigmahat
+fit5$sigmahat
+
+fit1$betahat
+```
+
+```{r}
+srlmcell::lambdamax_satan(data$y, data$x, betahat = c(0,data$beta), sigmahat = 1)##get lambdamax
+srlmcell::lambdamax_matan(data$y, data$x, betahat = c(0,data$beta), sigmahat = 1)##get lambdamax
+srlmcell::scale_func(rnorm(100), b, delta, sigmahat = 2)
+
+
+srlmcell::TukeyS_atan(data$y, data$x, betahat = c(0,data$beta), sigmahat = 1, lambda = 1)
+
+
+```
+
+```{r}
+fitss1 =srlmcell::TukeyM_atan_iter(data$y, x, ximp, betahat = c(0,data$beta), sigma = 1, tech = "row",lambda = 0.02, maxiter = 10)
+fitss1$k
+
+fitss1$betahat
+
+fitss2 =srlmcell::TukeyM_atan_iter(data$y, x, ximp, betahat = c(0,data$beta), sigma = 1, tech = "row",lambda = 0.02, maxiter = 10)
+fitss2$k
+fitss2$betahat
+```
+
+
+```{r}
+t1
+t2
+t3
+t4
+t5
+```
+
+
+
+
+
+
+
+
+

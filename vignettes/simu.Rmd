@@ -1,0 +1,200 @@
+---
+title: "Simulation"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{simu}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  eval = T,
+  message = F, 
+  warning = F
+)
+
+#https://pengsu517.github.io/robcovsel
+```
+
+```{r , echo=FALSE}
+library(tidyverse)
+library(gridExtra)
+library(grid)
+library(plotly)
+library(stargazer)
+options(show.error.locations = TRUE)
+```
+
+
+```{r, message = F, warning = F,echo=FALSE}
+load("result_simu_p200_new.RData")
+result1 = as.data.frame(t(as.data.frame(result)))
+result1 = result1 %>% mutate(across(c(1:3, 10:19), as.numeric), 
+                             across(4:9, as.factor),
+                             bacc = (tp/5 + (p-5-fp)/(p-5))/2)
+#glimpse(result1)
+levels(result1$e) = c("e = 0%", "e = 2%", "e = 5%", "e = 10%")
+levels(result1$df) = c( "Normal","t(3)", "t(5)")
+levels(result1$gamma) = c( "2", "4", "6", "8", "10", " ")
+
+result1$df = factor(result1$df, levels = c("t(3)", "t(5)", "Normal"))
+result1$method = factor(result1$method, levels = c("sss",   "rlars", "smddcrow", "smddccell", "smrlarsrow", "smrlarscell"))
+
+#result1$method = factor(result1$method, levels = c("Sparse_Shooting_S",   "Robust_Lars", "Sparse_M_DDC", "Sparse_M_Rlars"))
+#result1$method = factor(result1$method, labels = c("sShootS",   "Rlars", "srlm_ddc", "srlm_rlars") ) 
+
+#result1 = result1%>% mutate(
+#  e  = factor(e, labels = c("e = 0%", "e = 2%", "e = 5%", "e = 10%")),
+#  df = factor(df, labels = c("Normal", "t(3)")),
+#  method = factor(method, levels = c("Sparse_Shooting_S",   "Robust_Lars", "Sparse_M_DDC", "Sparse_M_Rlars"),
+#                  labels = c("sShootS",   "Rlars", "srlm_ddc", "srlm_rlars"))
+#)
+
+```
+
+
+```{r , warning = F, echo=FALSE}
+result2 = result1
+result2[(result2$e=="e = 0%")&(result2$gamma!="2"),]=NA
+result2 = result2[complete.cases(result2),]
+result2$gamma[result2$e=="e = 0%"] = " "
+names(result2)[c(10:13,19,20)] = c("MAPE", "RTMSPE", "TP", "FP", "Time", "BACC")
+save(result2, file = "result_simu_p200_new_cleaned.RData")
+```
+
+
+```{r}
+
+summary = result2 %>% group_by(n,p,e,r,gamma, df, method) %>% summarise(
+  TPR = mean(tp/5, na.rm = T),
+  FPR = mean(fp/(p-5), na.rm = T),
+  TNR = 1-FPR,
+  BACC = (TPR + TNR)/2,
+  MAPE = mean(mape), 
+  RTMSPE = mean(rtmspe),
+  Time = mean(elapsed))
+
+summary[c(8,9,11,14)] = round(summary[c(8,9,11,14)],3)
+out = as.character(summary[c(3,6,7,8,9,11,14)])  
+```
+
+
+```{r fig.width=10, fig.height=6, echo=FALSE}
+
+#result2[which.max(result2$rtmspe),] 
+
+
+
+
+p1 = ggplot(data = result2)+
+  geom_boxplot(aes(fill = method, x = gamma, y = rtmspe))+
+  facet_grid(df~e, scales = "free", space = "free_x") +
+  #scale_y_continuous(limits = quantile(result1$rtmse, c(0.1, 0.8)))+
+  theme_bw()+
+  labs(x = expression(gamma*": magnitude of outlyingness"))+
+  theme(text= element_text(size=12), 
+        #axis.text.x = element_blank(),
+        legend.position = "right")
+p1
+
+
+#plotly::ggplotly(p1)
+
+
+#ggsave("plots_time_p200.eps", plot = p1, width = 10,height = 7)
+```
+
+
+```{r fig.width=10, fig.height=20, echo=FALSE}
+
+p2 = ggplot(data = summary, aes(x = gamma, y = BACC))+
+  geom_line(aes(color = method))+ 
+  geom_point(aes(color = method))+
+  facet_grid(df~e, scales = "free") 
+p2
+
+#ggsave("plots_rtmse.eps", plot = p1, width = 10,height = 7)
+```
+
+
+
+
+
+```{r, fig.width=12, fig.height=12}
+library(cellWise)
+set.seed(5)
+dataset = srlmcell::genevar(p = 2, n = 20, beta = c(1,1), df = 0, r = 0, e = 0)
+
+
+x = dataset$x
+x[1,1] = c(6)
+x[2,1] = c(-6.5)
+y = x[,1] + x[,2]+rnorm(n = 20, sd = 0.5)
+x[3,1] = c(6)
+x[1,2] = c(6)
+
+fit1 <- DDC(x)
+
+
+
+x = rbind(x, fit1$Ximp[1:3,])
+label = factor(c(rep(1,20), rep(2,3)),labels = c("Origion", "Imputation"))
+x = cbind(x, label)
+mat  = as.data.frame(cbind(y,x))
+colnames(mat) = c("y", "X1", "X2","label")
+#mat$label = factor(c(rep(1,20), 2:4),labels = c("clean observations", "Point a", "Point b", "Point c"))
+
+#pairs(mat[,1:3], pch = 19, xaxt='n', yaxt='n')
+upper.panel<-function(x, y){
+  points(x,y, pch=19, col=c("black", "red")[mat$label], cex = 2)
+  r <- round(cor(x, y), digits=2)
+  #usr <- par("usr")
+  #on.exit(par(usr))
+  # #par(usr = c(0, 1, 0, 1))
+  # text(x[3], y[3], "a", col = "white")
+  # text(x[2], y[2], "b", col = "white")
+  # text(x[1], y[1], "c", col = "white")
+  # text(x[23]-0.4, y[23], "a'")
+  # text(x[22]-0.4, y[22], "b'")
+  # text(x[21]-0.4, y[21], "c'")
+}
+pairs(mat[,1:3], lower.panel = NULL, 
+      upper.panel = upper.panel)
+
+
+
+fit1$Ximp[1:3,]
+```
+
+```{r}
+plot(fit1$Ximp, col = "red", pch = 19, cex = 0.5, xlim = c(-6, 6), ylim = c(-6, 6), font = 1)
+points(dataset$x, pch = 19, cex = 0.5,)
+#text(fit1$Ximp, labels=1:n, cex=1, font=2)
+```
+
+
+```{r}
+upper.panel<-function(x, y){
+  points(x,y, pch=19, col=c("red", "green3", "blue")[iris$Species])
+  r <- round(cor(x, y), digits=2)
+  txt <- paste0("R = ", r)
+  usr <- par("usr"); on.exit(par(usr))
+  par(usr = c(0, 1, 0, 1))
+  text(0.5, 0.9, txt)
+}
+pairs(iris[,1:3], lower.panel = NULL, 
+      upper.panel = upper.panel)
+```
+
+
+```{r}
+library(GGally)
+
+ggpairs(mat, columns = 1:3, ggplot2::aes(colour = label), upper = NULL, , axisLabels="none") 
+```
+
+
+
