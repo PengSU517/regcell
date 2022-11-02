@@ -250,14 +250,21 @@ List TukeyM_atan_iter(arma::vec y, arma::mat x, arma::mat ximp, arma::vec betaha
     }
   }
 
+
   if(tech == "cell"){
-    double resori, restilde;
+    double resori, restilde, xdiff, diff;
     for(k = 1; k < maxiter; k++){
       xtildec = join_rows(onevec, xtilde);
       for(i=0; (i<n); i++){
         restilde =   as_scalar(y[i] - xtildec.row(i)*betahat) ;
         for(j=0; (j<p); j++){
-          resori = as_scalar(y[i] - xtildec.row(i)*betahat + xtildec(i,(j+1))*betahat[(j+1)] - xc(i,(j+1))*betahat[(j+1)]) ;
+          xdiff = as_scalar(xtildec(i,(j+1))- xc(i,(j+1)));
+          if((xdiff!=0)&&(as_scalar(betahat(j+1))!=0)){
+            diff = xdiff*as_scalar(betahat(j+1));
+          }else{
+            diff = 0;
+          }
+          resori = restilde + diff;
           //change it to restilde
           //如果没有imputation可以跳过计算
           if(abs(resori) < abs(restilde)){

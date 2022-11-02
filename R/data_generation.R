@@ -27,6 +27,14 @@ genevar = function(n = 100, p = 20, e = 0,r = 0.5, df = 0,
       outlierlabel = apply(matrix(0, nrow = n, ncol = p), 2,
                            function(xvec) {xvec[sample(x = 1:n, size = e*n)] = 1; return(xvec)})
     }
+
+    if(outtype=="structured"){
+      lev = (mahalanobis(xc,mu, sigma))^2
+      #prob = lev/sum(lev)*e*n
+      outlierlabel = apply(matrix(0, nrow = n, ncol = p), 2,
+                           function(xvec) {xvec[sample(x = 1:n, size = e*n, prob = lev)] = 1; return(xvec)})
+    }
+
     if(outtype=="rowwise"){
       xvec = rep(0,n)
       xvec[sample(x = 1:n, size = e*n)] = 1

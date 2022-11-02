@@ -31,11 +31,12 @@ y = data$y
 ```
 
 ```{r}
-t1 = system.time({fit1 = srlmcell::srlms(data$y, data$x, initial = "rlars", crit = "bic", iter = TRUE)})
-t2 = system.time({fit2 = srlmcell::srlmm(data$y, data$x, initial = "ddc",   crit = "bic", iter = TRUE)})
-t3 = system.time({fit3 = shootings::sparseshooting(data$x,data$y)})
-t4 = system.time(({fit4 = slm(y,ximp, crit = "logbic")}))
-t5 = system.time(({fit5 = Rlars(y,x)}))
+t1 = system.time({fit1 = srlmcell::srlmm(data$y, data$x, initial = "rlars", tech = "cell", iter = TRUE)})["elapsed"]
+t2 = system.time({fit2 = srlmcell::srlmm(data$y, data$x, initial = "rlars", tech = "row",  iter = TRUE)})["elapsed"]
+t3 = system.time({fit3 = shootings::sparseshooting(data$x,data$y)})["elapsed"]
+#t4 = system.time(({fit4 = slm(y,ximp, crit = "logbic")}))
+t5 = system.time(({fit5 = Rlars(y,x)}))["elapsed"]
+
 ```
 
 ```{r}

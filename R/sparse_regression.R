@@ -24,7 +24,7 @@ get_lambda_grids = function(y,x,betahat, sigmahat){
 }
 
 ## sparse robust regression with imputed design matrix
-srlms = function(y,x, initial = "ddc", iter = TRUE, crit = "bic"){
+srlms = function(y,x, initial = "rlars", iter = TRUE, crit = "ebic"){
 
   ximp <- suppressMessages(cellWise::DDC(x)$Ximp)
   if(initial == "ddc"  ){fit0 = slm(y, ximp)}
@@ -53,7 +53,7 @@ srlms = function(y,x, initial = "ddc", iter = TRUE, crit = "bic"){
 
 
 ## sparse robust regression with imputed design matrix
-srlmm = function(y,x, initial = "ddc", iter = TRUE, tech = "row", crit = "bic"){
+srlmm = function(y,x, initial = "rlars", iter = TRUE, tech = "row", crit = "ebic", lambda = NULL){
 
   ximp <- suppressMessages(cellWise::DDC(x)$Ximp)
   if(initial == "ddc"  ){fit0 = slm(y, ximp)}
@@ -64,20 +64,34 @@ srlmm = function(y,x, initial = "ddc", iter = TRUE, tech = "row", crit = "bic"){
 
   n = dim(x)[1]
   p = dim(x)[2]
-  grid = get_lambda_gridm(y,ximp, betahat, sigmahat)
-  if(iter){
-    fit = lapply(grid, function(lambda){TukeyM_atan_iter(y, x, ximp, betahat, sigmahat, tech, lambda)})
+
+  if(is.null(lambda)){
+    grid = get_lambda_gridm(y,ximp, betahat, sigmahat)
+    if(iter){
+      fit = lapply(grid, function(lambda){TukeyM_atan_iter(y, x, ximp, betahat, sigmahat, tech, lambda)})
+    }else{
+      fit = lapply(grid, function(lambda){TukeyM_atan(y, ximp, betahat, sigmahat, lambda)})
+    }
+
+    if(crit == "ebic"){
+      bic = unlist(lapply(fit, function(x) 2*(x$loss) + log(n)*sum(as.logical(x$betahat[-1])) +
+                            2*log(choose(p,sum(as.logical(x$betahat[-1]))))))
+    }else{
+      bic = unlist(lapply(fit, function(x) 2*(x$loss) + (log(n))*sum(as.logical(x$betahat[-1]))))
+    }
+
+    result = fit[[which.min(bic)]]
+    result$lambda_opt = grid[which.min(bic)]
   }else{
-    fit = lapply(grid, function(lambda){TukeyM_atan(y, ximp, betahat, sigmahat, lambda)})
-  }
-  if(crit == "ebic"){
-    bic = unlist(lapply(fit, function(x) 2*(x$loss) + (log(n)+log(p))*sum(as.logical(x$betahat[-1]))))
-  }else{
-    bic = unlist(lapply(fit, function(x) 2*(x$loss) + (log(n))*sum(as.logical(x$betahat[-1]))))
+    if(iter){
+      result = TukeyM_atan_iter(y, x, ximp, betahat, sigmahat, tech, lambda)
+    }else{
+      result = TukeyM_atan(y, ximp, betahat, sigmahat, lambda)
+    }
   }
 
-  result = fit[[which.min(bic)]]
-  result$lambda_opt = grid[which.min(bic)]
+  xtilde = result$xtilde
+  result$flagger = (x!=xtilde)
 
   return(result)
 }

@@ -30,18 +30,21 @@ options(show.error.locations = TRUE)
 
 
 ```{r, message = F, warning = F,echo=FALSE}
-load("result_simu_p200_new.RData")
+load("result_simu_p20_structured2.RData")
+#assign('result111', get(load('result_simu_p200_new2.RData')))
+
 result1 = as.data.frame(t(as.data.frame(result)))
-result1 = result1 %>% mutate(across(c(1:3, 10:19), as.numeric), 
-                             across(4:9, as.factor),
-                             bacc = (tp/5 + (p-5-fp)/(p-5))/2)
+result1 = result1 %>% mutate(across(c(1:4, 12:21), as.numeric), 
+                             across(5:11, as.factor), 
+                             bacc = (TP/pr + (p-pr-FP)/(p-pr))/2)
 #glimpse(result1)
+#result1$fp = result1$fp-5
 levels(result1$e) = c("e = 0%", "e = 2%", "e = 5%", "e = 10%")
 levels(result1$df) = c( "Normal","t(3)", "t(5)")
 levels(result1$gamma) = c( "2", "4", "6", "8", "10", " ")
 
 result1$df = factor(result1$df, levels = c("t(3)", "t(5)", "Normal"))
-result1$method = factor(result1$method, levels = c("sss",   "rlars", "smddcrow", "smddccell", "smrlarsrow", "smrlarscell"))
+#result1$method = factor(result1$method, levels = c("sss",   "rlars", "smddcrow", "smddccell", "smrlarsrow", "smrlarscell"))
 
 #result1$method = factor(result1$method, levels = c("Sparse_Shooting_S",   "Robust_Lars", "Sparse_M_DDC", "Sparse_M_Rlars"))
 #result1$method = factor(result1$method, labels = c("sShootS",   "Rlars", "srlm_ddc", "srlm_rlars") ) 
@@ -61,38 +64,45 @@ result2 = result1
 result2[(result2$e=="e = 0%")&(result2$gamma!="2"),]=NA
 result2 = result2[complete.cases(result2),]
 result2$gamma[result2$e=="e = 0%"] = " "
-names(result2)[c(10:13,19,20)] = c("MAPE", "RTMSPE", "TP", "FP", "Time", "BACC")
-save(result2, file = "result_simu_p200_new_cleaned.RData")
+names(result2)[c(12:15,21,22)] = c("MAPE", "RTMSPE", "TP", "FP", "Time", "BACC")
+```
+
+```{r}
+result_new= result2
+save(result_new, file = "result_simu_new_cleaned.RData")
+load("result_simu_new_cleaned.RData")
+#result_high$method %in% c("sss",   "rlars", "smddcrow", "smddccell", "smrlarsrow", "smrlarscell")
+
 ```
 
 
 ```{r}
 
 summary = result2 %>% group_by(n,p,e,r,gamma, df, method) %>% summarise(
-  TPR = mean(tp/5, na.rm = T),
-  FPR = mean(fp/(p-5), na.rm = T),
+  TPR = mean(TP/5, na.rm = T),
+  FPR = mean(FP/(p-5), na.rm = T),
   TNR = 1-FPR,
   BACC = (TPR + TNR)/2,
-  MAPE = mean(mape), 
-  RTMSPE = mean(rtmspe),
-  Time = mean(elapsed))
+  MAPE = mean(MAPE), 
+  RTMSPE = mean(RTMSPE),
+  Time = mean(Time))
 
 summary[c(8,9,11,14)] = round(summary[c(8,9,11,14)],3)
 out = as.character(summary[c(3,6,7,8,9,11,14)])  
 ```
 
 
-```{r fig.width=10, fig.height=6, echo=FALSE}
+```{r fig.width=10, fig.height=3, echo=FALSE}
 
 #result2[which.max(result2$rtmspe),] 
 
+result3 = result2 %>% filter(df == "Normal")
 
 
-
-p1 = ggplot(data = result2)+
-  geom_boxplot(aes(fill = method, x = gamma, y = rtmspe))+
-  facet_grid(df~e, scales = "free", space = "free_x") +
-  #scale_y_continuous(limits = quantile(result1$rtmse, c(0.1, 0.8)))+
+p1 = ggplot(data = result3)+
+  geom_boxplot(aes(fill = method, x = gamma, y = MAPE))+
+  facet_grid(outtype~e, scales = "free", space = "free_x") +
+  #scale_y_continuous(limits = quantile(result3$MAPE, c(0.1, 0.8)))+
   theme_bw()+
   labs(x = expression(gamma*": magnitude of outlyingness"))+
   theme(text= element_text(size=12), 
@@ -195,6 +205,67 @@ library(GGally)
 
 ggpairs(mat, columns = 1:3, ggplot2::aes(colour = label), upper = NULL, , axisLabels="none") 
 ```
+
+
+
+
+```{r, message = F, warning = F,echo=FALSE}
+library(tidyverse)
+load("result_regression_structured_10rel_detection_new.RData")
+
+result1 = as.data.frame(t(as.data.frame(result)))
+result1 = result1 %>% mutate(across(c(1:4, 12:16), as.numeric), 
+                             across(5:11, as.factor))
+
+unique(result1$method)
+#levels(result1$e) = c("e = 0%", "e = 2%", "e = 5%", "e = 10%")
+#levels(result1$df) = c( "Normal","t(3)", "t(5)")
+#levels(result1$gamma) = c( "2", "4", "6", "8", "10", " ")
+#result1$df = factor(result1$df, levels = c("t(3)", "t(5)", "Normal"))
+
+result1[which.max(result1$MAPE),]
+
+```
+
+```{r , warning = F, echo=FALSE}
+result2 = result1
+result2[(result2$e=="e = 0%")&(result2$gamma!="2"),]=NA
+result2 = result2[complete.cases(result2),]
+result2$gamma[result2$e=="e = 0%"] = " "
+```
+
+```{r}
+result_regression_new= result2
+save(result_regression_new, file = "result_simu_regression_new_cleaned.RData")
+load("result_simu_regression_new_cleaned.RData")
+#result_high$method %in% c("sss",   "rlars", "smddcrow", "smddccell", "smrlarsrow", "smrlarscell")
+```
+
+```{r fig.width=10, fig.height=10, echo=FALSE}
+
+#result2[which.max(result2$rtmspe),] 
+
+result3 = result2 %>% filter(df == "t(3)")
+
+
+p1 = ggplot(data = result3)+
+  geom_boxplot(aes(fill = method, x = gamma, y = MAPE))+
+  facet_grid(outtype~e, scales = "free", space = "free_x") +
+  scale_y_continuous(limits = c(0,10))+
+  theme_bw()+
+  labs(x = expression(gamma*": magnitude of outlyingness"))+
+  theme(text= element_text(size=12), 
+        #axis.text.x = element_blank(),
+        legend.position = "right")
+p1
+
+result3[which.max(result3$MAPE),]
+
+
+
+#ggsave("plots_time_p200.eps", plot = p1, width = 10,height = 7)
+```
+
 
 
 
