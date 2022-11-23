@@ -179,6 +179,39 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// TukeyM
+List TukeyM(arma::vec y, arma::mat x, arma::vec betahat, double sigmahat, double maxiter);
+RcppExport SEXP _srlmcell_TukeyM(SEXP ySEXP, SEXP xSEXP, SEXP betahatSEXP, SEXP sigmahatSEXP, SEXP maxiterSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::vec >::type y(ySEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type x(xSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type betahat(betahatSEXP);
+    Rcpp::traits::input_parameter< double >::type sigmahat(sigmahatSEXP);
+    Rcpp::traits::input_parameter< double >::type maxiter(maxiterSEXP);
+    rcpp_result_gen = Rcpp::wrap(TukeyM(y, x, betahat, sigmahat, maxiter));
+    return rcpp_result_gen;
+END_RCPP
+}
+// TukeyM_iter
+List TukeyM_iter(arma::vec y, arma::mat x, arma::mat ximp, arma::vec betahat, double sigmahat, String tech, double b, double maxiter);
+RcppExport SEXP _srlmcell_TukeyM_iter(SEXP ySEXP, SEXP xSEXP, SEXP ximpSEXP, SEXP betahatSEXP, SEXP sigmahatSEXP, SEXP techSEXP, SEXP bSEXP, SEXP maxiterSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::vec >::type y(ySEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type x(xSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type ximp(ximpSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type betahat(betahatSEXP);
+    Rcpp::traits::input_parameter< double >::type sigmahat(sigmahatSEXP);
+    Rcpp::traits::input_parameter< String >::type tech(techSEXP);
+    Rcpp::traits::input_parameter< double >::type b(bSEXP);
+    Rcpp::traits::input_parameter< double >::type maxiter(maxiterSEXP);
+    rcpp_result_gen = Rcpp::wrap(TukeyM_iter(y, x, ximp, betahat, sigmahat, tech, b, maxiter));
+    return rcpp_result_gen;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_srlmcell_rho_func", (DL_FUNC) &_srlmcell_rho_func, 2},
@@ -192,6 +225,8 @@ static const R_CallMethodDef CallEntries[] = {
     {"_srlmcell_TukeyS_atan", (DL_FUNC) &_srlmcell_TukeyS_atan, 9},
     {"_srlmcell_TukeyS_atan_iter", (DL_FUNC) &_srlmcell_TukeyS_atan_iter, 10},
     {"_srlmcell_lambdamax_satan", (DL_FUNC) &_srlmcell_lambdamax_satan, 5},
+    {"_srlmcell_TukeyM", (DL_FUNC) &_srlmcell_TukeyM, 5},
+    {"_srlmcell_TukeyM_iter", (DL_FUNC) &_srlmcell_TukeyM_iter, 8},
     {NULL, NULL, 0}
 };
 

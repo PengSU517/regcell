@@ -53,7 +53,7 @@ srlms = function(y,x, initial = "rlars", iter = TRUE, crit = "ebic"){
 
 
 ## sparse robust regression with imputed design matrix
-srlmm = function(y,x, initial = "rlars", iter = TRUE, tech = "row", crit = "ebic", lambda = NULL){
+srlmm = function(y,x, initial = "rlars", iter = TRUE, tech = "row", crit = "aic", lambda = NULL){
 
   ximp <- suppressMessages(cellWise::DDC(x)$Ximp)
   if(initial == "ddc"  ){fit0 = slm(y, ximp)}
@@ -73,9 +73,8 @@ srlmm = function(y,x, initial = "rlars", iter = TRUE, tech = "row", crit = "ebic
       fit = lapply(grid, function(lambda){TukeyM_atan(y, ximp, betahat, sigmahat, lambda)})
     }
 
-    if(crit == "ebic"){
-      bic = unlist(lapply(fit, function(x) 2*(x$loss) + log(n)*sum(as.logical(x$betahat[-1])) +
-                            2*log(choose(p,sum(as.logical(x$betahat[-1]))))))
+    if(crit == "aic"){
+      bic = unlist(lapply(fit, function(x) 2*(x$loss) + 2*sum(as.logical(x$betahat[-1]))))
     }else{
       bic = unlist(lapply(fit, function(x) 2*(x$loss) + (log(n))*sum(as.logical(x$betahat[-1]))))
     }
@@ -91,6 +90,34 @@ srlmm = function(y,x, initial = "rlars", iter = TRUE, tech = "row", crit = "ebic
   }
 
   xtilde = result$xtilde
+  result$flagger = (x!=xtilde)
+
+  return(result)
+}
+
+
+
+## robust regression with imputed design matrix
+rlmm = function(y,x, initial = "rlars", iter = TRUE, tech = "crow"){
+  ximp <- suppressMessages(cellWise::DDC(x)$Ximp)
+  if(initial == "ddc"  ){fit0 = slm(y, ximp)}
+  if(initial == "rlars"){fit0 = Rlars(y, x)}
+
+  betahat  = fit0$betahat
+  sigmahat = fit0$sigmahat
+
+  n = dim(x)[1]
+
+  p = dim(x)[2]
+
+  if(iter){
+    result = TukeyM_iter(y, x, ximp, betahat, sigmahat, tech)
+  }else{
+    result = TukeyM(y, ximp, betahat, sigmahat)
+  }
+
+  xtilde = result$xtilde
+  if(is.null(xtilde)){xtilde = ximp}
   result$flagger = (x!=xtilde)
 
   return(result)

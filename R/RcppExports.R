@@ -45,3 +45,11 @@ lambdamax_satan <- function(y, x, betahat, sigmahat = 1, lambdamax = 1) {
     .Call(`_srlmcell_lambdamax_satan`, y, x, betahat, sigmahat, lambdamax)
 }
 
+TukeyM <- function(y, x, betahat, sigmahat, maxiter = 30) {
+    .Call(`_srlmcell_TukeyM`, y, x, betahat, sigmahat, maxiter)
+}
+
+TukeyM_iter <- function(y, x, ximp, betahat, sigmahat, tech = "row", b = 4.6845, maxiter = 30) {
+    .Call(`_srlmcell_TukeyM_iter`, y, x, ximp, betahat, sigmahat, tech, b, maxiter)
+}
+
