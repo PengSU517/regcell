@@ -1,5 +1,5 @@
-genevar = function(n = 100, p = 20, e = 0,r = 0.5, df = 0,
-                   beta = c(1,2,1,2,1), gamma = 6, errorsigma = 1,
+genevar = function(n = 100, p = 20, pr = 5, e = 0,r = 0.5, df = 0,
+                   beta = c(rep(1,pr), rep(0, p-pr)), gamma = 6, errorsigma = 1,
                    outtype = "cellwise"){
 
   {
@@ -42,9 +42,9 @@ genevar = function(n = 100, p = 20, e = 0,r = 0.5, df = 0,
     }
 
     outliervalue = rnorm(n = n*p, mean = gamma, sd = 1)
-    outliersign = sample(c(-1,1), size = n*p, replace = T)
-    outlier = matrix(outliervalue*outliersign, nrow = n, ncol=p)
-    x = xc*(1-outlierlabel)+outlier*outlierlabel
+    ##outliersign = sample(c(-1,1), size = n*p, replace = T)
+    outlier = matrix(outliervalue, nrow = n, ncol=p)
+    x = xc*(1-outlierlabel) - sign(xc)*outlier*outlierlabel
 
   }
   return(list(x = x, xc = xc, y = y, ynew = ynew, beta = beta, outlierlabel = outlierlabel,
