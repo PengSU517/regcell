@@ -23,7 +23,7 @@ library(srlmcell)
 
 ```{r}
 ###need to set original values better
-data = srlmcell::genevar(n = 100, e = 0.05, p = 20, df = 0,r = 0, outtype = "cellwise")
+data = srlmcell::genevar(n = 100, e = 0.05, p = 20, pr = 5, df = 0,r = 0.5, gamma = 10, outtype = "cellwise")
 ximp <- suppressMessages(cellWise::DDC(data$x)$Ximp)
 x = data$x
 y = data$y
@@ -31,55 +31,41 @@ y = data$y
 ```
 
 ```{r}
-t1 = system.time({fit1 = srlmcell::srlmm(data$y, data$x, initial = "rlars", tech = "cell", iter = TRUE)})["elapsed"]
-t2 = system.time({fit2 = srlmcell::srlmm(data$y, data$x, initial = "rlars", tech = "row",  iter = TRUE)})["elapsed"]
-t3 = system.time({fit3 = shootings::sparseshooting(data$x,data$y)})["elapsed"]
-#t4 = system.time(({fit4 = slm(y,ximp, crit = "logbic")}))
-t5 = system.time(({fit5 = Rlars(y,x)}))["elapsed"]
+#t1 = system.time({fit1 = srlmcell::srlmm(data$y, data$x, initial = "rlars", tech = "cell", iter = TRUE)})["elapsed"]
+#t2 = system.time({fit2 = srlmcell::srlmm(data$y, data$x, initial = "rlars", tech = "row",  iter = TRUE)})["elapsed"]
+t3 = system.time({fit3 = srlmcell::srlmm(data$y, data$x, initial = "rlars", tech = "cell", reg = "ols", iter = TRUE)})["elapsed"]
+t4 = system.time({fit4 = srlmcell::srlmm(data$y, data$x, initial = "rlars", tech = "row",  reg = "ols", iter = TRUE)})["elapsed"]
+t5 = system.time({fit5 = srlmcell::srlmm(data$y, data$x, initial = "rlars", tech = "ada",  reg = "ols", iter = TRUE)})["elapsed"]
+t23 = system.time({fit23 = srlmcell::srlmm(data$y, data$x, initial = "rlars", tech = "cell", reg = "robust", iter = TRUE)})["elapsed"]
+t24 = system.time({fit24 = srlmcell::srlmm(data$y, data$x, initial = "rlars", tech = "row",  reg = "robust", iter = TRUE)})["elapsed"]
+t25 = system.time({fit25 = srlmcell::srlmm(data$y, data$x, initial = "rlars", tech = "ada",  reg = "robust", iter = TRUE)})["elapsed"]
 
+#t5 = system.time({fit5 = shootings::sparseshooting(data$x,data$y)})["elapsed"]
+#t4 = system.time(({fit4 = slm(y,ximp, crit = "logbic")}))
+#t6 = system.time(({fit6 = Rlars(y,x)}))["elapsed"]
+
+#c(t1,t2, t3, t4, t5, t6)
+
+cbind(fit3$betahat, fit4$betahat, fit5$betahat,fit23$betahat, fit24$betahat, fit25$betahat)
+c(fit3$loss, fit4$loss, fit5$loss,fit23$loss, fit24$loss, fit25$loss)
+
+
+fit23$betahat
 ```
 
 ```{r}
+fit1$betahat[1:20]
 fit2$betahat[1:20]
 fit3$coef_ln
-fit4$betahat[1:20]
 fit5$betahat[1:20]
-
-fit4$sigmahat
-fit5$sigmahat
-
-fit1$betahat
-```
-
-```{r}
-srlmcell::lambdamax_satan(data$y, data$x, betahat = c(0,data$beta), sigmahat = 1)##get lambdamax
-srlmcell::lambdamax_matan(data$y, data$x, betahat = c(0,data$beta), sigmahat = 1)##get lambdamax
-srlmcell::scale_func(rnorm(100), b, delta, sigmahat = 2)
-
-
-srlmcell::TukeyS_atan(data$y, data$x, betahat = c(0,data$beta), sigmahat = 1, lambda = 1)
-
 
 ```
 
 ```{r}
 fitss1 =srlmcell::TukeyM_atan_iter(data$y, x, ximp, betahat = c(0,data$beta), sigma = 1, tech = "row",lambda = 0.02, maxiter = 10)
-fitss1$k
-
-fitss1$betahat
-
-fitss2 =srlmcell::TukeyM_atan_iter(data$y, x, ximp, betahat = c(0,data$beta), sigma = 1, tech = "row",lambda = 0.02, maxiter = 10)
-fitss2$k
-fitss2$betahat
-```
-
-
-```{r}
-t1
-t2
-t3
-t4
-t5
+t(fitss1$betahat)
+fitss2 =srlmcell::TukeyM_atan_iter(data$y, x, ximp, betahat = c(0,data$beta), sigma = 1, tech = "cell",lambda = 0.02, maxiter = 10)
+t(fitss2$betahat)
 ```
 
 

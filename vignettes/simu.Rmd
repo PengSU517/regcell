@@ -31,7 +31,7 @@ options(show.error.locations = TRUE)
 
 
 ```{r, message = F, warning = F,echo=FALSE}
-load("result_simu_p20_pr5.RData")
+load("result_simu_p20_newcode_1201.RData")
 #assign('result111', get(load('result_simu_p200_new2.RData')))
 ```
 
@@ -42,13 +42,14 @@ result1 = result1 %>% mutate(across(c(1:4, 12:21), as.numeric),
                              bacc = (TP/pr + (p-pr-FP)/(p-pr))/2)
 #glimpse(result1)
 #result1$fp = result1$fp-5
+
+
 levels(result1$e) = c("e = 0%", "e = 2%", "e = 5%", "e = 10%")
-levels(result1$df) = c( "Normal","t(3)", "t(5)")
+levels(result1$df) = c("Normal", "t(3)", "t(5)")
 levels(result1$gamma) = c( "2", "4", "6", "8", "10", " ")
 
 result1$df = factor(result1$df, levels = c("t(3)", "t(5)", "Normal"))
-result1$method = factor(result1$method, levels = c("slm",   "sss", "rlars", "smrlarsrow", "smrlarscell"))
-result1$method = factor(result1$method, labels = c("Lasso",   "SShootS", "Rlars", "CRSM_row" , "CRSM_cell"))
+#result1$method = factor(result1$method, levels = c("rlars", "rob_row", "rob_cell", "rob_imp", "ols_row", "ols_cell", "ols_imp"))
 ```
 
 
@@ -58,6 +59,7 @@ result2[(result2$e=="e = 0%")&(result2$gamma!="2"),]=NA
 result2 = result2[complete.cases(result2),]
 result2$gamma[result2$e=="e = 0%"] = " "
 names(result2)[c(12:15,21,22)] = c("MAPE", "RTMSPE", "TP", "FP", "Time", "BACC")
+
 ```
 
 ```{r}
@@ -71,12 +73,12 @@ load("result_simu_new_cleaned.RData")
 
 #result2[which.max(result2$rtmspe),] 
 
-result3 = result2 #%>% filter(df == "t(5)")
+result3 = result2 %>% filter(df=="t(3)")
 
 
 p1 = ggplot(data = result3)+
   geom_boxplot(aes(fill = method, x = gamma, y = MAPE))+
-  facet_grid(df~e, scales = "free", space = "free_x") +
+  facet_grid(pr~e, scales = "free", space = "free_x") +
   #scale_y_continuous(limits = quantile(result3$MAPE, c(0.1, 0.8)))+
   theme_bw()+
   labs(x = expression(gamma*": magnitude of outlyingness"))+
@@ -109,7 +111,7 @@ summary3$BACC = summary3$BACCA
 #summary3 = reshape2::melt(summary3, id = "gamma")
 
 summary3
-p2 = ggplot(data = summary3, aes(x = gamma, y = BACC, group = method))+
+p2 = ggplot(data = summary3, aes(x = gamma, y = BACCA, group = method))+
   geom_point(aes(color = method))+
   geom_line(aes(linetype = method, color = method))+ 
   facet_grid(df~e, scales = "free", space = "free_x") +
@@ -169,7 +171,6 @@ upper.panel<-function(x, y){
 }
 pairs(mat[,1:3], lower.panel = NULL, 
       upper.panel = upper.panel)
-
 
 
 fit1$Ximp[1:3,]
@@ -288,190 +289,43 @@ coef(cv_results)
 coef(cv_results, lambda = '1-se')
 ```
 
-```{r}
-library(optimParallel)
-negll <- function(par, x){
--sum(dnorm(x=x, mean=par[1], sd=par[2], log=TRUE))
-}
-set.seed(13); x <- rnorm(1000, 5, 2)
-cl <- makeCluster(2) # set the number of processor cores
-setDefaultCluster(cl=cl) # set 'cl' as default cluster
-optimParallel(par=c(1,1), fn=negll, x=x, lower=c(-Inf, .0001))
-```
+
 
 
 ```{r}
-#3 variables with c,alpha estimation
-
-cl <- makeCluster(8) # set the number of processor cores
-setDefaultCluster(cl=cl) 
-
-clusterEvalQ(cl, library(MASS))
-clusterEvalQ(cl, library(mvtnorm))
-clusterEvalQ(cl, library(numDeriv))
-
-#clusterExport(cl,'N')
-#clusterExport(cl,'X')
-#clusterExport(cl,'Y')
-#clusterExport(cl,'Z')
-#clusterExport(cl,'T')
-library(MASS)
-library(mvtnorm)
-library(numDeriv)
-#set.seed(13)
-  N =20
-  c = 0.5
-  alpha1 = -0.5 
-  alpha2 = 0.5
-  sigma_b = 1
-  sig1 = 1
-  
-  #Generate observed data
-  rho = 0.9
-  
-  
-  n = sample(3:10,N,replace = TRUE)
-  
-  c = c(c, Inf)
-  alpha = c(-Inf,alpha1, alpha2, Inf)
-  R_l = matrix(rep(rho, 9), ncol = 3)
-  sig = c(sig1,1,1)
-  diag(R_l) = c(1,1,1)
-  Sig_l = diag(sig)%*%R_l%*%diag(sig)
-  
-  beta_y = c(0.3,0.3)
-  beta_z = c(0.4,0.4)
-  beta_t = c(0.1,0.1)
-
-
-X = matrix(rnorm(sum(n)*2),ncol = 2)
-
-  #generate data
-  sub = NULL
-  times = NULL
-  b1 = NULL
-  b2 = NULL
-  b3 = NULL
-  r_e = matrix(rep(0,sum(n*3)),ncol = 3)
-  for(i in 1:N){
-    sub = c(sub,rep(i,n[i]))
-    times = c(times,1:n[i])
-    b1 = c(b1,rep(rnorm(1,mean=0,sd=sigma_b),n[i]))
-    b2 = c(b2,rep(rnorm(1,mean=0,sd=sigma_b),n[i]))
-    b3 = c(b3,rep(rnorm(1,mean=0,sd=sigma_b),n[i]))
-  }
-  
-  data_o = mvrnorm(sum(n), rep(0, 3), Sigma = Sig_l)
-  
-  #Generate latent variables
-  Z_l = data_o[,2]+b2+X%*%beta_z
-  T_l = data_o[,3]+b3+X%*%beta_t
-  
-  #Generate observed data
-  Y = as.numeric(data_o[,1]+b1+X%*%beta_y)
-  
-  
-  Z = as.numeric(Z_l> c[1])
-  T = rep(0, sum(n))
-  for(i in 1:sum(n)){
-    if (T_l[i] <= alpha[2]) T[i] = 1
-    else if (T_l[i] > alpha[2] & T_l[i] <= alpha[3]) T[i] = 2
-    else T[i] = 3}
-  
-  
-C = c(-Inf,  qnorm(sum(Z)/sum(n)), Inf) 
- 
-Alpha = c(-Inf,qnorm(sum(T==2)/sum(n)),qnorm(1-sum(T==3)/sum(n)),Inf)              
-        
-  likelihood = function(parameter,X=X,Y=Y,Z=Z,T=T,C=C,Alpha=Alpha,N=N,n=n,sub=sub){
-    r = parameter[1:3]
-    
-    sigma = parameter[4]^2
-    
-    s = sqrt(sigma)
-    
-    sigma_b = parameter[5]^2
-    
-    sig_b = sqrt(sigma_b)
-    
-    betay = parameter[6:7]
-    betaz = parameter[8:9]
-    betat = parameter[10:11]
-    
-    
-    if(r[1]>=1|r[1]<=(-1)|r[2]>=1|r[2]<=(-1)|r[3]>=1|r[3]<=(-1)|(r[3]-r[1]*r[2])<=0) 
-      return(100000000) 
-    
-    else{
-      r_condition = (r[3]-r[1]*r[2])/sqrt((1-r[1]^2)*(1-r[2]^2))
-      
-      if (r_condition^2>1) return (100000000)
-      
-      
-      else{ 
-        
-        R_condition = matrix(c(1,r_condition,r_condition,1),ncol=2) 
-        
-        l=0
-        
-        for (i in 1:N){
-          
-          f_N<- function(b){
-            u = (Y[sub==i]-X[sub==i,]%*%betay-b[1])/s
-            v1 = C[Z[sub==i]+1]-b[2]-X[sub==i,]%*%betaz
-            v2 = C[Z[sub==i]+2]-b[2]-X[sub==i,]%*%betaz
-            w1 = Alpha[T[sub==i]]-b[3]-X[sub==i,]%*%betat
-            w2 = Alpha[T[sub==i]+1]-b[3]-X[sub==i,]%*%betat 
-            
-            
-            upper1 = cbind((v1-r[1]*u)/sqrt(1-r[1]^2),(v2-r[1]*u)/sqrt(1-r[1]^2))
-            upper2 = cbind((w1-r[2]*u)/sqrt(1-r[2]^2),(w2-r[2]*u)/sqrt(1-r[2]^2))
-            fij_c = 1
-            for (j in 1:n[i]){
-            fij_c = fij_c*dnorm(u[j])/s*(mvtnorm::pmvnorm(upper =c(upper1[j,1],upper2[j,1]),corr=R_condition)-
-                                  mvtnorm::pmvnorm(upper =c(upper1[j,1],upper2[j,2]),corr=R_condition)-
-                                  mvtnorm::pmvnorm(upper =c(upper1[j,2],upper2[j,1]),corr=R_condition)+
-                                  mvtnorm::pmvnorm(upper =c(upper1[j,2],upper2[j,2]),corr=R_condition))[1]}
-            f_N = -log(fij_c*dnorm(b[1],sd = sig_b)*dnorm(b[2],sd = sig_b)*dnorm(b[3],sd = sig_b))
-            return(f_N)}
-          b_0 = nlm(f_N,c(0.1,0.1,0.1))$estimate
-          #optim(c(0.1,0.1),f_N)$par
-          H = numDeriv::hessian(f_N,b_0)
-          f_i = (2*pi)^(3/2)/sqrt(abs(det(H)))*exp(-f_N(b_0))
-          l = l+log(f_i)
-        }
-      return(-l)}}
-  }
-  
-
- 
-  
-  
-  
-  #initial value
-  parameter = c(cor(Y,Z)
-                ,cor(Y,T)
-                ,cor(Z,T)
-                ,0.5*var(Y),0.5*var(Y),lm(Y~X)$coef[2:3],lm(Z~X)$coef[2:3],
-                lm(T~X)$coef[2:3])
- # likelihood(parameter)
-  # true = c(rho,rho,rho,sig1,sigma_b,c,alpha1,alpha2)
- # rst = optim(parameter,likelihood,X=X,Y=Y,Z=Z,T=T,C=C,Alpha=Alpha,N=N,method="L-BFGS-B")$par
-
-
-#nlm(likelihood,parameter)
-
-#clusterExport(cl,'N')
-#clusterExport(cl,'X')
-#clusterExport(cl,'Y')
-#clusterExport(cl,'Z')
-#clusterExport(cl,'T')
-
-
-optimParallel(par=unname(parameter),fn=likelihood,
-X=X,Y=Y,Z=Z,T=T,C=C,Alpha=Alpha,N=N,n=n,sub=sub,
-lower=rep(.0001,11))
-
-setDefaultCluster(cl=NULL); stopCluster(cl)
+set.seed(5)
+data = srlmcell::genevar(n = 20, e = 0.1, p = 20, pr = 5, df = 3,r = 0.5, gamma = 10, outtype = "cellwise")
+ximp <- suppressMessages(cellWise::DDC(data$x)$Ximp)
+df <- expand.grid(n = 1:20,p = c(1:21))
+df$n = as.factor(df$n)
+levels(df$n) = as.character(20:1)
+df$p = as.factor(df$p)
+levels(df$p) = c(" ", as.character(1:20))
+df$type = rep(factor(c("Y","X", "X(inactive)"), levels = c("Y","X", "X(inactive)")),times = 20*c(1,5,15))
+df$`True outlier` = factor(c(rep(0,20),as.numeric(data$outlierlabel)), labels = c("No", "Yes"))
+df$`Detected outlier` = factor(c(rep(0,20),as.numeric(ximp!=data$x)), labels = c("No", "Yes"))
 ```
+
+```{r, fig.width=10, fig.height=9}
+p111 = ggplot(df,aes(p, n)) +
+  geom_tile(aes(colour = `Detected outlier`, fill = `True outlier`, size = `Detected outlier`))+
+  scale_size_manual(values = c(0.5,1))+
+  scale_fill_manual(values=c("gray", "yellow"))+
+  scale_color_manual(values=c("black", "red"))+
+  facet_grid(.~type,space = "free", scale = "free")+
+  theme_minimal()
+#ggsave("illis2.eps", plot = p111, width = 10,height = 9)
+```
+
+
+
+
+
+
+
+
+
+
+
+
 
