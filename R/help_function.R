@@ -8,7 +8,8 @@ Rlars = function(y, x){
   #winsorize = F, prob = 0.99,
   betahat = fit$coefficients[,fit$crit$best]
   sigmahat = fit$scale[fit$crit$best]
-  return(list(betahat = betahat, sigmahat = sigmahat))
+  res = fit$residuals[,fit$crit$best]
+  return(list(betahat = betahat, sigmahat = sigmahat, res = res))
 
 }
 

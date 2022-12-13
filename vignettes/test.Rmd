@@ -15,7 +15,7 @@ knitr::opts_chunk$set(
 ```
 
 ```{r setup}
-library(srlmcell)
+library(regcell)
 ```
 
 
@@ -23,54 +23,72 @@ library(srlmcell)
 
 ```{r}
 ###need to set original values better
-data = srlmcell::genevar(n = 100, e = 0.05, p = 20, pr = 5, df = 0,r = 0.5, gamma = 10, outtype = "cellwise")
+{
+  n = 100
+  e = 0.05
+  p = 10
+  pr = 5
+  df = 3
+  r = 0
+  gamma = 10
+  beta = c(1,1,1,1,1)
+  
+}
+```
+
+```{r}
+
+data = srlmcell::genevar(n = n, e = e, p = p, pr = pr, df = df,r = r, gamma = gamma, beta = beta,outtype = "cellwise")
 ximp <- suppressMessages(cellWise::DDC(data$x)$Ximp)
 x = data$x
 y = data$y
+beta = data$beta
+beta
+```
+
+```{r}
+fit1 = sregcell(y = y, x = x, adadelta = T,adabeta = T,alpha = 0.9)
+fit2 = sregcell(y = y, x = x, adadelta = T,adabeta = F,alpha = 0.9)
+fit3 = sregcell(y = y, x = x, adadelta = F,adabeta = T,alpha = 0.9)
+fit4 = sregcell(y = y, x = x, adadelta = F,adabeta = F,alpha = 0.9)
+```
+```{r}
+fit21 = sregcell(y = y, x = x, adadelta = T,adabeta = T,alpha = 0.5)
+fit22 = sregcell(y = y, x = x, adadelta = T,adabeta = F,alpha = 0.5)
+fit23 = sregcell(y = y, x = x, adadelta = F,adabeta = T,alpha = 0.5)
+fit24 = sregcell(y = y, x = x, adadelta = F,adabeta = F,alpha = 0.5)
+```
+
+```{r}
+cbind(fit1$betahat,fit2$betahat,fit3$betahat,fit4$betahat,fit21$betahat,fit22$betahat,fit23$betahat,fit24$betahat)
+
+cbind(fit1$loss,fit2$loss,fit3$loss,fit4$loss,fit21$loss,fit22$loss,fit23$loss,fit24$loss)
+```
+
+
+```{r}
+betahat = regcell::soft_threshold_beta(betahat = beta+p:1/100, alambda_beta = rep(0.05,p))
+#betahat
+
+deltahat = regcell::soft_threshold_delta(deltahat = x, alambda_delta = matrix(1,n,p))
+#deltahat
+```
+
+
+```{r}
+fit_delta = reg_delta(y,x,betahat = beta,deltahat = deltahat,lambda_delta = 3)
+(fit_delta$deltahat!=0 )- data$outlierlabel
 
 ```
 
 ```{r}
-#t1 = system.time({fit1 = srlmcell::srlmm(data$y, data$x, initial = "rlars", tech = "cell", iter = TRUE)})["elapsed"]
-#t2 = system.time({fit2 = srlmcell::srlmm(data$y, data$x, initial = "rlars", tech = "row",  iter = TRUE)})["elapsed"]
-t3 = system.time({fit3 = srlmcell::srlmm(data$y, data$x, initial = "rlars", tech = "cell", reg = "ols", iter = TRUE)})["elapsed"]
-t4 = system.time({fit4 = srlmcell::srlmm(data$y, data$x, initial = "rlars", tech = "row",  reg = "ols", iter = TRUE)})["elapsed"]
-t5 = system.time({fit5 = srlmcell::srlmm(data$y, data$x, initial = "rlars", tech = "ada",  reg = "ols", iter = TRUE)})["elapsed"]
-t23 = system.time({fit23 = srlmcell::srlmm(data$y, data$x, initial = "rlars", tech = "cell", reg = "robust", iter = TRUE)})["elapsed"]
-t24 = system.time({fit24 = srlmcell::srlmm(data$y, data$x, initial = "rlars", tech = "row",  reg = "robust", iter = TRUE)})["elapsed"]
-t25 = system.time({fit25 = srlmcell::srlmm(data$y, data$x, initial = "rlars", tech = "ada",  reg = "robust", iter = TRUE)})["elapsed"]
-
-#t5 = system.time({fit5 = shootings::sparseshooting(data$x,data$y)})["elapsed"]
-#t4 = system.time(({fit4 = slm(y,ximp, crit = "logbic")}))
-#t6 = system.time(({fit6 = Rlars(y,x)}))["elapsed"]
-
-#c(t1,t2, t3, t4, t5, t6)
-
-cbind(fit3$betahat, fit4$betahat, fit5$betahat,fit23$betahat, fit24$betahat, fit25$betahat)
-c(fit3$loss, fit4$loss, fit5$loss,fit23$loss, fit24$loss, fit25$loss)
-
-
-fit23$betahat
+reg_beta(y = y,x = x - fit_delta$deltahat,betahat = beta, alpha = 0,lambda_beta = 10)
 ```
+
 
 ```{r}
-fit1$betahat[1:20]
-fit2$betahat[1:20]
-fit3$coef_ln
-fit5$betahat[1:20]
-
+reg_beta_delta(y,x,betahat = betahat,alpha = 0,deltahat = deltahat,lambda_beta = 10*log(n),lambda_delta = 3)
 ```
-
-```{r}
-fitss1 =srlmcell::TukeyM_atan_iter(data$y, x, ximp, betahat = c(0,data$beta), sigma = 1, tech = "row",lambda = 0.02, maxiter = 10)
-t(fitss1$betahat)
-fitss2 =srlmcell::TukeyM_atan_iter(data$y, x, ximp, betahat = c(0,data$beta), sigma = 1, tech = "cell",lambda = 0.02, maxiter = 10)
-t(fitss2$betahat)
-```
-
-
-
-
 
 
 

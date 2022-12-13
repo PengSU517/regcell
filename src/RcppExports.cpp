@@ -11,137 +11,114 @@ Rcpp::Rostream<true>&  Rcpp::Rcout = Rcpp::Rcpp_cout_get();
 Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 #endif
 
-// rho_func
-arma::vec rho_func(arma::vec res, double b);
-RcppExport SEXP _srlmcell_rho_func(SEXP resSEXP, SEXP bSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< arma::vec >::type res(resSEXP);
-    Rcpp::traits::input_parameter< double >::type b(bSEXP);
-    rcpp_result_gen = Rcpp::wrap(rho_func(res, b));
-    return rcpp_result_gen;
-END_RCPP
-}
-// psi_func
-arma::vec psi_func(arma::vec res, double b);
-RcppExport SEXP _srlmcell_psi_func(SEXP resSEXP, SEXP bSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< arma::vec >::type res(resSEXP);
-    Rcpp::traits::input_parameter< double >::type b(bSEXP);
-    rcpp_result_gen = Rcpp::wrap(psi_func(res, b));
-    return rcpp_result_gen;
-END_RCPP
-}
-// diff_func
-arma::vec diff_func(arma::vec res, double b);
-RcppExport SEXP _srlmcell_diff_func(SEXP resSEXP, SEXP bSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< arma::vec >::type res(resSEXP);
-    Rcpp::traits::input_parameter< double >::type b(bSEXP);
-    rcpp_result_gen = Rcpp::wrap(diff_func(res, b));
-    return rcpp_result_gen;
-END_RCPP
-}
-// scale_func
-double scale_func(arma::vec res, double b, double delta, double sigmahat);
-RcppExport SEXP _srlmcell_scale_func(SEXP resSEXP, SEXP bSEXP, SEXP deltaSEXP, SEXP sigmahatSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< arma::vec >::type res(resSEXP);
-    Rcpp::traits::input_parameter< double >::type b(bSEXP);
-    Rcpp::traits::input_parameter< double >::type delta(deltaSEXP);
-    Rcpp::traits::input_parameter< double >::type sigmahat(sigmahatSEXP);
-    rcpp_result_gen = Rcpp::wrap(scale_func(res, b, delta, sigmahat));
-    return rcpp_result_gen;
-END_RCPP
-}
-// soft_threshold
-arma::vec soft_threshold(arma::vec betahat, arma::vec Alambda);
-RcppExport SEXP _srlmcell_soft_threshold(SEXP betahatSEXP, SEXP AlambdaSEXP) {
+// soft_threshold_beta
+arma::vec soft_threshold_beta(arma::vec betahat, arma::vec alambda_beta);
+RcppExport SEXP _regcell_soft_threshold_beta(SEXP betahatSEXP, SEXP alambda_betaSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< arma::vec >::type betahat(betahatSEXP);
-    Rcpp::traits::input_parameter< arma::vec >::type Alambda(AlambdaSEXP);
-    rcpp_result_gen = Rcpp::wrap(soft_threshold(betahat, Alambda));
+    Rcpp::traits::input_parameter< arma::vec >::type alambda_beta(alambda_betaSEXP);
+    rcpp_result_gen = Rcpp::wrap(soft_threshold_beta(betahat, alambda_beta));
     return rcpp_result_gen;
 END_RCPP
 }
-// TukeyM_atan
-List TukeyM_atan(arma::vec y, arma::mat x, arma::vec betahat, double sigmahat, double lambda, String reg, double gamma, double maxiter);
-RcppExport SEXP _srlmcell_TukeyM_atan(SEXP ySEXP, SEXP xSEXP, SEXP betahatSEXP, SEXP sigmahatSEXP, SEXP lambdaSEXP, SEXP regSEXP, SEXP gammaSEXP, SEXP maxiterSEXP) {
+// soft_threshold_delta
+arma::mat soft_threshold_delta(arma::mat deltahat, arma::mat alambda_delta);
+RcppExport SEXP _regcell_soft_threshold_delta(SEXP deltahatSEXP, SEXP alambda_deltaSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::mat >::type deltahat(deltahatSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type alambda_delta(alambda_deltaSEXP);
+    rcpp_result_gen = Rcpp::wrap(soft_threshold_delta(deltahat, alambda_delta));
+    return rcpp_result_gen;
+END_RCPP
+}
+// reg_beta
+List reg_beta(arma::vec y, arma::mat x, arma::vec betahat, double intercept, double lambda_beta, bool adabeta, double maxiter);
+RcppExport SEXP _regcell_reg_beta(SEXP ySEXP, SEXP xSEXP, SEXP betahatSEXP, SEXP interceptSEXP, SEXP lambda_betaSEXP, SEXP adabetaSEXP, SEXP maxiterSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< arma::vec >::type y(ySEXP);
     Rcpp::traits::input_parameter< arma::mat >::type x(xSEXP);
     Rcpp::traits::input_parameter< arma::vec >::type betahat(betahatSEXP);
-    Rcpp::traits::input_parameter< double >::type sigmahat(sigmahatSEXP);
-    Rcpp::traits::input_parameter< double >::type lambda(lambdaSEXP);
-    Rcpp::traits::input_parameter< String >::type reg(regSEXP);
-    Rcpp::traits::input_parameter< double >::type gamma(gammaSEXP);
+    Rcpp::traits::input_parameter< double >::type intercept(interceptSEXP);
+    Rcpp::traits::input_parameter< double >::type lambda_beta(lambda_betaSEXP);
+    Rcpp::traits::input_parameter< bool >::type adabeta(adabetaSEXP);
     Rcpp::traits::input_parameter< double >::type maxiter(maxiterSEXP);
-    rcpp_result_gen = Rcpp::wrap(TukeyM_atan(y, x, betahat, sigmahat, lambda, reg, gamma, maxiter));
+    rcpp_result_gen = Rcpp::wrap(reg_beta(y, x, betahat, intercept, lambda_beta, adabeta, maxiter));
     return rcpp_result_gen;
 END_RCPP
 }
-// TukeyM_atan_iter
-List TukeyM_atan_iter(arma::vec y, arma::mat x, arma::mat ximp, arma::vec betahat, double sigmahat, String tech, double lambda, String reg, double gamma, double b, double maxiter);
-RcppExport SEXP _srlmcell_TukeyM_atan_iter(SEXP ySEXP, SEXP xSEXP, SEXP ximpSEXP, SEXP betahatSEXP, SEXP sigmahatSEXP, SEXP techSEXP, SEXP lambdaSEXP, SEXP regSEXP, SEXP gammaSEXP, SEXP bSEXP, SEXP maxiterSEXP) {
+// reg_delta
+List reg_delta(arma::vec y, arma::mat x, arma::vec betahat, arma::mat deltahat, double lambda_delta, arma::mat cellweight, double alpha, double maxiter);
+RcppExport SEXP _regcell_reg_delta(SEXP ySEXP, SEXP xSEXP, SEXP betahatSEXP, SEXP deltahatSEXP, SEXP lambda_deltaSEXP, SEXP cellweightSEXP, SEXP alphaSEXP, SEXP maxiterSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< arma::vec >::type y(ySEXP);
     Rcpp::traits::input_parameter< arma::mat >::type x(xSEXP);
-    Rcpp::traits::input_parameter< arma::mat >::type ximp(ximpSEXP);
     Rcpp::traits::input_parameter< arma::vec >::type betahat(betahatSEXP);
-    Rcpp::traits::input_parameter< double >::type sigmahat(sigmahatSEXP);
-    Rcpp::traits::input_parameter< String >::type tech(techSEXP);
-    Rcpp::traits::input_parameter< double >::type lambda(lambdaSEXP);
-    Rcpp::traits::input_parameter< String >::type reg(regSEXP);
-    Rcpp::traits::input_parameter< double >::type gamma(gammaSEXP);
-    Rcpp::traits::input_parameter< double >::type b(bSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type deltahat(deltahatSEXP);
+    Rcpp::traits::input_parameter< double >::type lambda_delta(lambda_deltaSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type cellweight(cellweightSEXP);
+    Rcpp::traits::input_parameter< double >::type alpha(alphaSEXP);
     Rcpp::traits::input_parameter< double >::type maxiter(maxiterSEXP);
-    rcpp_result_gen = Rcpp::wrap(TukeyM_atan_iter(y, x, ximp, betahat, sigmahat, tech, lambda, reg, gamma, b, maxiter));
+    rcpp_result_gen = Rcpp::wrap(reg_delta(y, x, betahat, deltahat, lambda_delta, cellweight, alpha, maxiter));
     return rcpp_result_gen;
 END_RCPP
 }
-// lambdamax_matan
-List lambdamax_matan(arma::vec y, arma::mat x, arma::vec betahat, double sigmahat, String reg, double lambdamax);
-RcppExport SEXP _srlmcell_lambdamax_matan(SEXP ySEXP, SEXP xSEXP, SEXP betahatSEXP, SEXP sigmahatSEXP, SEXP regSEXP, SEXP lambdamaxSEXP) {
+// reg_beta_delta
+List reg_beta_delta(arma::vec y, arma::mat x, arma::vec betahat, double intercept, arma::mat deltahat, arma::mat cellweight, double lambda_beta, bool adabeta, double lambda_delta, double alpha, double maxiter);
+RcppExport SEXP _regcell_reg_beta_delta(SEXP ySEXP, SEXP xSEXP, SEXP betahatSEXP, SEXP interceptSEXP, SEXP deltahatSEXP, SEXP cellweightSEXP, SEXP lambda_betaSEXP, SEXP adabetaSEXP, SEXP lambda_deltaSEXP, SEXP alphaSEXP, SEXP maxiterSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< arma::vec >::type y(ySEXP);
     Rcpp::traits::input_parameter< arma::mat >::type x(xSEXP);
     Rcpp::traits::input_parameter< arma::vec >::type betahat(betahatSEXP);
-    Rcpp::traits::input_parameter< double >::type sigmahat(sigmahatSEXP);
-    Rcpp::traits::input_parameter< String >::type reg(regSEXP);
+    Rcpp::traits::input_parameter< double >::type intercept(interceptSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type deltahat(deltahatSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type cellweight(cellweightSEXP);
+    Rcpp::traits::input_parameter< double >::type lambda_beta(lambda_betaSEXP);
+    Rcpp::traits::input_parameter< bool >::type adabeta(adabetaSEXP);
+    Rcpp::traits::input_parameter< double >::type lambda_delta(lambda_deltaSEXP);
+    Rcpp::traits::input_parameter< double >::type alpha(alphaSEXP);
+    Rcpp::traits::input_parameter< double >::type maxiter(maxiterSEXP);
+    rcpp_result_gen = Rcpp::wrap(reg_beta_delta(y, x, betahat, intercept, deltahat, cellweight, lambda_beta, adabeta, lambda_delta, alpha, maxiter));
+    return rcpp_result_gen;
+END_RCPP
+}
+// lambdamax_beta
+List lambdamax_beta(arma::vec y, arma::mat x, arma::vec betahat, double intercept, bool adabeta, double lambdamax);
+RcppExport SEXP _regcell_lambdamax_beta(SEXP ySEXP, SEXP xSEXP, SEXP betahatSEXP, SEXP interceptSEXP, SEXP adabetaSEXP, SEXP lambdamaxSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::vec >::type y(ySEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type x(xSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type betahat(betahatSEXP);
+    Rcpp::traits::input_parameter< double >::type intercept(interceptSEXP);
+    Rcpp::traits::input_parameter< bool >::type adabeta(adabetaSEXP);
     Rcpp::traits::input_parameter< double >::type lambdamax(lambdamaxSEXP);
-    rcpp_result_gen = Rcpp::wrap(lambdamax_matan(y, x, betahat, sigmahat, reg, lambdamax));
+    rcpp_result_gen = Rcpp::wrap(lambdamax_beta(y, x, betahat, intercept, adabeta, lambdamax));
     return rcpp_result_gen;
 END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_srlmcell_rho_func", (DL_FUNC) &_srlmcell_rho_func, 2},
-    {"_srlmcell_psi_func", (DL_FUNC) &_srlmcell_psi_func, 2},
-    {"_srlmcell_diff_func", (DL_FUNC) &_srlmcell_diff_func, 2},
-    {"_srlmcell_scale_func", (DL_FUNC) &_srlmcell_scale_func, 4},
-    {"_srlmcell_soft_threshold", (DL_FUNC) &_srlmcell_soft_threshold, 2},
-    {"_srlmcell_TukeyM_atan", (DL_FUNC) &_srlmcell_TukeyM_atan, 8},
-    {"_srlmcell_TukeyM_atan_iter", (DL_FUNC) &_srlmcell_TukeyM_atan_iter, 11},
-    {"_srlmcell_lambdamax_matan", (DL_FUNC) &_srlmcell_lambdamax_matan, 6},
+    {"_regcell_soft_threshold_beta", (DL_FUNC) &_regcell_soft_threshold_beta, 2},
+    {"_regcell_soft_threshold_delta", (DL_FUNC) &_regcell_soft_threshold_delta, 2},
+    {"_regcell_reg_beta", (DL_FUNC) &_regcell_reg_beta, 7},
+    {"_regcell_reg_delta", (DL_FUNC) &_regcell_reg_delta, 8},
+    {"_regcell_reg_beta_delta", (DL_FUNC) &_regcell_reg_beta_delta, 11},
+    {"_regcell_lambdamax_beta", (DL_FUNC) &_regcell_lambdamax_beta, 6},
     {NULL, NULL, 0}
 };
 
-RcppExport void R_init_srlmcell(DllInfo *dll) {
+RcppExport void R_init_regcell(DllInfo *dll) {
     R_registerRoutines(dll, NULL, CallEntries, NULL, NULL);
     R_useDynamicSymbols(dll, FALSE);
 }

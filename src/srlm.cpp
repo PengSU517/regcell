@@ -11,420 +11,202 @@ using namespace arma;
 using namespace Rcpp;
 
 
-
-
-
 // [[Rcpp::export]]
-arma::vec rho_func(arma::vec res, double b = 4.6845){   //should be a vector
-  // rho function Tukey's biweight
-
-  unsigned int n = res.n_elem;
-
-  arma::vec bvec(n);
-  bvec.fill(b);
-
-  arma::vec value(n);
-  value = ((abs(res) <= bvec)%(1-pow(  (1 - pow(res/bvec,2.0)),3.0))%pow(bvec,2.0)/6) + (abs(res) > bvec)%pow(bvec,2.0)/6;
-  return value;
-}
-
-
-// [[Rcpp::export]]
-arma::vec psi_func(arma::vec res, double b = 4.6845){
-  // rho function Tukey's biweight
-
-  unsigned int n = res.n_elem;
-
-  arma::vec bvec(n);
-  bvec.fill(b);
-
-  arma::vec value(n);
-  value = (abs(res) <= bvec)%res%(pow((1 - pow(res/bvec,2)),2));
-
-  return value;
-}
-
-// [[Rcpp::export]]
-arma::vec diff_func(arma::vec res, double b = 4.6845){   //should be a vector
-  // rho function Tukey's biweight
-
-  unsigned int n = res.n_elem;
-
-  arma::vec bvec(n);
-  bvec.fill(b);
-
-  arma::vec value(n);
-  arma::vec resb = res/bvec;
-
-  value = (abs(res) <= bvec)%(1 - 6*pow(resb,2) + 5*pow(resb,4));
-
-  return value;
-
-}
-
-
-
-// [[Rcpp::export]]
-double scale_func(arma::vec res, double b, double delta, double sigmahat){
-  // res: n-dimensional vector of residuals
-  // delta: constant for consistency of M-scale : E(z)=kp
-  // b: tuning parameter for rho function
-  // sigmahat: initial scale esitmate
-  // maxit: maximum number of iterations
-  // tol: numerical tolerance for convergence
-  // Return: M-scale estimate of the residuals u
-  unsigned int n = res.n_elem;
-
-  arma::vec sigmavec(n);
-  sigmavec.fill(sigmahat);
-
-  double total=0;
-  double sigmanew=1;
-  int maxit = 30;
-  double tol = pow(10, -6);
-  double err = 10;
-
-  int k=0;
-  while((k<maxit) & (err>tol)){
-    total = accu(rho_func(res/sigmavec));
-    sigmanew=sqrt(pow(sigmahat,2.0)*total/delta/n);
-    err = std::abs(sigmanew/sigmahat-1);
-    sigmahat = sigmanew;
-    sigmavec.fill(sigmahat);
-    k++;
-  }
-  return sigmahat;
-}
-
-
-
-// [[Rcpp::export]]
-arma::vec soft_threshold(arma::vec betahat, arma::vec Alambda){   //should be a vector
-  // rho function Tukey's biweight
-
-  unsigned int p = betahat.n_elem;
-  arma::vec diff = abs(betahat) - Alambda;
+arma::vec soft_threshold_beta(arma::vec betahat, arma::vec alambda_beta){   //should be a vector
+  arma::vec diff = abs(betahat) - alambda_beta;
   arma::vec value = sign(betahat)%(diff>0)%diff;
   return value;
 }
 
 
+// [[Rcpp::export]]
+arma::mat soft_threshold_delta(arma::mat deltahat, arma::mat alambda_delta){   //should be a vector
+  arma::mat diff = abs(deltahat) - alambda_delta;
+  arma::mat value = sign(deltahat)%(diff>0)%diff;
+  return value;
+}
+
+
 
 // [[Rcpp::export]]
-
-List TukeyM_atan(arma::vec y, arma::mat x, arma::vec betahat, double sigmahat,  double lambda, String reg,
-                 double gamma = 0.05, double maxiter = 30){
-  //sparse M-regressioner with Tukey's biweight loss and atan penalty
-  //y: response
-  //x: design matrix
-  //betahat: initial estimate
-  //sigmahat:estimate of sigma (keeping fixed)
-  //lambda: tuning parameter for regularization
-  //gamma: another tuning parameter in Atan penalty
-  //maxiter: maximum iteration time.
-
+List reg_beta(arma::vec y, arma::mat x, arma::vec betahat, double intercept, double lambda_beta, bool adabeta, double maxiter = 30){
 
   //initialize variables
-  double n = x.n_rows; //sample size
-  double p = x.n_cols; //dimension size
+  unsigned int n = x.n_rows; //sample size
+  unsigned int p = x.n_cols; //dimension size
 
-  arma::mat onevec(n,1); //constant vector (first column of the design matrix)
-  onevec.fill(1);
-
-  arma::vec sigmahatvec(n);//a vector filled with sigma, just for computation convenience
-  sigmahatvec.fill(sigmahat);
-
-  arma::mat sigmahatmat(p+1, p+1);//a matrix filled with sigma, just for computation convenience
-  sigmahatmat.fill(sigmahat);
-
-  arma::vec lambdavec(p);//a vector filled with lambda, just for computation convenience
-  lambdavec.fill(lambda);
+  arma::vec lambdavec_beta(p);//a vector filled with lambda, just for computation convenience
+  lambdavec_beta.fill(lambda_beta);
 
   arma::vec gammavec(p);//a vector filled with gamma, just for computation convenience
-  gammavec.fill(gamma);
-
-  arma::mat xc = join_rows(onevec, x);// complete design matrix with the first column constant
-
+  gammavec.fill(0.05);
   arma::vec twoerpi(p);// a constant vector filled with 1/pi
   twoerpi.fill(2/M_PI);
 
-  arma::vec Alambda = gammavec%(gammavec + twoerpi)/(square(gammavec) +square(betahat.rows(1,p)))%lambdavec;
-  // compute adaptive penaltive for each variables
-  arma::vec Alambdac = join_cols(zeros(1), Alambda);
-  // add penalty for intercept (penalty is zero for an intercept)
+  arma::vec alambdavec_beta = lambdavec_beta;//-----------------------whether using adaptive penalties
+  // compute adaptive penaltive for each variables//-----------whether penalties should be related with delta
 
-  arma::mat stepsize(p+1,p+1); //stepsize for proximal gradient descent algorithm
-  stepsize.fill(1); //stepsize setting need to be improved
+  arma::mat weightmat = eye(n,n);
+  double L = arma::eig_sym(trans(x)*weightmat*x).max();
+  arma::vec steptvec(p);// a constant vector filled with 1/pi
+  steptvec.fill(1/L);
 
-  //arma::mat shrinksize(p+1,p+1);
-  //shrinksize.fill(1);
+  arma::vec interceptvec(n);
+  arma::vec res(n);
 
-  arma::vec res = y - xc*betahat;
-  arma::vec betapos(p+1);
-  arma::vec betanew(p+1);
 
+  arma::vec betapos(p);
+  arma::vec betanew(p);
   double loss;
 
-  if(reg=="robust"){
-    arma::mat weightmat = repmat(diff_func(res/sigmahatvec),1,p+1);
+  double k = 1;//iterator
+  while(k <= maxiter)//start iteration
+  {
+    interceptvec.fill(intercept);
+    res = y - interceptvec - x*betahat;//residual
+    betapos = betahat + steptvec%(trans(x) * res);
 
-    double L = arma::eig_sym(trans(xc)*(weightmat%xc)).max()/pow(sigmahat,2);
-    double t = 1/L;  //stepsize could be improved
-
-    arma::vec steptvec(p+1);// a constant vector filled with 1/pi
-    steptvec.fill(t);
-
-    double k = 1;//iterator
-    while(k <= maxiter)//start iteration
-    {
-      res = y - xc*betahat;//residuals
-      betapos = betahat + steptvec%(trans(xc) * psi_func(res/sigmahatvec));
-      betanew = soft_threshold (betapos, Alambdac);
-      if((abs(betanew-betahat)).max() < pow(10, -4)) {break;};
-      //stepsize = stepsize*shrinksize;
-      betahat = betanew;
-      Alambda = gammavec%(gammavec + twoerpi)/(square(gammavec) +square(betahat.rows(1,p)))%lambdavec;
-      Alambdac = join_cols(zeros(1), Alambda);
-
-      k++;
+    if(adabeta){
+      alambdavec_beta = gammavec%(gammavec + twoerpi)/(square(gammavec) +square(betahat))%lambdavec_beta;
     }
-    loss = 2*accu(rho_func(y-xc*betahat)/sigmahatvec);
+
+    betanew = soft_threshold_beta(betapos, steptvec%alambdavec_beta);
+    if((abs(betanew-betahat)).max() < pow(10, -4)) {break;};
+    betahat = betanew;
+    res = y - x*betahat;//residuals
+    intercept  = mean(res);
+    k++;
   }
-
-  if(reg=="ols"){
-
-    double L = arma::eig_sym(trans(xc)*xc).max();
-    double t = 1/L;  //stepsize could be improved
-
-    arma::vec steptvec(p+1);// a constant vector filled with 1/pi
-    steptvec.fill(t);
-
-    double k = 1;//iterator
-    while(k <= maxiter)//start iteration
-    {
-      res = y - xc*betahat;//residuals
-      betapos = betahat + steptvec%(trans(xc) * res);
-      betanew = soft_threshold (betapos, Alambdac);
-      if((abs(betanew-betahat)).max() < pow(10, -4)) {break;};
-      //stepsize = stepsize*shrinksize;
-      betahat = betanew;
-      Alambda = gammavec%(gammavec + twoerpi)/(square(gammavec) +square(betahat.rows(1,p)))%lambdavec;
-      Alambdac = join_cols(zeros(1), Alambda);
-
-      k++;
-    }
-    loss = accu(pow((y-xc*betahat)/sigmahatvec,2));
-  }
+  loss = accu(pow(y-x*betahat,2));//eps and x have been std
 
 
   List results = List::create(
     Named("betahat") = betahat,
-    Named("sigmahat") = sigmahat,
+    Named("interceptvec") = interceptvec,
     Named("loss") = loss
-    //Named("t") = t,
-    //Named("L") = L,
-    //Named("weightmat") = weightmat,
-    //Named("k") = k-1
     );
   return(results);
 
 }
 
 
+
+
+
 // [[Rcpp::export]]
-List TukeyM_atan_iter(arma::vec y, arma::mat x, arma::mat ximp, arma::vec betahat, double sigmahat,
-                      String tech, double lambda, String reg,
-                      double gamma = 0.05, double b = 4.6845,  double maxiter = 30){
+List reg_delta(arma::vec y, arma::mat x, arma::vec betahat, arma::mat deltahat,
+               double lambda_delta, arma::mat cellweight, double alpha, double maxiter = 30){
 
   //initialize variables
-  double n = x.n_rows; //sample size
-  double p = x.n_cols; //dimension size
+  unsigned int n = x.n_rows; //sample size
+  unsigned int p = x.n_cols; //dimension size
 
-  arma::mat xtilde = x;
-  arma::mat onevec  = ones(n,1); //constant vector (first column of the design matrix)
-  arma::mat xc      = join_rows(onevec, x);
-  arma::mat ximpc   = join_rows(onevec, ximp);
-  arma::mat xtildec = join_rows(onevec, x);
+  arma::mat lambdamat_delta(n,p);//a vector filled with lambda,
+  lambdamat_delta.fill(lambda_delta);
+  arma::mat alphamat(p,p);
+  alphamat.fill(alpha);
 
-  arma::umat flagged = (x!=ximp);/////bool matrix
+  arma::mat one_minus_alphahat(p,p);
+  one_minus_alphahat.fill((1-alpha));
 
-  List outputs;
+  arma::mat alphamatnp(n,p);
+  alphamatnp.fill(alpha);
 
-  //List outputs = TukeyM_atan(y, xtilde, betahat, sigmahat, lambda);
-  //betahat = as<arma::vec>(outputs["betahat"]);
+  arma::mat alambdamat_delta = lambdamat_delta%cellweight;//------whether using adaptive penalties
 
-  int i,j,k;
+  arma::mat Sigmahat = eye(p,p);
+  arma::mat xtx = alphamat%(betahat*trans(betahat))+ one_minus_alphahat%(Sigmahat);
+  arma::mat ytx = x*xtx - alphamatnp%(y*trans(betahat));
 
-  if(tech=="row"){
-    arma::vec res_ori(n);
-    arma::vec res_imp(n);
-    arma::vec res_tilde(n);
-    arma::vec diff_ori(n);
-    arma::vec diff_imp(n);
-    arma::vec betanew(p+1);
-    for(k = 1; k < maxiter; k++){
-      res_ori = y -    xc*betahat;
-      res_tilde = y - xtildec*betahat;
-      res_imp = y - ximpc*betahat;
-      diff_ori = abs(res_ori) - abs(res_tilde);
-      diff_imp= abs(res_imp) - abs(res_tilde);
-
-      for(i=0; i<n; i++){
-        if(diff_ori[i]<0) {
-          for(j = 0; j<p; j++){
-            if(flagged(i,j)){
-              xtilde(i,j) = x(i,j);
-            }
-          }
-        }
-        if(diff_imp[i]<0) {
-          for(j = 0; j<p; j++){
-            if(flagged(i,j)){
-              xtilde(i,j) = ximp(i,j);
-            }
-          }
-        }
-      }
-
-      outputs = TukeyM_atan(y, xtilde, betahat, sigmahat, lambda, reg);
-      betanew = as<arma::vec>(outputs["betahat"]);
-      if((abs(betanew-betahat)).max() < pow(10, -4)) {break;};
-      betahat = betanew;
-      xtildec = join_rows(onevec, xtilde);
-    }
+  double L = arma::eig_sym(xtx).max();
+  arma::mat stepmat(n,p);
+  stepmat.fill(1/L);
+  arma::mat deltapos(n,p);
+  arma::mat deltanew(n,p);
+  double k = 1;//iterator
+  while(k <= maxiter)//start iteration
+  {
+    deltapos = deltahat + stepmat%(ytx - deltahat*xtx);
+    deltanew = soft_threshold_delta(deltapos, stepmat%alambdamat_delta);//------------------------------!!!!!!!!!!!
+    if((abs(deltanew-deltahat)).max() < pow(10, -4)) {break;};
+    deltahat = deltanew;
+    k++;
   }
-
-
-  if(tech=="ada"){
-    arma::vec res_ori(n);
-    arma::vec res_imp(n);
-    arma::vec res_tilde(n);
-    arma::vec diff_ori(n);
-    arma::vec diff_imp(n);
-    arma::vec betanew(p+1);
-    for(k = 1; k < maxiter; k++){
-      res_ori = y -    xc*betahat;
-      res_tilde = y - xtildec*betahat;
-      res_imp = y - ximpc*betahat;
-      diff_ori = abs(res_ori) - abs(res_tilde);
-      diff_imp= abs(res_imp) - abs(res_tilde);
-
-      for(j=0; j<p; j++){
-        if(betahat(j+1)!=0){
-          for(i=0; (i<n); i++){
-            if(diff_ori[i]<0) {
-              if(flagged(i,j)){
-                xtilde(i,j) = x(i,j);
-              }
-            }
-            if(diff_imp[i]<0) {
-              if(flagged(i,j)){
-                xtilde(i,j) = ximp(i,j);
-              }
-            }
-          }
-        }else{
-          for(i=0; i<n; i++){
-            if(flagged(i,j)){
-              xtilde(i,j) = ximp(i,j);
-            }
-          }
-        }
-      }
-      outputs = TukeyM_atan(y, xtilde, betahat, sigmahat, lambda, reg);
-      betanew = as<arma::vec>(outputs["betahat"]);
-      if((abs(betanew-betahat)).max() < pow(10, -4)) {break;};
-      betahat = betanew;
-      xtildec = join_rows(onevec, xtilde);
-    }
-  }
-
-
-  if(tech == "cell"){
-    double res_ori;
-    double res_imp;
-    double res_tilde;
-
-    arma::vec diff_ori(p);
-    arma::vec diff_imp(p);
-    arma::vec betanew(p+1);
-    for(k = 1; k < maxiter; k++){
-
-      for(i = 0; i<n; i++){
-        res_tilde = as_scalar(y[i] - xtildec.row(i)*betahat);
-        diff_ori.fill(0);
-        diff_imp.fill(0);
-        for(j = 0;j<p;j++){
-          if(flagged(i,j)){
-            if(betahat(j+1)!=0){
-              res_imp = res_tilde + as_scalar((xtilde(i,j) - ximp(i,j))*betahat.row(j+1));
-              diff_imp(j) = std::abs(res_imp - res_tilde);
-              res_ori = res_tilde + as_scalar((     x(i,j) - ximp(i,j))*betahat.row(j+1));
-              diff_ori(j) = std::abs(res_ori) - std::abs(res_tilde);
-            }
-            else{
-              xtilde(i,j) = ximp(i,j);
-            }
-          }
-        }
-        if(min(diff_imp<0)){
-          xtilde(i, diff_imp.index_min()) = ximp(i, diff_imp.index_min());
-        }
-        if(min(diff_ori<0)){
-          xtilde(i, diff_ori.index_min()) =    x(i, diff_ori.index_min());
-        }
-      }
-      outputs = TukeyM_atan(y, xtilde, betahat, sigmahat, lambda,reg);
-      betanew = as<arma::vec>(outputs["betahat"]);
-      if((abs(betanew-betahat)).max() < pow(10, -4)) {break;};
-      betahat = betanew;
-      xtildec = join_rows(onevec, xtilde);
-    }
-  }
-
-  double loss = as<double>(outputs["loss"]);
-  //double L = as<double>(outputs["L"]);
-  //double t = as<double>(outputs["t"]);
-  //arma::mat weightmat = as<arma::mat>(outputs["weightmat"]);
 
   List results = List::create(
-    Named("betahat") = betahat,
-    Named("sigmahat") = sigmahat,
-    Named("xtilde") = xtilde,
-    Named("flagged") = flagged,
-    //Named("t") = t,
-    //Named("L") = L,
-    //Named("k") = k,
-    //Named("weightmat") = weightmat,
-    Named("loss") = loss
+    Named("deltahat") = deltahat
   );
   return(results);
+
 
 }
 
 
+// [[Rcpp::export]]
+List reg_beta_delta(arma::vec y, arma::mat x, arma::vec betahat, double intercept, arma::mat deltahat, arma::mat cellweight,
+                    double lambda_beta, bool adabeta, double lambda_delta,double alpha, double maxiter = 30){
+
+  //initialize variables
+  unsigned int n = x.n_rows; //sample size
+  unsigned int p = x.n_cols; //dimension size
+
+  List outputs_beta;
+  List outputs_delta;
+  arma::vec betaget(p);
+  arma::vec interceptvec(n);
+  interceptvec.fill(intercept);
+  arma::mat deltaget(n,p);
+  double loss;
+  double k = 1;//iterator
+  while(k <= maxiter)//start iteration
+  {
+    outputs_delta = reg_delta(y-interceptvec, x, betahat, deltahat, lambda_delta, cellweight, alpha);
+    deltaget = as<arma::mat>(outputs_delta["deltahat"]);
+    outputs_beta = reg_beta(y, x-deltahat, betahat, intercept, lambda_beta, adabeta);
+    betaget = as<arma::vec>(outputs_beta["betahat"]);
+    interceptvec = as<arma::vec>(outputs_beta["interceptvec"]);
+
+    if((abs(betaget-betahat)).max() < pow(10, -4)) {break;};
+    betahat = betaget;
+    deltahat = deltaget;
+    k++;
+  }
+
+  arma::mat lambdamat_delta(n,p);
+  lambdamat_delta.fill(lambda_delta);
+  loss = alpha * as<double>(outputs_beta["loss"]) + (1 - alpha)*accu(pow(x-deltahat,2)) + accu(lambdamat_delta%abs(deltahat));
+  intercept= as_scalar(interceptvec[0]);
 
 
+  List results = List::create(
+    Named("intercept") = intercept,
+    Named("betahat") = betahat,
+    Named("deltahat") = deltahat,
+    Named("loss") = loss
+  );
+  return(results);
+
+
+}
 
 
 // [[Rcpp::export]]
 
-List lambdamax_matan(arma::vec y, arma::mat x, arma::vec betahat, double sigmahat,
-                      String reg, double lambdamax = 1){
+List lambdamax_beta(arma::vec y, arma::mat x, arma::vec betahat, double intercept, bool adabeta, double lambdamax = 1){
   //initialize variables
   double n = x.n_rows; //sample size
   double p = x.n_cols; //dimension size
-  arma::vec betaget(p+1);
+  arma::vec betaget(p);
   arma::vec iovec(2, fill::zeros);
-  double ind = 0;
+  int ind = 0;
   bool label = true;
   int k = 0;
   while((label)){
     List outputs;
-    outputs = TukeyM_atan(y, x, betahat, sigmahat, lambdamax, reg);
+    outputs = reg_beta(y, x, betahat,intercept,lambdamax,adabeta);
     betaget = as<arma::vec>(outputs["betahat"]);
-    ind = (accu(abs(betaget.rows(1,p)))==0);// 1 means zero model; -1 means others
-    label = (iovec.min()<=3);
+    ind = accu(abs(betaget))==0;// 1 means zero model; 0 means others
+    label = iovec.min()<=5;
     lambdamax = (pow(0.5, (ind-0.5)*2*1/pow(2,iovec.min()))*lambdamax);
     iovec[ind] = iovec[ind]+1;
     k++;
@@ -444,14 +226,3 @@ List lambdamax_matan(arma::vec y, arma::mat x, arma::vec betahat, double sigmaha
 }
 
 
-
-
-
-
-
-
-
-
-
-
-//
