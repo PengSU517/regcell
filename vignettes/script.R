@@ -4,7 +4,7 @@ getDoParWorkers()
 
 ###### data generation settings
 {
-  ms = 1:20
+  ms = 1:2
   ns = 100
   ps = 20 # ps = 200 in high dimensional settings
   prs = c(5,10)
@@ -35,24 +35,16 @@ getDoParWorkers()
   slmf = function(y,x){srlmcell::slm(y,x)$betahat}
   sssf = function(y, x){shootings::sparseshooting(x,y)$coef_ln}
   rlarsf = function(y, x){srlmcell::Rlars(y, x)$betahat}
-  sreg_ada_f = function(y,x){fit = regcell::sregcell(y = y, x = x, adadelta = T,adabeta = T); c(fit$intercept, fit$betahat)}
   sreg_adadelta_f = function(y,x){fit = regcell::sregcell(y = y, x = x, adadelta = T,adabeta = F); c(fit$intercept, fit$betahat)}
-  sreg_adabeta_f = function(y,x){fit = regcell::sregcell(y = y, x = x, adadelta = F,adabeta = T); c(fit$intercept, fit$betahat)}
   sreg_f = function(y,x){fit = regcell::sregcell(y = y, x = x, adadelta = F,adabeta = F); c(fit$intercept, fit$betahat)}
-  sreg_ada_enet_f = function(y,x){fit = regcell::sregcell(y = y, x = x, adadelta = T,adabeta = T,alpha = 0.9); c(fit$intercept, fit$betahat)}
   sreg_adadelta_enet_f = function(y,x){fit = regcell::sregcell(y = y, x = x, adadelta = T,adabeta = F,alpha = 0.9); c(fit$intercept, fit$betahat)}
-  sreg_adabeta_enet_f = function(y,x){fit = regcell::sregcell(y = y, x = x, adadelta = F,adabeta = T,alpha = 0.9); c(fit$intercept, fit$betahat)}
   sreg_enet_f = function(y,x){fit = regcell::sregcell(y = y, x = x, adadelta = F,adabeta = F,alpha = 0.9); c(fit$intercept, fit$betahat)}
 
   mtds = list(
     rlars = rlarsf,
-    sreg_ada = sreg_ada_f,
     sreg_adadelta = sreg_adadelta_f,
-    sreg_adabeta = sreg_adabeta_f,
     sreg = sreg_f,
-    sreg_enet_ada = sreg_ada_enet_f,
-    sreg_enet_adadelta = sreg_adadelta_enet_f,
-    sreg_enet_adabeta = sreg_adabeta_enet_f,
+    sreg_adadelta_enet = sreg_adadelta_enet_f,
     sreg_enet = sreg_enet_f
   )
 }
@@ -75,7 +67,7 @@ getDoParWorkers()
         seed = m
         set.seed(seed = seed)
         beta = c(rep(1,pr),rep(0,p-pr))
-        dataset = srlmcell::genevar(n = n, p = p, e = e, r = r, beta = beta, gamma = gamma, df = df, outtype = outtype)
+        dataset = regcell::genevar(n = n, p = p, e = e, r = r, beta = beta, gamma = gamma, df = df, outtype = outtype)
         x  = dataset$x
         xc = dataset$xc
         y  = dataset$y

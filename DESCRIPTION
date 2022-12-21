@@ -3,9 +3,9 @@ Type: Package
 Title: What the package does (short line)
 Version: 1.0
 Date: 2022-08-28
-Author: Who wrote it
-Maintainer: Who to complain to <yourfault@somewhere.net>
-Description: More about what it does (maybe more than one line)
+Author: Peng SU
+Maintainer: Peng SU <peng.su@sydney.edu.au>
+Description: Regression under cellwise contamination
 License: What license is it under?
 Imports: Rcpp (>= 1.0.7)
 LinkingTo: Rcpp, RcppArmadillo

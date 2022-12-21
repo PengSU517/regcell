@@ -19,76 +19,287 @@ library(regcell)
 ```
 
 
-
-
 ```{r}
 ###need to set original values better
 {
   n = 100
-  e = 0.05
-  p = 10
+  e = 0.1
+  p = 20
   pr = 5
-  df = 3
-  r = 0
-  gamma = 10
-  beta = c(1,1,1,1,1)
+  df = 0
+  r = 0.5
+  gamma = 6
+  beta = rep(1,5)
   
 }
+
+{
+  adadelta = TRUE
+  adabeta = FALSE
+  softbeta = TRUE
+  softdelta = TRUE
+  lambda_delta = 3
+  lambda_beta = 10
+  alpha = 0.5
+  maxiter = 30
+  
+}
+
+
 ```
+
+
+```{r}
+fit0 = Rlars(y, x)
+#fit0$betahat
+rowweight = 1/abs(fit0$res/fit0$sigmahat/lambda_delta)#####有大问题
+colweight = 1/abs(x)
+```
+
 
 ```{r}
 
-data = srlmcell::genevar(n = n, e = e, p = p, pr = pr, df = df,r = r, gamma = gamma, beta = beta,outtype = "cellwise")
+data = regcell::genevar(n = n, e = e, p = p, pr = pr, df = df,r = r, gamma = gamma, beta = beta,outtype = "cellwise")
 ximp <- suppressMessages(cellWise::DDC(data$x)$Ximp)
 x = data$x
 y = data$y
 beta = data$beta
 beta
+
 ```
 
 ```{r}
-fit1 = sregcell(y = y, x = x, adadelta = T,adabeta = T,alpha = 0.9)
-fit2 = sregcell(y = y, x = x, adadelta = T,adabeta = F,alpha = 0.9)
-fit3 = sregcell(y = y, x = x, adadelta = F,adabeta = T,alpha = 0.9)
-fit4 = sregcell(y = y, x = x, adadelta = F,adabeta = F,alpha = 0.9)
-```
-```{r}
-fit21 = sregcell(y = y, x = x, adadelta = T,adabeta = T,alpha = 0.5)
-fit22 = sregcell(y = y, x = x, adadelta = T,adabeta = F,alpha = 0.5)
-fit23 = sregcell(y = y, x = x, adadelta = F,adabeta = T,alpha = 0.5)
-fit24 = sregcell(y = y, x = x, adadelta = F,adabeta = F,alpha = 0.5)
-```
-
-```{r}
-cbind(fit1$betahat,fit2$betahat,fit3$betahat,fit4$betahat,fit21$betahat,fit22$betahat,fit23$betahat,fit24$betahat)
-
-cbind(fit1$loss,fit2$loss,fit3$loss,fit4$loss,fit21$loss,fit22$loss,fit23$loss,fit24$loss)
-```
-
-
-```{r}
-betahat = regcell::soft_threshold_beta(betahat = beta+p:1/100, alambda_beta = rep(0.05,p))
+betahat = regcell::threshold_beta(betahat = beta+p:1/100, alambda_beta = rep(0.05,p), softbeta = T)
 #betahat
 
-deltahat = regcell::soft_threshold_delta(deltahat = x, alambda_delta = matrix(1,n,p))
-#deltahat
+deltahat = regcell::threshold_delta(deltahat = x, alambda_delta = matrix(4,n,p), softdelta = F)
+#(x - deltahat)[14,]
+#deltahat[14,]
+#deltahat[14,]
+```
+
+
+
+```{r}
+# betahat = rnorm(p)
 ```
 
 
 ```{r}
-fit_delta = reg_delta(y,x,betahat = beta,deltahat = deltahat,lambda_delta = 3)
-(fit_delta$deltahat!=0 )- data$outlierlabel
+fit_reg_delta = reg_delta(rnorm(n),x,betahat = rep(0,p), deltahat =  matrix(rnorm(n*p),n,p), lambda_delta = 3, 
+                          cellweight = matrix(1,n,p), alpha = 0, softdelta = T, maxiterdelta = 100)#加速最优梯度 加速收敛
+
+fit_reg_delta$deltahat[1:3,]
+#fit_reg_delta$resclean[1]
+
+#问题解决 现在收敛
+#fit_reg_delta$deltahat[1,]
+#fit_reg_delta$xclean[1,]
+#x[1,]
+#data$xc[1,]
+
+```
+
+
+
+
+```{r}
+#(fit_reg_delta$deltahat!=0) - data$outlierlabel
+#sum((((fit_reg_delta$deltahat!=0) - data$outlierlabel)!=0)[,(1:5)])
+#fit_reg_delta$deltahat[22,]
+
+```
+
+
+```{r}
+# deltahat = matrix(rnorm(n*p),n,p)
+```
+
+
+```{r}
+fit_beta = reg_beta(y = y,x = x - fit_reg_delta$deltahat, intercept = 0, betahat = rep(0,p), 
+         lambdavec_beta = rep(lambda_beta,p),maxiter = 300, softbeta = TRUE)
+fit_beta$betahat
+```
+
+
+```{r}
+fit_total = reg_beta_delta(y,x,betahat = rep(0,p),intercept = 0,deltahat = matrix(rnorm(n*p),n,p), 
+               rowweight = rep(1,n), colweight = matrix(1,n,p), 
+               lambda_beta = lambda_beta, adabeta = FALSE, softbeta = TRUE,
+               lambda_delta = lambda_delta, adadelta = TRUE, softdelta = TRUE,  alpha = 0, maxiter = 2)
+
+#fit0$betahat
+#fit_total$penaltyloss
+#fit_total$cellweight
+fit_total$regloss
+fit_total$scaleloss
+fit_total$penaltyloss
+
+fit_total$lambda_delta
+#fit_total$cellweight
+
+alpha*fit_total$regloss + (1-alpha)*fit_total$scaleloss + lambda_delta*fit_total$penaltyloss
+
+sum(abs(fit_total$deltahat!=0))
+
+
+fit_total$deltahat[1,]
+fit_total$betahat
+
+
+alpha*fit_total$regloss + (1-alpha)*fit_total$scaleloss + lambda_delta*fit_total$penaltyloss
+
+# 收敛但不是全局最优
 
 ```
 
 ```{r}
-reg_beta(y = y,x = x - fit_delta$deltahat,betahat = beta, alpha = 0,lambda_beta = 10)
+fit_total2 = reg_beta_delta(y,x,betahat = fit_total$betahat,intercept = fit_total$intercept ,deltahat = fit_total$deltahat, 
+               rowweight = rep(1,n), colweight = matrix(1,n,p), 
+               lambda_beta = lambda_beta, adabeta = FALSE, softbeta = TRUE,
+               lambda_delta = lambda_delta, adadelta = TRUE, softdelta = TRUE,  alpha = 0, maxiter = 100)
+
+#fit0$betahat
+#fit_total$penaltyloss
+#fit_total$cellweight
+fit_total2$regloss
+fit_total2$scaleloss
+fit_total2$penaltyloss
+
+alpha*fit_total2$regloss + (1-alpha)*fit_total2$scaleloss + lambda_delta*fit_total2$penaltyloss
+
+sum(abs(fit_total2$deltahat!=0))
+
+
+fit_total2$deltahat[1,]
+fit_total2$betahat
+
+
+alpha*fit_total2$regloss + (1-alpha)*fit_total2$scaleloss + lambda_delta*fit_total2$penaltyloss
+
+# 收敛但不是全局最优
+```
+
+
+
+```{r}
+fit0$betahat
+# fit_total$betahat
+# fit_total$loss
+# fit_total$k
+# fit_total$lambdavec_beta
+# fit0$betahat
 ```
 
 
 ```{r}
-reg_beta_delta(y,x,betahat = betahat,alpha = 0,deltahat = deltahat,lambda_beta = 10*log(n),lambda_delta = 3)
+{
+    ximp <- suppressMessages(cellWise::DDC(x)$Ximp)
+    #if(initial == "ddc"  ){fit0 = slm(y, ximp)}
+    fit0 = Rlars(y, x)
+
+    n = dim(x)[1]
+    p = dim(x)[2]
+
+    sigmahat = fit0$sigmahat
+    intercept = fit0$betahat[1]#/sigmahat
+    #betahat  = fit0$betahat[-1]#/sigmahat
+    betahat = rep(0,p)
+    ynew = y#/sigmahat
+
+    rowweight = 1/abs(fit0$res/fit0$sigmahat/lambda_delta)
+    colweight = 1/abs(x/lambda_delta)
+  }
+
+  length = 100
+  grid = get_lambda_grid(ynew,ximp, betahat,intercept, length = length)
 ```
+
+
+```{r}
+fit1 = regcell::sregcell_lambda(y = y, x = x, adadelta = TRUE, adabeta = FALSE,
+                                        lambda_delta = 2.56, lambda = grid[1], softbeta = TRUE, softdelta = TRUE, alpha = 0.5)
+fit1
+```
+
+
+
+
+
+
+```{r}
+
+system.time({fitbic = sregcell(y = y, x = x, adadelta = TRUE, adabeta = FALSE,
+                                        lambda_delta = 2.56, softbeta = TRUE, softdelta = TRUE, alpha = 0.5)})
+# fitbic$result_opt$betahat
+# fitbic$result_opt$intercept
+# fitbic$result_opt$lambda_beta
+# sum(fitbic$result_opt$deltahat)
+# fitbic$result_opt$cellweight
+
+```
+
+```{r}
+fitbic$fits[[1]]
+```
+
+
+
+```{r}
+fitbic$fits[[30]]$intercept
+allfits[[30]]$intercept
+
+fitbic$fits[[30]]$lambda_beta
+allfits[[30]]$lambda_beta
+
+regloss1 = unlist(lapply(fitbic$fits, function(fit) fit$regloss))
+scaleloss1 = unlist(lapply(fitbic$fits, function(fit) fit$scaleloss))
+penaltyloss1 = unlist(lapply(fitbic$fits, function(fit) fit$penaltyloss))
+activeseq1 = unlist(lapply(fitbic$fits, function(fit)  sum(as.logical(fit$betahat[-1]))))
+ic1 = alpha*regloss + (1-alpha)*scaleloss +  penaltyloss + log(n)*activeseq
+```
+
+
+```{r}
+plot(activeseq1)
+plot(activeseq1, regloss1)
+plot(activeseq1, scaleloss1)
+plot(activeseq1, penaltyloss1)
+plot(activeseq1, ic1)
+activeseq[which.min(ic)] 
+
+# penaltyloss
+```
+
+```{r}
+fit$fits[[1]]$betahat
+fit$fits[[1]]$intercept
+fit$fits[[1]]$lambda_beta###lambdamax 也有问题
+fit$fits[[1]]$deltahat
+fit$fits[[1]]$cellweight
+
+fit_delta = reg_delta(y = y- fit$fits[[1]]$intercept, x = x, betahat = fit$fits[[1]]$betahat, deltahat = fit$fits[[1]]$deltahat,
+                              lambda_delta = 2.56, cellweight = fit$fits[[1]]$cellweight, alpha = 0.5, softdelta = TRUE);
+
+fit_delta$deltahat
+#这个函数的结果是正常的
+# reg_delta(y = y- interceptvec, x = x, betahat = betahat, deltahat = deltahat,
+#                              lambda_delta = lambda_delta, cellweight = cellweight, alpha = alpha, softdelta = softdelta);
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
