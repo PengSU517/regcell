@@ -74,8 +74,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // reg_beta_delta
-List reg_beta_delta(arma::vec y, arma::mat x, arma::vec betahat, double intercept, arma::mat deltahat, arma::vec rowweight, arma::mat colweight, double lambda_beta, bool adabeta, bool softbeta, double lambda_delta, bool adadelta, bool softdelta, double alpha, double maxiter);
-RcppExport SEXP _regcell_reg_beta_delta(SEXP ySEXP, SEXP xSEXP, SEXP betahatSEXP, SEXP interceptSEXP, SEXP deltahatSEXP, SEXP rowweightSEXP, SEXP colweightSEXP, SEXP lambda_betaSEXP, SEXP adabetaSEXP, SEXP softbetaSEXP, SEXP lambda_deltaSEXP, SEXP adadeltaSEXP, SEXP softdeltaSEXP, SEXP alphaSEXP, SEXP maxiterSEXP) {
+List reg_beta_delta(arma::vec y, arma::mat x, arma::vec betahat, double intercept, arma::mat deltahat, arma::vec rowweight, arma::mat colweight, double lambda_beta, bool adabeta, bool softbeta, double lambda_delta, bool adadelta, bool adarow, bool softdelta, double alpha, double maxiter);
+RcppExport SEXP _regcell_reg_beta_delta(SEXP ySEXP, SEXP xSEXP, SEXP betahatSEXP, SEXP interceptSEXP, SEXP deltahatSEXP, SEXP rowweightSEXP, SEXP colweightSEXP, SEXP lambda_betaSEXP, SEXP adabetaSEXP, SEXP softbetaSEXP, SEXP lambda_deltaSEXP, SEXP adadeltaSEXP, SEXP adarowSEXP, SEXP softdeltaSEXP, SEXP alphaSEXP, SEXP maxiterSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -91,10 +91,11 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< bool >::type softbeta(softbetaSEXP);
     Rcpp::traits::input_parameter< double >::type lambda_delta(lambda_deltaSEXP);
     Rcpp::traits::input_parameter< bool >::type adadelta(adadeltaSEXP);
+    Rcpp::traits::input_parameter< bool >::type adarow(adarowSEXP);
     Rcpp::traits::input_parameter< bool >::type softdelta(softdeltaSEXP);
     Rcpp::traits::input_parameter< double >::type alpha(alphaSEXP);
     Rcpp::traits::input_parameter< double >::type maxiter(maxiterSEXP);
-    rcpp_result_gen = Rcpp::wrap(reg_beta_delta(y, x, betahat, intercept, deltahat, rowweight, colweight, lambda_beta, adabeta, softbeta, lambda_delta, adadelta, softdelta, alpha, maxiter));
+    rcpp_result_gen = Rcpp::wrap(reg_beta_delta(y, x, betahat, intercept, deltahat, rowweight, colweight, lambda_beta, adabeta, softbeta, lambda_delta, adadelta, adarow, softdelta, alpha, maxiter));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -104,7 +105,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_regcell_threshold_delta", (DL_FUNC) &_regcell_threshold_delta, 3},
     {"_regcell_reg_beta", (DL_FUNC) &_regcell_reg_beta, 7},
     {"_regcell_reg_delta", (DL_FUNC) &_regcell_reg_delta, 9},
-    {"_regcell_reg_beta_delta", (DL_FUNC) &_regcell_reg_beta_delta, 15},
+    {"_regcell_reg_beta_delta", (DL_FUNC) &_regcell_reg_beta_delta, 16},
     {NULL, NULL, 0}
 };
 

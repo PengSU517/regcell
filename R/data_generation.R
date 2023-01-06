@@ -1,13 +1,16 @@
-genevar = function(n = 100, p = 20, pr = 5, e = 0,r = 0.5, df = 0,
-                   beta = c(rep(1,pr), rep(0, p-pr)), gamma = 6, errorsigma = 1,
+genevar = function(n = 100, p, pr, e,r, df,
+                   beta = NULL, gamma, errorsigma,
                    outtype = "cellwise"){
 
   {
-    beta = c(beta, rep(0,(p-length(beta))))
+    if(is.null(beta)){
+      beta = c(rep(1,pr), rep(0, p-pr))
+    }
+
     mu = rep(0,p)
     sigma = diag(rep(1^2,p))
     for (i in 1:p) {for (j in 1:p) {
-      if (i !=j)sigma[i,j] = sqrt(sigma[i,i]*sigma[j,j])*r^abs(i-j)}}
+      if (i !=j) sigma[i,j] = sqrt(sigma[i,i]*sigma[j,j])*r^abs(i-j)}}
   }
 
   {
@@ -20,7 +23,6 @@ genevar = function(n = 100, p = 20, pr = 5, e = 0,r = 0.5, df = 0,
 
     errornew = rnorm(n,0,errorsigma)
     ynew = xc%*%beta + errornew
-
 
     #creating outliers
     if(outtype=="cellwise"){
@@ -43,11 +45,11 @@ genevar = function(n = 100, p = 20, pr = 5, e = 0,r = 0.5, df = 0,
 
     outliervalue = rnorm(n = n*p, mean = gamma, sd = 1)
     ##outliersign = sample(c(-1,1), size = n*p, replace = T)
-    outlier = matrix(outliervalue, nrow = n, ncol=p)
-    x = xc + sign(xc)*outlier*outlierlabel
+    outlier = matrix(outliervalue, nrow = n, ncol=p)*outlierlabel
+    x = xc + outlier
 
   }
-  return(list(x = x, xc = xc, y = y, ynew = ynew, beta = beta, outlierlabel = outlierlabel,
+  return(list(x = x, xc = xc, y = y, ynew = ynew, beta = beta, outlierlabel = outlierlabel, outlier = outlier,
               mu = mu, Sigma = sigma, sigma = errorsigma))
 
 

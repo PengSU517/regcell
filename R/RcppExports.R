@@ -9,15 +9,15 @@ threshold_delta <- function(deltahat, alambda_delta, softdelta) {
     .Call(`_regcell_threshold_delta`, deltahat, alambda_delta, softdelta)
 }
 
-reg_beta <- function(y, x, betahat, intercept, lambdavec_beta, softbeta = TRUE, maxiterbeta = 100) {
+reg_beta <- function(y, x, betahat, intercept, lambdavec_beta, softbeta = TRUE, maxiterbeta = 2) {
     .Call(`_regcell_reg_beta`, y, x, betahat, intercept, lambdavec_beta, softbeta, maxiterbeta)
 }
 
-reg_delta <- function(y, x, betahat, deltahat, lambda_delta, cellweight, alpha, softdelta = TRUE, maxiterdelta = 100) {
+reg_delta <- function(y, x, betahat, deltahat, lambda_delta, cellweight, alpha, softdelta = TRUE, maxiterdelta = 2) {
     .Call(`_regcell_reg_delta`, y, x, betahat, deltahat, lambda_delta, cellweight, alpha, softdelta, maxiterdelta)
 }
 
-reg_beta_delta <- function(y, x, betahat, intercept, deltahat, rowweight, colweight, lambda_beta, adabeta, softbeta, lambda_delta, adadelta, softdelta, alpha, maxiter = 20) {
-    .Call(`_regcell_reg_beta_delta`, y, x, betahat, intercept, deltahat, rowweight, colweight, lambda_beta, adabeta, softbeta, lambda_delta, adadelta, softdelta, alpha, maxiter)
+reg_beta_delta <- function(y, x, betahat, intercept, deltahat, rowweight, colweight, lambda_beta, adabeta, softbeta, lambda_delta, adadelta, adarow, softdelta, alpha, maxiter = 20) {
+    .Call(`_regcell_reg_beta_delta`, y, x, betahat, intercept, deltahat, rowweight, colweight, lambda_beta, adabeta, softbeta, lambda_delta, adadelta, adarow, softdelta, alpha, maxiter)
 }
 

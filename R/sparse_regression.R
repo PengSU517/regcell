@@ -41,33 +41,31 @@ get_lambda_grid = function(y,ximp,betahat,intercept,adabeta, length){
 
 ## sparse robust regression with imputed design matrix
 sregcell = function(y,x, initial = "rlars", crit = "bic",
-                    adadelta = TRUE, adabeta = FALSE, softbeta = TRUE, softdelta = TRUE,
+                    adadelta = TRUE, adarow= FALSE, adabeta = FALSE, softbeta = TRUE, softdelta = TRUE,
                     lambda_delta = 2.56, alpha = 0.5, maxiter = 100){
 
   {
     ximp <- suppressMessages(cellWise::DDC(x)$Ximp)
-    #if(initial == "ddc"  ){fit0 = slm(y, ximp)}
-    fit0 = Rlars(y, x)
 
     n = dim(x)[1]
     p = dim(x)[2]
 
-    sigmahat = fit0$sigmahat
-    intercept = fit0$betahat[1]#/sigmahat
-    #betahat  = fit0$betahat[-1]#/sigmahat
-    betahat = rep(0,p)
-    ynew = y#/sigmahat
 
-    rowweight = 1/abs(fit0$res/fit0$sigmahat/lambda_delta)
+    intercept = 0
+    ## fit0$betahat[1] #/sigmahat
+    ## sigmahat = fit0$sigmahat
+    betahat = rep(0,p)
+    ynew = y #/sigmahat
+
     colweight = 1/abs(x/lambda_delta)
   }
 
   length = 100
   grid = get_lambda_grid(ynew,ximp, betahat,intercept, length = length)
-  allfits = lapply(grid, function(lambda){reg_beta_delta(y = ynew, x = x, betahat = betahat, intercept = intercept,
+  allfits = lapply(grid, function(lambda){reg_beta_delta(y = ynew, x = x, betahat = betahat, intercept = 0,
                                                       deltahat = x-ximp, rowweight = rowweight, colweight = colweight,
                                                       lambda_beta = lambda, adabeta = adabeta, softbeta = softbeta,
-                                                      lambda_delta = lambda_delta, adadelta = adadelta, softdelta = softdelta,
+                                                      lambda_delta = lambda_delta, adadelta = adadelta, adarow = adarow, softdelta = softdelta,
                                                       alpha = alpha, maxiter = maxiter)})
 
 
@@ -75,7 +73,7 @@ sregcell = function(y,x, initial = "rlars", crit = "bic",
   scaleloss = unlist(lapply(1:length, function(i) allfits[[i]]$scaleloss))
   penaltyloss = unlist(lapply(1:length, function(i) allfits[[i]]$penaltyloss))
   activeseq = unlist(lapply(1:length, function(i)  sum(as.logical(allfits[[i]]$betahat[-1]))))
-  ic = alpha*regloss + (1-alpha)*scaleloss + penaltyloss + log(n)*activeseq
+  ic = alpha*regloss + (1-alpha)*scaleloss + lambda_delta*penaltyloss + 2*log(n)*activeseq
 
   result_opt = allfits[[which.min(ic)]]
 
@@ -109,7 +107,7 @@ sregcell = function(y,x, initial = "rlars", crit = "bic",
 
 
 sregcell_lambda = function(y,x, initial = "rlars", crit = "bic",
-                           adadelta = TRUE, adabeta = FALSE, softbeta = TRUE, softdelta = TRUE,
+                           adadelta = TRUE, adarow = FALSE, adabeta = FALSE, softbeta = TRUE, softdelta = TRUE,
                            lambda_delta = 2.56, lambda = 5*log(length(y)), alpha = 0.5, maxiter = 100 ){
 
   {
@@ -134,7 +132,7 @@ sregcell_lambda = function(y,x, initial = "rlars", crit = "bic",
   result = reg_beta_delta(y = ynew, x = x, betahat = betahat, intercept = intercept,
                           deltahat = x-ximp, rowweight = rowweight, colweight = colweight,
                           lambda_beta = lambda, adabeta = adabeta, softbeta = softbeta,
-                          lambda_delta = lambda_delta, adadelta = adadelta, softdelta = softdelta,
+                          lambda_delta = lambda_delta, adadelta = adadelta, adarow = adarow, softdelta = softdelta,
                           alpha = alpha, maxiter = maxiter)
 
   #result$intercept = result$intercept*sigmahat
