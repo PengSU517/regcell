@@ -12,29 +12,33 @@ using namespace Rcpp;
 
 
 // [[Rcpp::export]]
-arma::vec threshold_vec(arma::vec betahat, arma::vec alambda_beta, bool soft = true){   //should be a vector
-  double p = betahat.n_rows;
-  arma::vec diff = abs(betahat) - alambda_beta;
+arma::vec threshold_vec(arma::vec xvec, arma::vec lambdavec, bool soft = true){   //should be a vector
+  double p = xvec.n_rows;
+  arma::vec diff = abs(xvec) - lambdavec;
   arma::vec value(p);
   if(soft){
-    value = sign(betahat)%(diff>0)%diff;
+    value = sign(xvec)%(diff>0)%diff;
   }else{
-    value = betahat%(diff>0);
+    arma::vec avec(p);
+    avec.fill(2);
+    value = xvec%(diff>=lambdavec) + sign(xvec)%avec%(abs(xvec)-lambdavec)%(diff>=0)%(diff<lambdavec);
   }
   return value;
 }
 
 
 // [[Rcpp::export]]
-arma::mat threshold_mat(arma::mat deltahat, arma::mat alambda_delta, bool soft = true){   //should be a vector
-  double n = deltahat.n_rows;
-  double p = deltahat.n_cols;
+arma::mat threshold_mat(arma::mat xmat, arma::mat lambdamat, bool soft = true){   //should be a vector
+  double n = xmat.n_rows;
+  double p = xmat.n_cols;
   arma::mat value(n,p);
-  arma::mat diff = abs(deltahat) - alambda_delta;
+  arma::mat diff = abs(xmat) - lambdamat;
   if(soft){
-    value = sign(deltahat)%(diff>0)%diff;
+    value = sign(xmat)%(diff>0)%diff;
   }else{
-    value = deltahat%(diff>0);
+    arma::mat amat(n,p);
+    amat.fill(2);
+    value = xmat%(diff>=lambdamat) + sign(xmat)%amat%(abs(xmat)-lambdamat)%(diff>=0)%(diff<lambdamat);
   }
   return value;
 }
@@ -63,7 +67,7 @@ arma::mat threshold_svd(arma::mat x, arma::vec lambdavec, bool soft = true){   /
 
 
 // [[Rcpp::export]]
-List rob_pca(arma::mat x, arma::mat xc, arma::mat delta, double lambda, int maxiter = 100){
+List rob_pca(arma::mat x, arma::mat xc, arma::mat delta, double lambda, int maxiter = 1000){
   unsigned int n = x.n_rows;
   unsigned int p = x.n_cols;
   unsigned int dim = std::min(n,p);
@@ -107,13 +111,11 @@ List rob_pca(arma::mat x, arma::mat xc, arma::mat delta, double lambda, int maxi
 
 // [[Rcpp::export]]
 List reg_beta(arma::vec y, arma::mat x, arma::vec betahat, double intercept,
-              arma::vec lambdavec_beta, bool softbeta = true, double maxiterbeta = 2){
+              arma::vec alambdavec_beta, bool softbeta = true, double maxiterbeta = 2){
 
   //initialize variables
   unsigned int n = x.n_rows; //sample size
   unsigned int p = x.n_cols; //dimension size
-
-  arma::vec alambdavec_beta = lambdavec_beta;//------------whether using adaptive penalties
 
   //arma::mat weightmat = eye(n,n);
   double L = arma::eig_sym(trans(x)*x).max();//直接用奇异值分解不好吗
@@ -122,18 +124,17 @@ List reg_beta(arma::vec y, arma::mat x, arma::vec betahat, double intercept,
 
   arma::vec interceptvec(n);
   arma::vec res(n);
-
-
   arma::vec betapos(p);
   arma::vec betanew(p);
-
+  arma::vec mgradient(p);
 
   double k = 1;//iterator
   while(k <= maxiterbeta)//start iteration
   {
     interceptvec.fill(intercept);
     res = y - interceptvec - x*betahat;//residual
-    betapos = betahat + steptvec%(trans(x) * res);
+    mgradient = trans(x) * res;
+    betapos = betahat + steptvec%mgradient;
 
     betanew = threshold_vec(betapos, steptvec%alambdavec_beta, softbeta);
     if((abs(betanew-betahat)).max() < pow(10, -6)) {break;};
@@ -145,6 +146,7 @@ List reg_beta(arma::vec y, arma::mat x, arma::vec betahat, double intercept,
   };
 
   List results = List::create(
+    Named("mgradient") = mgradient,
     Named("betahat") = betahat,
     Named("intercept") = intercept
     );
@@ -154,30 +156,22 @@ List reg_beta(arma::vec y, arma::mat x, arma::vec betahat, double intercept,
 
 
 
-
-
 // [[Rcpp::export]]
 List reg_delta(arma::vec y, arma::mat x, arma::vec betahat, arma::mat deltahat,
-               double lambda_delta, arma::mat cellweight, double alpha, bool softdelta = true, double maxiterdelta = 2){
+               arma::mat alambdamat_delta, double alpha, bool softdelta = true, double maxiterdelta = 2){
 
   //initialize variables
   unsigned int n = x.n_rows; //sample size
   unsigned int p = x.n_cols; //dimension size
 
-  arma::mat lambdamat_delta(n,p);//a vector filled with lambda,
-  lambdamat_delta.fill(lambda_delta);
   arma::mat alphamatnp(n,p);
   alphamatnp.fill(alpha);
-
   arma::mat one_minus_alphamatnp(n,p);
   one_minus_alphamatnp.fill(1-alpha);
 
-  arma::mat alambdamat_delta = lambdamat_delta%cellweight;//------whether using adaptive penalties
-
   double L = alpha*as_scalar(trans(betahat)*betahat) + (1-alpha);
   //在pca时步长如何选择是个问题
-  //stepwise should be related with the second order derivative
-  // only unit matrix could compute like this
+
   arma::mat stepmat(n,p);
   stepmat.fill(0.9/L);
 
@@ -190,13 +184,12 @@ List reg_delta(arma::vec y, arma::mat x, arma::vec betahat, arma::mat deltahat,
   double k = 1;//iterator
   while(k <= maxiterdelta)//start iteration
   {
-
     xclean = x - deltahat;
     resclean = y - xclean*betahat;
     gradient = alphamatnp%(resclean*trans(betahat)) - (one_minus_alphamatnp%xclean);//这里是不是有问题
     deltapos = deltahat - stepmat%gradient;
-    deltanew = threshold_mat(deltapos, stepmat%alambdamat_delta, softdelta);
-    //------------------------------!!!!!!!!!!!关于加罚的选择
+    deltanew = threshold_mat(deltapos, stepmat%one_minus_alphamatnp%alambdamat_delta, softdelta);
+    //------------------------------关于加罚的选择，也是结果好坏的决定因素
     if((abs(deltanew-deltahat)).max() < pow(10, -6)) {break;};
     deltahat = deltanew;
     k++;
@@ -218,9 +211,9 @@ List reg_delta(arma::vec y, arma::mat x, arma::vec betahat, arma::mat deltahat,
 // [[Rcpp::export]]
 List reg_beta_delta(arma::vec y, arma::mat x,
                     arma::vec betahat, double intercept, arma::mat deltahat,
-                    arma::vec rowweight, arma::mat colweight,
-                    double lambda_beta, bool adabeta, bool softbeta,
-                    double lambda_delta,bool adadelta, bool adarow, bool softdelta,
+                    arma::mat cellweight,
+                    double lambda_beta, bool softbeta,
+                    double lambda_delta,bool softdelta,
                     double alpha, double maxiter = 20){
 
   //initialize variables
@@ -236,51 +229,27 @@ List reg_beta_delta(arma::vec y, arma::mat x,
   arma::vec ycenter = y - interceptvec;
   arma::mat xclean = x - deltahat;
 
-  arma::vec betaget(p);
-  arma::mat deltaget(n,p);
-
-  if(!adadelta){
-    colweight.fill(1);
-  };
-
-  if(!adarow){
-    rowweight.fill(1);
-  };
-
-  arma::mat alphamatnp(n,p);
-  alphamatnp.fill(alpha);
-
-  arma::mat one_minus_alphahatnp(n,p);
-  one_minus_alphahatnp.fill((1-alpha));
-
-  arma::mat cellweight;
-  //cellweight = rowweight*trans(ones(p))%alphamatnp + colweight%one_minus_alphahatnp;
-  cellweight = colweight;
-
   arma::vec lambdavec_beta(p);
   lambdavec_beta.fill(lambda_beta);
+  arma::vec alambdavec_beta = lambdavec_beta;//------whether using adaptive penalties
 
-  arma::vec lambdavec_betanew = lambdavec_beta;
+  arma::mat lambdamat_delta(n,p);
+  lambdamat_delta.fill(lambda_delta);
+  arma::mat alambdamat_delta = lambdamat_delta%cellweight;//------whether using adaptive penalties
 
-  arma::vec lambdavec_delta(p);
-  lambdavec_delta.fill(lambda_delta);
+  arma::vec betaget(p);
+  arma::mat deltaget(n,p);
 
   double k = 1;//iterator
   while(k <= maxiter)//start iteration
   {
-    if(adabeta){//adabeta only useful when not all important variables are contaminated
-      cellweight = alphamatnp%(rowweight*trans(betahat)) + one_minus_alphahatnp%colweight;
-      lambdavec_betanew = lambdavec_delta%trans(sum(abs(deltahat))) + lambdavec_beta;
-    };
+    outputs_delta= reg_delta(ycenter, x, betahat, deltahat,alambdamat_delta, alpha, softdelta);
 
-    // reg_delta(arma::vec y, arma::mat x, arma::vec betahat, arma::mat deltahat,
-    // double lambda_delta, arma::mat cellweight, double alpha
-    outputs_delta= reg_delta(ycenter, x, betahat, deltahat,lambda_delta, cellweight, alpha, softdelta);
-
-    //调用函数的时候不能申明参数位置？必须按顺序吗？
+    //调用函数的时候必须按顺序
     deltaget = as<arma::mat>(outputs_delta["deltahat"]);
     //arma::vec y, arma::mat x, arma::vec betahat, double intercept, arma::vec lambdavec_beta, double maxiter = 20
-    outputs_beta = reg_beta(y, xclean, betahat, intercept, lambdavec_betanew, softbeta);//找bug找了两天，我吐了
+    outputs_beta = reg_beta(y, xclean, betahat, intercept, alambdavec_beta, softbeta);
+    //找bug找了两天，我吐了
     //但是即使没有及时更新也应该收敛才对吧
     betaget = as<arma::vec>(outputs_beta["betahat"]);
 
@@ -296,28 +265,21 @@ List reg_beta_delta(arma::vec y, arma::mat x,
 
   };
 
-  arma::mat lambdamat_delta(n,p);
-  lambdamat_delta.fill(lambda_delta);
-//
-//   arma::mat loss1 = x;
-//   arma::mat loss2 = deltahat;
-//   arma::mat loss3 = (x-deltahat);
-//   arma::mat loss4 = pow((x-deltahat),2);
-
   double regloss = accu(pow(y - interceptvec - (x - deltahat)*betahat,2));
   double scaleloss = accu(pow(x-deltahat,2));
-  double penaltyloss = accu(lambdamat_delta%abs(deltahat));
+  double penaltyloss = accu(alambdamat_delta%abs(deltahat));
+
+  arma::vec mgradient = as<arma::vec>(outputs_beta["mgradient"]);
   //-------------------------------------------------------------有大问题
 
   List results = List::create(
     Named("intercept") = intercept,
     Named("betahat") = betahat,
     Named("deltahat") = deltahat,
-    Named("rowweight") = rowweight,
-    Named("colweight") = colweight,
     Named("cellweight") = cellweight,
-    Named("lambda_beta") = lambda_beta,
-    Named("lambda_delta") = lambda_delta,
+    Named("mgradient") = mgradient,
+    Named("alambdavec_beta") = alambdavec_beta,
+    Named("alambdamat_delta") = alambdamat_delta,
     Named("k") = k,
     Named("regloss") = regloss,
     Named("scaleloss") = scaleloss,

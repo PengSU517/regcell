@@ -1,5 +1,5 @@
 genevar = function(n = 100, p, pr, e,r, df,
-                   beta = NULL, gamma, errorsigma,
+                   beta = NULL, intercept = 0, gamma, errorsigma,
                    outtype = "cellwise"){
 
   {
@@ -19,10 +19,10 @@ genevar = function(n = 100, p, pr, e,r, df,
 
     ##creating response
     error = rnorm(n,0,errorsigma)
-    y = xc%*%beta + error
+    y = intercept + xc%*%beta + error
 
     errornew = rnorm(n,0,errorsigma)
-    ynew = xc%*%beta + errornew
+    ynew = intercept + xc%*%beta + errornew
 
     #creating outliers
     if(outtype=="cellwise"){
@@ -46,7 +46,7 @@ genevar = function(n = 100, p, pr, e,r, df,
     outliervalue = rnorm(n = n*p, mean = gamma, sd = 1)
     ##outliersign = sample(c(-1,1), size = n*p, replace = T)
     outlier = matrix(outliervalue, nrow = n, ncol=p)*outlierlabel
-    x = xc + outlier
+    x = xc + sign(xc)*outlier#这个设计对结果有很大影响
 
   }
   return(list(x = x, xc = xc, y = y, ynew = ynew, beta = beta, outlierlabel = outlierlabel, outlier = outlier,

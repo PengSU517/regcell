@@ -1,15 +1,18 @@
 require(cellWise)
 
 
-lambdamax_beta = function(y,x,betahat,intercept,lambdamax = 1){
+lambdamax_beta = function(y,x,betahat,intercept, softbeta){
 
   n = dim(x)[1]
   p = dim(x)[2]
-  iovec = rep(0,2)
+
+  lambdamax = max(t(x)%*%(y-mean(y)))
+
+  iovec = rep(5,2)
   ind = 0
   k = 0
-  while(min(iovec)<5){
-    outputs_beta = reg_beta(y = y, x = x, betahat = betahat, intercept = intercept, lambdavec_beta = rep(lambdamax,p))
+  while(min(iovec)<10){
+    outputs_beta = reg_beta(y = y, x = x, betahat = betahat, intercept = intercept, alambdavec_beta = rep(lambdamax,p), softbeta = softbeta)
     betaget = outputs_beta$betahat
     ind = (sum(abs(betaget))==0)
     lambdamax = ((1/2)^((ind-0.5)*2*1/(2^min(iovec))))*lambdamax
@@ -22,15 +25,12 @@ lambdamax_beta = function(y,x,betahat,intercept,lambdamax = 1){
 }
 
 
-
-
-
 #### get lambda grid
-get_lambda_grid = function(y,ximp,betahat,intercept,adabeta, length){
+get_lambda_grid = function(y,ximp,betahat,intercept,softbeta, length){
   n = dim(ximp)[1]
   p = dim(ximp)[2]
 
-  lambdamax = lambdamax_beta(y,ximp,betahat, intercept)$lambdamax
+  lambdamax = lambdamax_beta(y,ximp,betahat, intercept, softbeta)$lambdamax
 
   lmin = lambdamax/10^3
   grid = c(exp(seq(log(lambdamax),log(lmin),length = length)))
@@ -40,32 +40,40 @@ get_lambda_grid = function(y,ximp,betahat,intercept,adabeta, length){
 
 
 ## sparse robust regression with imputed design matrix
-sregcell = function(y,x, initial = "rlars", crit = "bic",
-                    adadelta = TRUE, adarow= FALSE, adabeta = FALSE, softbeta = TRUE, softdelta = TRUE,
+sregcell = function(y,x, crit = "bic", method.weight = "rpca",
+                    softbeta = TRUE, softdelta = TRUE,
                     lambda_delta = 2.56, alpha = 0.5, maxiter = 100){
 
-  {
-    ximp <- suppressMessages(cellWise::DDC(x)$Ximp)
+  n = dim(x)[1]
+  p = dim(x)[2]
 
-    n = dim(x)[1]
-    p = dim(x)[2]
-
-
-    intercept = 0
-    ## fit0$betahat[1] #/sigmahat
-    ## sigmahat = fit0$sigmahat
-    betahat = rep(0,p)
-    ynew = y #/sigmahat
-
-    colweight = 1/abs(x/lambda_delta)
+  if(method.weight=="rpca"){
+    fitpca = rob_pca(x, xc = matrix(0,n,p), delta = matrix(0,n,p),lambda = 1/sqrt(min(n,p)), maxiter = 100)
+    cellweight = 0.1/(abs(fitpca$delta)+0.1)
+    xc = fitpca$xc
+    delta = fitpca$delta
+    }
+  if(method.weight=="ddc"){
+    fitddc = cellWise::DDC(x)
+    cellweight = 0.1/(abs(x - fitddc$Ximp)+0.1)
+    xc = fitddc$Ximp
+    delta = x - xc
+  }
+  if(method.weight=="equal"){
+    cellweight = matrix(1,n,p)
+    xc = threshold_mat(x,matrix(lambda_delta, n,p))
+    delta = x - xc
   }
 
+  intercept = 0
+  betahat = rep(0,p)
+
   length = 100
-  grid = get_lambda_grid(ynew,ximp, betahat,intercept, length = length)
-  allfits = lapply(grid, function(lambda){reg_beta_delta(y = ynew, x = x, betahat = betahat, intercept = 0,
-                                                      deltahat = x-ximp, rowweight = rowweight, colweight = colweight,
-                                                      lambda_beta = lambda, adabeta = adabeta, softbeta = softbeta,
-                                                      lambda_delta = lambda_delta, adadelta = adadelta, adarow = adarow, softdelta = softdelta,
+  grid = get_lambda_grid(y,xc, betahat,intercept, softbeta, length = length)
+  allfits = lapply(grid, function(lambda){reg_beta_delta(y = y, x = x, betahat = betahat, intercept = 0,
+                                                      deltahat = delta, cellweight = cellweight,
+                                                      lambda_beta = lambda, softbeta = softbeta,
+                                                      lambda_delta = lambda_delta, softdelta = softdelta,
                                                       alpha = alpha, maxiter = maxiter)})
 
 
@@ -77,67 +85,93 @@ sregcell = function(y,x, initial = "rlars", crit = "bic",
 
   result_opt = allfits[[which.min(ic)]]
 
-
-  # plot(activeseq)
-  # plot(activeseq,regloss)
-  # plot(activeseq,scaleloss)
-  # plot(activeseq, penaltyloss)
-  # plot(activeseq, ic)
-  #
-  # max(abs(x - allfits[[1]]$deltahat))
-  #
-  #
-  # fit1 = reg_beta_delta(y = ynew, x = x, betahat = betahat, intercept = intercept,
-  #                       deltahat = x-ximp, rowweight = rowweight, colweight = colweight,
-  #                       lambda_beta = grid[1], adabeta = adabeta, softbeta = softbeta,
-  #                       lambda_delta = lambda_delta, adadelta = adadelta, softdelta = softdelta,
-  #                       alpha = alpha, maxiter = maxiter)
-  #
-  # fit1$betahat
-  # fit1$deltahat
-  # fit1$penaltyloss
-
-  #result_opt$lambda = grid[which.min(ic)]
-  #result_opt$intercept = result_opt$intercept*sigmahat
-  #result_opt$betahat = result_opt$betahat*sigmahat
-
   finallist = list(fits = allfits, result_opt = result_opt)
   return(finallist)
 }
 
 
-sregcell_lambda = function(y,x, initial = "rlars", crit = "bic",
-                           adadelta = TRUE, adarow = FALSE, adabeta = FALSE, softbeta = TRUE, softdelta = TRUE,
+sregcell_lambda = function(y,x, adadelta = TRUE, softbeta = TRUE, softdelta = TRUE,
                            lambda_delta = 2.56, lambda = 5*log(length(y)), alpha = 0.5, maxiter = 100 ){
 
-  {
-    ximp <- suppressMessages(cellWise::DDC(x)$Ximp)
-    #if(initial == "ddc"  ){fit0 = slm(y, ximp)}
-    fit0 = Rlars(y, x)
+  n = dim(x)[1]
+  p = dim(x)[2]
 
+  if(method.weight=="rpca"){
+    fitpca = rob_pca(x, xc = matrix(0,n,p), delta = matrix(0,n,p),lambda = 1/sqrt(min(n,p)), maxiter = 100)
+    cellweight = 0.1/(abs(fitpca$delta)+0.1)
+  }
+  if(method.weight=="ddc"){
+    fitddc = cellWise::DDC(x)
+    cellweight = 0.1/(abs(x - fitddc$Ximp)+0.1)
+  }
+  if(method.weight=="equal"){
+    cellweight = matrix(1,n,p)
+  }
+
+  intercept = 0
+  betahat = rep(0,p)
+
+  result = reg_beta_delta(y = y, x = x, betahat = betahat, intercept = intercept,
+                          deltahat = fitpca$delta, cellweight = cellweight,
+                          lambda_beta = lambda,  softbeta = softbeta,
+                          lambda_delta = lambda_delta,  softdelta = softdelta,
+                          alpha = alpha, maxiter = maxiter)
+  return(result)
+}
+
+
+
+
+
+
+sregcell_step = function(y,x, adadelta = TRUE, softbeta = TRUE, softdelta = TRUE,
+                           lambda_delta = 2.56, alpha = 0.5, maxiter = 100 ){
+
+  {
     n = dim(x)[1]
     p = dim(x)[2]
+    fitpca = rob_pca(x, xc = matrix(0,n,p), delta = matrix(0,n,p),lambda = 1/sqrt(min(n,p)), maxiter = 100)
+    if(adadelta){cellweight = 0.3/(abs(fitpca$delta)+0.1)}else{cellweight = matrix(1,n,p)}
+  }
 
-    sigmahat = fit0$sigmahat
-    intercept = fit0$betahat[1]#/sigmahat
-    #betahat  = fit0$betahat[-1]#/sigmahat
+  {
+    lambda = max(t(x)%*%(y-mean(y)))
+    intercept = 0
     betahat = rep(0,p)
-    ynew = y#/sigmahat
+    deltahat = fitpca$delta
+  }
 
-    rowweight = 1/abs(fit0$res/fit0$sigmahat/lambda_delta)
-    colweight = 1/abs(x/lambda_delta)
+  k = 1
+  while(TRUE){
+    result = reg_beta_delta(y = y, x = x, betahat = betahat, intercept = intercept,
+                            deltahat = deltahat, cellweight = cellweight,
+                            lambda_beta = lambda,  softbeta = softbeta,
+                            lambda_delta = lambda_delta,  softdelta = softdelta,
+                            alpha = alpha, maxiter = maxiter)
+    intercept = result$intercept
+    betahat = result$betahat
+
+    k = k+1
   }
 
 
-  result = reg_beta_delta(y = ynew, x = x, betahat = betahat, intercept = intercept,
-                          deltahat = x-ximp, rowweight = rowweight, colweight = colweight,
-                          lambda_beta = lambda, adabeta = adabeta, softbeta = softbeta,
-                          lambda_delta = lambda_delta, adadelta = adadelta, adarow = adarow, softdelta = softdelta,
-                          alpha = alpha, maxiter = maxiter)
 
-  #result$intercept = result$intercept*sigmahat
-  #result$betahat = result$betahat*sigmahat
-  #result$loss
 
   return(result)
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
