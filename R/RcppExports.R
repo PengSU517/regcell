@@ -17,15 +17,19 @@ rob_pca <- function(x, xc, delta, lambda, maxiter = 1000L) {
     .Call(`_regcell_rob_pca`, x, xc, delta, lambda, maxiter)
 }
 
-reg_beta <- function(y, x, betahat, intercept, alambdavec_beta, softbeta = TRUE, maxiterbeta = 2) {
-    .Call(`_regcell_reg_beta`, y, x, betahat, intercept, alambdavec_beta, softbeta, maxiterbeta)
+reg_beta <- function(yclean, xclean, betahat, intercept, alambdavec_beta, softbeta = TRUE, maxiterbeta = 2) {
+    .Call(`_regcell_reg_beta`, yclean, xclean, betahat, intercept, alambdavec_beta, softbeta, maxiterbeta)
 }
 
-reg_delta <- function(y, x, betahat, deltahat, alambdamat_delta, alpha, softdelta = TRUE, maxiterdelta = 2) {
-    .Call(`_regcell_reg_delta`, y, x, betahat, deltahat, alambdamat_delta, alpha, softdelta, maxiterdelta)
+reg_delta <- function(yclean, x, betahat, deltahat, alambdamat_delta, alpha, softdelta = TRUE, maxiterdelta = 2) {
+    .Call(`_regcell_reg_delta`, yclean, x, betahat, deltahat, alambdamat_delta, alpha, softdelta, maxiterdelta)
 }
 
-reg_beta_delta <- function(y, x, betahat, intercept, deltahat, cellweight, lambda_beta, softbeta, lambda_delta, softdelta, alpha, maxiter = 20) {
-    .Call(`_regcell_reg_beta_delta`, y, x, betahat, intercept, deltahat, cellweight, lambda_beta, softbeta, lambda_delta, softdelta, alpha, maxiter)
+reg_zeta <- function(y, xclean, betahat, alambdavec_zeta, softzeta = TRUE) {
+    .Call(`_regcell_reg_zeta`, y, xclean, betahat, alambdavec_zeta, softzeta)
+}
+
+reg_beta_delta <- function(y, x, betahat, intercept, deltahat, zetahat, lambda_beta, softbeta, lambda_delta, softdelta, lambda_zeta, softzeta, alpha, maxiter = 20) {
+    .Call(`_regcell_reg_beta_delta`, y, x, betahat, intercept, deltahat, zetahat, lambda_beta, softbeta, lambda_delta, softdelta, lambda_zeta, softzeta, alpha, maxiter)
 }
 

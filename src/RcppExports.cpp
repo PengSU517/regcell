@@ -66,29 +66,29 @@ BEGIN_RCPP
 END_RCPP
 }
 // reg_beta
-List reg_beta(arma::vec y, arma::mat x, arma::vec betahat, double intercept, arma::vec alambdavec_beta, bool softbeta, double maxiterbeta);
-RcppExport SEXP _regcell_reg_beta(SEXP ySEXP, SEXP xSEXP, SEXP betahatSEXP, SEXP interceptSEXP, SEXP alambdavec_betaSEXP, SEXP softbetaSEXP, SEXP maxiterbetaSEXP) {
+List reg_beta(arma::vec yclean, arma::mat xclean, arma::vec betahat, double intercept, arma::vec alambdavec_beta, bool softbeta, double maxiterbeta);
+RcppExport SEXP _regcell_reg_beta(SEXP ycleanSEXP, SEXP xcleanSEXP, SEXP betahatSEXP, SEXP interceptSEXP, SEXP alambdavec_betaSEXP, SEXP softbetaSEXP, SEXP maxiterbetaSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< arma::vec >::type y(ySEXP);
-    Rcpp::traits::input_parameter< arma::mat >::type x(xSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type yclean(ycleanSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type xclean(xcleanSEXP);
     Rcpp::traits::input_parameter< arma::vec >::type betahat(betahatSEXP);
     Rcpp::traits::input_parameter< double >::type intercept(interceptSEXP);
     Rcpp::traits::input_parameter< arma::vec >::type alambdavec_beta(alambdavec_betaSEXP);
     Rcpp::traits::input_parameter< bool >::type softbeta(softbetaSEXP);
     Rcpp::traits::input_parameter< double >::type maxiterbeta(maxiterbetaSEXP);
-    rcpp_result_gen = Rcpp::wrap(reg_beta(y, x, betahat, intercept, alambdavec_beta, softbeta, maxiterbeta));
+    rcpp_result_gen = Rcpp::wrap(reg_beta(yclean, xclean, betahat, intercept, alambdavec_beta, softbeta, maxiterbeta));
     return rcpp_result_gen;
 END_RCPP
 }
 // reg_delta
-List reg_delta(arma::vec y, arma::mat x, arma::vec betahat, arma::mat deltahat, arma::mat alambdamat_delta, double alpha, bool softdelta, double maxiterdelta);
-RcppExport SEXP _regcell_reg_delta(SEXP ySEXP, SEXP xSEXP, SEXP betahatSEXP, SEXP deltahatSEXP, SEXP alambdamat_deltaSEXP, SEXP alphaSEXP, SEXP softdeltaSEXP, SEXP maxiterdeltaSEXP) {
+List reg_delta(arma::vec yclean, arma::mat x, arma::vec betahat, arma::mat deltahat, arma::mat alambdamat_delta, double alpha, bool softdelta, double maxiterdelta);
+RcppExport SEXP _regcell_reg_delta(SEXP ycleanSEXP, SEXP xSEXP, SEXP betahatSEXP, SEXP deltahatSEXP, SEXP alambdamat_deltaSEXP, SEXP alphaSEXP, SEXP softdeltaSEXP, SEXP maxiterdeltaSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< arma::vec >::type y(ySEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type yclean(ycleanSEXP);
     Rcpp::traits::input_parameter< arma::mat >::type x(xSEXP);
     Rcpp::traits::input_parameter< arma::vec >::type betahat(betahatSEXP);
     Rcpp::traits::input_parameter< arma::mat >::type deltahat(deltahatSEXP);
@@ -96,13 +96,28 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< double >::type alpha(alphaSEXP);
     Rcpp::traits::input_parameter< bool >::type softdelta(softdeltaSEXP);
     Rcpp::traits::input_parameter< double >::type maxiterdelta(maxiterdeltaSEXP);
-    rcpp_result_gen = Rcpp::wrap(reg_delta(y, x, betahat, deltahat, alambdamat_delta, alpha, softdelta, maxiterdelta));
+    rcpp_result_gen = Rcpp::wrap(reg_delta(yclean, x, betahat, deltahat, alambdamat_delta, alpha, softdelta, maxiterdelta));
+    return rcpp_result_gen;
+END_RCPP
+}
+// reg_zeta
+List reg_zeta(arma::vec y, arma::mat xclean, arma::vec betahat, arma::vec alambdavec_zeta, bool softzeta);
+RcppExport SEXP _regcell_reg_zeta(SEXP ySEXP, SEXP xcleanSEXP, SEXP betahatSEXP, SEXP alambdavec_zetaSEXP, SEXP softzetaSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::vec >::type y(ySEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type xclean(xcleanSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type betahat(betahatSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type alambdavec_zeta(alambdavec_zetaSEXP);
+    Rcpp::traits::input_parameter< bool >::type softzeta(softzetaSEXP);
+    rcpp_result_gen = Rcpp::wrap(reg_zeta(y, xclean, betahat, alambdavec_zeta, softzeta));
     return rcpp_result_gen;
 END_RCPP
 }
 // reg_beta_delta
-List reg_beta_delta(arma::vec y, arma::mat x, arma::vec betahat, double intercept, arma::mat deltahat, arma::mat cellweight, double lambda_beta, bool softbeta, double lambda_delta, bool softdelta, double alpha, double maxiter);
-RcppExport SEXP _regcell_reg_beta_delta(SEXP ySEXP, SEXP xSEXP, SEXP betahatSEXP, SEXP interceptSEXP, SEXP deltahatSEXP, SEXP cellweightSEXP, SEXP lambda_betaSEXP, SEXP softbetaSEXP, SEXP lambda_deltaSEXP, SEXP softdeltaSEXP, SEXP alphaSEXP, SEXP maxiterSEXP) {
+List reg_beta_delta(arma::vec y, arma::mat x, arma::vec betahat, double intercept, arma::mat deltahat, arma::vec zetahat, double lambda_beta, bool softbeta, double lambda_delta, bool softdelta, double lambda_zeta, bool softzeta, double alpha, double maxiter);
+RcppExport SEXP _regcell_reg_beta_delta(SEXP ySEXP, SEXP xSEXP, SEXP betahatSEXP, SEXP interceptSEXP, SEXP deltahatSEXP, SEXP zetahatSEXP, SEXP lambda_betaSEXP, SEXP softbetaSEXP, SEXP lambda_deltaSEXP, SEXP softdeltaSEXP, SEXP lambda_zetaSEXP, SEXP softzetaSEXP, SEXP alphaSEXP, SEXP maxiterSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -111,14 +126,16 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< arma::vec >::type betahat(betahatSEXP);
     Rcpp::traits::input_parameter< double >::type intercept(interceptSEXP);
     Rcpp::traits::input_parameter< arma::mat >::type deltahat(deltahatSEXP);
-    Rcpp::traits::input_parameter< arma::mat >::type cellweight(cellweightSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type zetahat(zetahatSEXP);
     Rcpp::traits::input_parameter< double >::type lambda_beta(lambda_betaSEXP);
     Rcpp::traits::input_parameter< bool >::type softbeta(softbetaSEXP);
     Rcpp::traits::input_parameter< double >::type lambda_delta(lambda_deltaSEXP);
     Rcpp::traits::input_parameter< bool >::type softdelta(softdeltaSEXP);
+    Rcpp::traits::input_parameter< double >::type lambda_zeta(lambda_zetaSEXP);
+    Rcpp::traits::input_parameter< bool >::type softzeta(softzetaSEXP);
     Rcpp::traits::input_parameter< double >::type alpha(alphaSEXP);
     Rcpp::traits::input_parameter< double >::type maxiter(maxiterSEXP);
-    rcpp_result_gen = Rcpp::wrap(reg_beta_delta(y, x, betahat, intercept, deltahat, cellweight, lambda_beta, softbeta, lambda_delta, softdelta, alpha, maxiter));
+    rcpp_result_gen = Rcpp::wrap(reg_beta_delta(y, x, betahat, intercept, deltahat, zetahat, lambda_beta, softbeta, lambda_delta, softdelta, lambda_zeta, softzeta, alpha, maxiter));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -130,7 +147,8 @@ static const R_CallMethodDef CallEntries[] = {
     {"_regcell_rob_pca", (DL_FUNC) &_regcell_rob_pca, 5},
     {"_regcell_reg_beta", (DL_FUNC) &_regcell_reg_beta, 7},
     {"_regcell_reg_delta", (DL_FUNC) &_regcell_reg_delta, 8},
-    {"_regcell_reg_beta_delta", (DL_FUNC) &_regcell_reg_beta_delta, 12},
+    {"_regcell_reg_zeta", (DL_FUNC) &_regcell_reg_zeta, 5},
+    {"_regcell_reg_beta_delta", (DL_FUNC) &_regcell_reg_beta_delta, 14},
     {NULL, NULL, 0}
 };
 
