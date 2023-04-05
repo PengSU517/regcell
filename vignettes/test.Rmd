@@ -14,6 +14,16 @@ knitr::opts_chunk$set(
 )
 ```
 
+
+```{r}
+xvec = seq(-100, 100, length.out = 501)
+yvec = threshold_vec(xvec, lambdavec = rep(5,501), soft = TRUE)
+
+plot(xvec, yvec, cex = 0.1)
+abline(a = 0, b = 1)
+```
+
+
 ```{r setup}
 library(regcell)
 ```
@@ -23,252 +33,353 @@ library(regcell)
 ###need to set original values better
 {
   n = 100
-  e = 0.1
-  p = 20
-  pr = 5
-  df = 0
+  e = 0
+  p = 30
+  pr = 10
+  df = 5
   r = 0.5
-  gamma = 6
-  beta = rep(1,5)
-  
+  gamma = 10
+  sigma = 1
+  scalex = 1
+  mux = rep(1,p)
+  set.seed(89)
+  intercept = 0
+  penal = 1
+  penaldelta = 1
+  # beta = c((10:1)/10+1,rep(0,p))
+
 }
 
+
+```
+
+
+```{r}
 {
-  adadelta = TRUE
-  adabeta = FALSE
-  softbeta = TRUE
+
+  softbeta = FALSE
   softdelta = TRUE
-  lambda_delta = 3
+  softzeta = TRUE
+  lambda_delta = 2.58
+  lambda_zeta = 1
   lambda_beta = 10
   alpha = 0.5
   maxiter = 30
-  
+  scale.method = regcell::qnscale
 }
-
-
 ```
 
 
 ```{r}
-fit0 = Rlars(y, x)
-#fit0$betahat
-rowweight = 1/abs(fit0$res/fit0$sigmahat/lambda_delta)#####有大问题
-colweight = 1/abs(x)
-```
+set.seed(1)
+data = regcell::genevar(n = n, e = e, p = p, pr = pr, 
+                        r = r, df = df, 
+                        mux = rep(0,p), scalex = scalex, intercept = intercept, sigma = sigma, 
+                        gamma = gamma, outtype = "mixed")
 
+# data = regcell::genevar(p = 10, pr = 5)
+out = cbind(x = data$outlier, y = data$erroroutlier)
 
-```{r}
-
-data = regcell::genevar(n = n, e = e, p = p, pr = pr, df = df,r = r, gamma = gamma, beta = beta,outtype = "cellwise")
-ximp <- suppressMessages(cellWise::DDC(data$x)$Ximp)
 x = data$x
 y = data$y
 beta = data$beta
 beta
 
-```
-
-```{r}
-betahat = regcell::threshold_beta(betahat = beta+p:1/100, alambda_beta = rep(0.05,p), softbeta = T)
-#betahat
-
-deltahat = regcell::threshold_delta(deltahat = x, alambda_delta = matrix(4,n,p), softdelta = F)
-#(x - deltahat)[14,]
-#deltahat[14,]
-#deltahat[14,]
-```
-
-
-
-```{r}
-# betahat = rnorm(p)
-```
-
-
-```{r}
-fit_reg_delta = reg_delta(rnorm(n),x,betahat = rep(0,p), deltahat =  matrix(rnorm(n*p),n,p), lambda_delta = 3, 
-                          cellweight = matrix(1,n,p), alpha = 0, softdelta = T, maxiterdelta = 100)#加速最优梯度 加速收敛
-
-fit_reg_delta$deltahat[1:3,]
-#fit_reg_delta$resclean[1]
-
-#问题解决 现在收敛
-#fit_reg_delta$deltahat[1,]
-#fit_reg_delta$xclean[1,]
-#x[1,]
-#data$xc[1,]
+plot(x[,1],y)
+# save(data, file = "weirddata.RData")
 
 ```
 
-
-
+```{r}
+# p = 10
+# n = 100
+# data = regcell::genevar(p = 10, pr = 5)
+# out = cbind(x = data$outlier, y = data$erroroutlier)
+# 
+# x = data$x
+# y = data$y
+# beta = data$beta
+# beta
+# 
+# plot(x[,1],y)
+```
 
 ```{r}
-#(fit_reg_delta$deltahat!=0) - data$outlierlabel
-#sum((((fit_reg_delta$deltahat!=0) - data$outlierlabel)!=0)[,(1:5)])
-#fit_reg_delta$deltahat[22,]
+fit111 = reg_beta_delta(y = y, x = x, betahat = rep(0,p), intercept = 0, deltahat = matrix(0,n,p), zetahat = rep(0,n), 
+               lambda_beta = 20, lambda_delta = 2.58, lambda_zeta = 1,
+               softbeta = TRUE, softdelta = TRUE, softzeta = TRUE  ,alpha = 0.5)
+
+as.numeric(fit111$betahat)
+```
+
+```{r}
+system.time({fit110 = sregcell(y = y, x = x, lambda_zeta = 1, lambda_delta = 2.56,
+                               softbeta = FALSE, softdelta = TRUE, softzeta = TRUE,
+                              penal = 1, penaldelta = 1,
+                               alpha = 0.5, maxiter = 30)})
+as.numeric(fit110$betahat)
+fit110$intercept_hat
+fit110$betahat_post
+betamat1 = fit110$betamat
+fit110$colactivedelta
 
 ```
 
-
 ```{r}
-# deltahat = matrix(rnorm(n*p),n,p)
-```
+system.time({fit11 = sregcell_std(y = y, x = x, lambda_zeta = 1, 
+                               softbeta = FALSE, softdelta = TRUE, softzeta = TRUE,
+                              penal = 0.5, penaldelta = 0,
+                               alpha = 0.5, maxiter = 30)})
+as.numeric(fit11$betahat)
+fit11$intercept_hat
+fit11$betahat_post
 
-
-```{r}
-fit_beta = reg_beta(y = y,x = x - fit_reg_delta$deltahat, intercept = 0, betahat = rep(0,p), 
-         lambdavec_beta = rep(lambda_beta,p),maxiter = 300, softbeta = TRUE)
-fit_beta$betahat
 ```
 
 
 ```{r}
-fit_total = reg_beta_delta(y,x,betahat = rep(0,p),intercept = 0,deltahat = matrix(rnorm(n*p),n,p), 
-               rowweight = rep(1,n), colweight = matrix(1,n,p), 
-               lambda_beta = lambda_beta, adabeta = FALSE, softbeta = TRUE,
-               lambda_delta = lambda_delta, adadelta = TRUE, softdelta = TRUE,  alpha = 0, maxiter = 2)
+system.time({fit22 = sregcell_std(y = y, x = x, df = Inf, lambda_zeta = 1, scale.method = qnscale, 
+                               softbeta = TRUE, softdelta = TRUE, softzeta = TRUE, 
+                               penal = 1, penaldelta = 1,
+                               alpha = 0.5)})
+fit22$betahat
+fit22$intercept_hat
+fit22$betahat_post
+```
 
+```{r fig.width=6, fig.height=6}
+plot((x - delta)%*%beta, y - zeta)
+plot(x%*%beta,y)
+
+
+plot(x%*%beta,y, pch = 19, cex = 0.7)
+points((x - delta)%*%beta, y - zeta, pch = 1, col = "red")
+
+plot(x[,3],y, pch = 19, cex = 0.7)
+points((x - delta)[,3],(y - zeta), col = "red")
+
+plot(x[,5],y, pch = 19, cex = 0.7)
+points((x - delta)[,5],(y - zeta), col = "red")
+
+max((x - delta)[,3])
+```
+
+
+```{r fig.width=6, fig.height=6}
+system.time({fit = sregcell_lambda(y = y, x = x, 
+                               lambda_delta = 2, lambda_zeta = 100, lambda = 0,
+                               softbeta = FALSE, softdelta = TRUE, softzeta = TRUE,
+                               alpha = 0.5)})
+
+betahat = fit$betahat
+delta = fit$deltahat
+zeta = fit$zetahat
+betahat
+
+plot((x - delta)%*%beta, y - zeta)
+plot(x%*%beta,y)
+plot((x - delta)[,1],(y - zeta))
+
+
+plot(x%*%beta,y, pch = 19, cex = 0.7)
+points((x - delta)%*%beta, y - zeta, pch = 1, col = "red")
+
+plot(x[,3],y, pch = 19, cex = 0.7)
+points((x - delta)[,3],(y - zeta), col = "red")
+
+
+
+```
+
+```{r}
+k = c(0,0.7,1,1.4,1.7,2.0,Inf)
+var = c(1.571, 1.187, 1.107, 1.047, 1.023, 1.010, 1)
+
+dat = data_frame(k,var)
+dat$eff = 1/dat$var
+
+xtable::xtable(t(dat))
+```
+
+
+
+
+
+```{r}
+fit0 = Rlars(y,x)
+fit0$betahat
+fitpca = rob_pca(x, xc = matrix(0,n,p), delta = matrix(0,n,p),lambda = 1/sqrt(min(n,p)), maxiter = 100)
 #fit0$betahat
-#fit_total$penaltyloss
-#fit_total$cellweight
+
+fit0$betahat
+
+fitpca$delta
+cellweight = 0.3/(abs(fitpca$delta)+0.1)
+
+
+```
+
+```{r}
+fit00 = sregcell_lambda(y, x, lambda = 20, alpha = 0.9)
+#社设定 alpha 0.5 时与rlars高度相似
+#在污染很大的情况下甚至不如直接wisorization
+fit00$betahat
+#这其实相当于一种 rowwise robust 只是把异常值shrinkage了，但是不对估计起任何正向作用
+#用rpca作为adaptive weights 或许会好一些  
+
+```
+
+```{r}
+system.time({fitshoot = shootings::sparseshooting(x,y)})
+fitshoot$coef
+```
+
+
+```{r}
+betahat = regcell::threshold_vec(xvec = beta + (p:1)/100, lambdavec =(1:p)/100, soft = FALSE)
+betahat
+
+```
+
+```{r}
+
+deltahat = regcell::threshold_mat(xmat = x, lambdamat = matrix(1,n,p), soft = TRUE)
+head(deltahat)
+head(data$outlier)
+#deltahat
+
+```
+
+
+```{r}
+
+# cellweight = 0.1/(abs(fitpca$delta)+0.1)
+
+fit_reg_delta = reg_delta(y ,x,betahat = beta, deltahat =  matrix(rnorm(n*p),n,p), 
+                          alambdamat_delta = matrix(1,n,p), alpha = 0.5, maxiterdelta = 20)#加速最优梯度 加速收敛
+
+head(fit_reg_delta$deltahat)
+
+```
+
+```{r}
+
+fit_reg_delta$deltahat - data$outlier
+max(abs(data$xc - xclean))
+# 收敛也贼慢
+xclean = x - fit_reg_delta$deltahat
+fit_reg_zeta = reg_zeta(y, xclean, betahat, rep(lambda_delta,n))
+zetahat = fit_reg_zeta$zetahat
+```
+
+
+
+```{r}
+fit_beta = reg_beta(y = y,x = x, intercept = 0, betahat = rnorm(dim(x)[2]), softbeta = TRUE,
+         alambdavec_beta = rep(1000,p),maxiter = 100)
+fit_beta$betahat
+fit_beta$intercept
+fit_beta$mgradient
+
+lm(y~x)$coe
+
+```
+
+```{r}
+fit_zeta = reg_zeta(y-10,x,betahat = beta, alambdavec_zeta = rep(3,n))
+as.numeric(fit_zeta$res)
+as.numeric(fit_zeta$zetahat)
+
+```
+
+
+```{r}
+fit111 = reg_beta_delta(y = y, x = x, betahat = rep(0,p), intercept = 10, deltahat = matrix(0,n,p), zetahat = rep(0,n), 
+               lambda_beta = 10000, lambda_delta = 2.58, lambda_zeta = 1,
+               softbeta = TRUE, softdelta = TRUE, softzeta = TRUE,alpha = 0.5, maxiter = 100)
+
+as.numeric(fit111$betahat)
+as.numeric(fit111$mgradient)
+#fit111$resclean1
+fit111$intercept
+# fit111$zetahat
+# fit111$deltahat
+#lm(y~x)$coe
+```
+
+```{r}
+lambdamax = 2*max(t(x - deltahat)%*%(y-intercept - zetahat))
+outputs = reg_beta_delta(y = y, x = x, betahat = rep(0,p), intercept = 10,
+                           deltahat = deltahat, zetahat = zetahat,
+                           lambda_beta = 1000, softbeta = softbeta,
+                           lambda_delta = lambda_delta, softdelta = softdelta,
+                           lambda_zeta = lambda_zeta, softzeta = softzeta,
+                           alpha = alpha, maxiter = maxiter)
+as.numeric(outputs$mgradient)
+```
+
+
+
+
+```{r}
+betahat = rep(0,p)
+fit_total = reg_beta_delta(y,x,betahat = rnorm(p),intercept = rnorm(1),
+                           deltahat = matrix(rnorm(n*p), n,p), zetahat = zetahat,
+               lambda_beta = 30, softbeta = FALSE,
+               lambda_delta = 3, softdelta = TRUE, 
+               lambda_zeta = 3, softzeta = TRUE,
+               alpha = 0.5, maxiter = 100)
+
+fit_total$betahat
+```
+
+```{r}
+fit_total$betahat
+#fit_total$betahat
+head(fit_total$betahat)
+head(fit_total$deltahat)
+head(data$outlier)
+head(cellweight)
+
 fit_total$regloss
 fit_total$scaleloss
 fit_total$penaltyloss
-
-fit_total$lambda_delta
-#fit_total$cellweight
-
-alpha*fit_total$regloss + (1-alpha)*fit_total$scaleloss + lambda_delta*fit_total$penaltyloss
-
-sum(abs(fit_total$deltahat!=0))
-
-
-fit_total$deltahat[1,]
-fit_total$betahat
-
-
-alpha*fit_total$regloss + (1-alpha)*fit_total$scaleloss + lambda_delta*fit_total$penaltyloss
+fit_total$k
+sum(fit_total$deltahat!=0)
 
 # 收敛但不是全局最优
 
-```
 
-```{r}
-fit_total2 = reg_beta_delta(y,x,betahat = fit_total$betahat,intercept = fit_total$intercept ,deltahat = fit_total$deltahat, 
-               rowweight = rep(1,n), colweight = matrix(1,n,p), 
-               lambda_beta = lambda_beta, adabeta = FALSE, softbeta = TRUE,
-               lambda_delta = lambda_delta, adadelta = TRUE, softdelta = TRUE,  alpha = 0, maxiter = 100)
-
-#fit0$betahat
-#fit_total$penaltyloss
-#fit_total$cellweight
-fit_total2$regloss
-fit_total2$scaleloss
-fit_total2$penaltyloss
-
-alpha*fit_total2$regloss + (1-alpha)*fit_total2$scaleloss + lambda_delta*fit_total2$penaltyloss
-
-sum(abs(fit_total2$deltahat!=0))
-
-
-fit_total2$deltahat[1,]
-fit_total2$betahat
-
-
-alpha*fit_total2$regloss + (1-alpha)*fit_total2$scaleloss + lambda_delta*fit_total2$penaltyloss
-
-# 收敛但不是全局最优
-```
-
-
-
-```{r}
-fit0$betahat
-# fit_total$betahat
-# fit_total$loss
-# fit_total$k
-# fit_total$lambdavec_beta
-# fit0$betahat
 ```
 
 
 ```{r}
-{
-    ximp <- suppressMessages(cellWise::DDC(x)$Ximp)
-    #if(initial == "ddc"  ){fit0 = slm(y, ximp)}
-    fit0 = Rlars(y, x)
 
-    n = dim(x)[1]
-    p = dim(x)[2]
+system.time({fitbic = sregcell(y = y, x = x, method.weight = "equal",lambda_delta = 2.56,  alpha = 0.5, softbeta = FALSE, softdelta = FALSE)})
+fitbic$result_opt$betahat
+fitbic$result_opt$deltahat
 
-    sigmahat = fit0$sigmahat
-    intercept = fit0$betahat[1]#/sigmahat
-    #betahat  = fit0$betahat[-1]#/sigmahat
-    betahat = rep(0,p)
-    ynew = y#/sigmahat
-
-    rowweight = 1/abs(fit0$res/fit0$sigmahat/lambda_delta)
-    colweight = 1/abs(x/lambda_delta)
-  }
-
-  length = 100
-  grid = get_lambda_grid(ynew,ximp, betahat,intercept, length = length)
 ```
 
 
 ```{r}
-fit1 = regcell::sregcell_lambda(y = y, x = x, adadelta = TRUE, adabeta = FALSE,
-                                        lambda_delta = 2.56, lambda = grid[1], softbeta = TRUE, softdelta = TRUE, alpha = 0.5)
-fit1
-```
-
-
-
-
-
-
-```{r}
-
-system.time({fitbic = sregcell(y = y, x = x, adadelta = TRUE, adabeta = FALSE,
-                                        lambda_delta = 2.56, softbeta = TRUE, softdelta = TRUE, alpha = 0.5)})
-# fitbic$result_opt$betahat
-# fitbic$result_opt$intercept
-# fitbic$result_opt$lambda_beta
-# sum(fitbic$result_opt$deltahat)
-# fitbic$result_opt$cellweight
-
-```
-
-```{r}
-fitbic$fits[[1]]
-```
-
-
-
-```{r}
-fitbic$fits[[30]]$intercept
-allfits[[30]]$intercept
-
-fitbic$fits[[30]]$lambda_beta
-allfits[[30]]$lambda_beta
-
-regloss1 = unlist(lapply(fitbic$fits, function(fit) fit$regloss))
-scaleloss1 = unlist(lapply(fitbic$fits, function(fit) fit$scaleloss))
-penaltyloss1 = unlist(lapply(fitbic$fits, function(fit) fit$penaltyloss))
-activeseq1 = unlist(lapply(fitbic$fits, function(fit)  sum(as.logical(fit$betahat[-1]))))
-ic1 = alpha*regloss + (1-alpha)*scaleloss +  penaltyloss + log(n)*activeseq
+regloss = unlist(lapply(fitbic$fits, function(fit) fit$regloss))
+scaleloss = unlist(lapply(fitbic$fits, function(fit) fit$scaleloss))
+penaltyloss = unlist(lapply(fitbic$fits, function(fit) fit$penaltyloss))
+activeseq = unlist(lapply(fitbic$fits, function(fit)  sum(as.logical(fit$betahat[-1]))))
+ic = alpha*regloss + (1-alpha)*scaleloss + lambda_delta*penaltyloss + 2*log(n)*activeseq
 ```
 
 
 ```{r}
-plot(activeseq1)
-plot(activeseq1, regloss1)
-plot(activeseq1, scaleloss1)
-plot(activeseq1, penaltyloss1)
-plot(activeseq1, ic1)
+plot(activeseq)
+plot(activeseq, regloss)
+plot(activeseq, scaleloss)
+plot(activeseq, penaltyloss)
+plot(activeseq, ic)
 activeseq[which.min(ic)] 
-
+# 怎么到6就没了啊 选择lambda还是个大问题
+# 因为adabeta
 # penaltyloss
 ```
 
@@ -294,11 +405,32 @@ fit_delta$deltahat
 
 
 
+```{r}
+Rcpp::sourceCpp("test.cpp")
+```
+
+
+
+```{r}
+
+
+result = threshold_svd(data$xc, rep(10,p))
+svd(result)$d
+
+lambda = 1/sqrt(min(dim(x)[1],dim(x)[2]))
+fit_pca = rob_pca(x, xc = matrix(0,n,p), delta = matrix(0,n,p), lambda = lambda, maxiter = 1000)
+svd(fit_pca$xc)$d
 
 
 
 
+fitpca = robpca(x)
+svd(fitpca$xtilde)$d
 
+
+fit_pca$delta[1:10,1]
+fitpca$err[1:10,1]
+```
 
 
 

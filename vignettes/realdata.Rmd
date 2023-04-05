@@ -1,0 +1,263 @@
+---
+title: "realdata"
+author: "pengsu"
+date: "2023-03-23"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+
+```{r}
+dat = as.data.frame(t(read.csv("Normarrayexpressdata.txt.magetab", sep = "\t")))
+datc = dat
+colnames(datc) = datc[1,]
+datcc = datc[-1,]
+
+colnames(datcc)[1] = "id"
+datcc$id = extract_numeric(rownames(datcc))
+
+featuredat = read.csv("feature.txt", sep = "\t")
+featuredat$id = extract_numeric(featuredat$Source.Name)
+
+datall = merge(featuredat, datcc, by = "id")
+
+
+y = datall$Characteristics..Total.Hip.T.score.
+x = datall[,-(1:50)] %>% mutate(across(.fns = as.numeric))
+logx = log(x)
+
+cor = robcovsel::paircorxyf(logx,y)
+thresh = sort(abs(cor), decreasing = T)[100]
+labels = which(abs(cor)>=thresh)
+xscreen = as.matrix(logx[, labels])
+
+datascreen = cbind(y,xscreen)
+save(datascreen, file = "datascreen.RData")
+```
+
+```{r}
+y = datascreen[,1]
+x = datascreen[,-1]
+
+inTrain <- caret::createDataPartition(y, p = 0.7)[[1]]
+
+
+ytrain = y[inTrain]
+xtrain = x[inTrain,]
+
+ytest = y[-inTrain]
+xtest = x[-inTrain,]
+
+
+fit0 = sregcell_std(ytrain,xtrain, penal = 1, softbeta = T, prob = 0.99, softzeta = 1, maxiter = 30)
+# sort(fit0$betahat_post, decreasing = T)[1:50]
+# fit0$betahat
+# fit0$sigmahat
+res = ytest - fit0$intercept_hat - xtest%*%fit0$betahat
+
+fit1 = Rlars(ytrain,xtrain)
+# sort(fit1$betahat, decreasing = T)[1:10]
+
+res2 = ytest - fit1$betahat[1] - xtest%*%fit1$betahat[-1]
+
+sd(res)
+sd(res2)
+
+hist(res)
+hist(res2)
+```
+
+
+
+```{r}
+mtds = list(
+  sss = function(y, x){shootings::sparseshooting(x,y)$coef},
+  rlars = function(y, x){regcell::Rlars(y, x)$betahat},
+  mmlasso = function(y,x){mmlasso::mmlasso(x,y)$coef.MMLasso.ad},
+  slts = function(y,x){robustHD::sparseLTS(x,y)$coefficients},
+
+  # cell_scad = function(y,x, penal, penaldelta){
+  #   fit = regcell::sregcell_std(y = y, x = x, softbeta = FALSE, lambda_zeta = 1, penal = 0.3, penaldelta = 0)
+  #   return(c(fit$intercept_hat, fit$betahat))
+  # },
+
+  cell_lasso_post = function(y,x){
+    fit = regcell::sregcell_std(y = y, x = x, softbeta = TRUE, lambda_zeta = 1, penal = 1, penaldelta =0)
+    return(c(fit$intercept_hat_post, fit$betahat_post))
+  },
+
+  lasso  = function(y,x){
+    return(regcell::slm(y,x, type = "lasso")$betahat)
+  }
+
+)
+```
+
+
+```{r fig.width=6}
+y = datascreen[,1]
+x = datascreen[,-1]
+
+fit1 <- cellWise::DDC(x)
+p1 = cellMap(fit1$remX, fit1$stdResid, columnlabels = c(1,rep(" ",98),100), rowlabels = c(1,rep(" ",82),84), columnangle = 0,
+        rowtitle = "Observations", columntitle = "Genes", sizetitles = 2,adjustrowlabels = 0.5, adjustcolumnlabels = 0.5)+
+   theme(axis.text.x = element_text(size = 12),
+        axis.text.y = element_text(size = 12),
+        axis.title.x = element_text(size = 14),
+        axis.title.y = element_text(size = 14),
+        legend.title = element_text(size=14), #change legend title font size
+        legend.text = element_text(size=12))
+p1
+
+#ggsave( "tbone.eps", plot = p1, width = 6, height = 5)
+
+```
+
+```{r}
+delta = ((x - fit1$Ximp)!=0)
+mean(colMeans(delta))
+
+max(colMeans(delta))
+which.max(colMeans(delta))
+
+
+max(rowMeans(delta))
+which.max(rowMeans(delta))
+
+
+boxplot(x)
+```
+
+
+
+
+
+
+```{r}
+
+
+n = dim(x)[1]
+num = length(mtds)
+
+errormat = matrix(0, nrow = num, ncol = n)
+for(mtd in 1:7){
+  for(obs in 1:n){
+    ytrain = y[-obs]
+    xtrain = x[-obs,]
+    ytest = y[obs]
+    xtest = x[obs,]
+
+    betahat = mtds[[mtd]](ytrain,xtrain)
+    
+    res = ytest - betahat[1] - sum(xtest*betahat[-1])
+    errormat[mtd, obs] = res
+  }
+}
+
+
+
+errordata = t(errormat)
+colnames(errordata) = c("SSS", "RLars", "MM-Lasso", "SLTS", "CR-Scad", "CR-Lasso", "Lasso")
+apply(errordata,2, IQR)
+apply(errordata,2, function(x){mean(sort(x^2, decreasing = F)[1:76])})
+apply(errordata,2, function(x){mean(abs(x))})
+
+
+save(errordata, file = "errordata.RData")
+
+boxplot(errordata,cex.size = 0.5)
+abline(h = 0, col = "red")
+
+
+errordata  = errordata[,-5]
+err1 = errordata %>% as.data.frame() %>% gather(key = "method", value = "error")
+```
+
+```{r fig.width=6, fig.height=3}
+p11 = ggplot(data = err1) + 
+  geom_boxplot(aes(group = method, fill = method, y = error))+
+  theme_bw()+
+  labs(y = "LOO prediction error")+
+  theme(axis.title.x=element_blank(),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank(),
+        text= element_text(size=12), 
+        legend.position = "right")
+p11
+
+#ggsave( "tbonerst.eps", plot = p11, width = 6, height = 3)
+```
+
+
+
+
+```{r}
+betamat = matrix(nrow = 7, ncol = 101)
+errormat = matrix(0, nrow = 7, ncol = 84)
+for(mtd in 1:7){
+  betahat = mtds[[mtd]](y,x)
+  betamat[mtd,] = betahat
+  res = y - betahat[1] - x%*%betahat[-1]
+  errormat[mtd,] = res
+}
+
+rowSums(betamat!=0)
+rownames(betamat) = rownames(errormat) = names(mtds)
+
+boxplot(t(errormat))
+apply(errormat, 1, sd)
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+```{r}
+fit1 = Rlars(ytrain,xtrain)
+# sort(fit1$betahat, decreasing = T)[1:10]
+fit1$sigmahat
+
+res2 = ytest - fit1$betahat[1] - xtest%*%fit1$betahat[-1]
+sd(res2)
+```
+
+
+```{r}
+fit3 = robustHD::sparseLTS(xtrain, ytrain)
+fit3$raw.scale
+res3 = ytest - fit3$coefficients[1] - xtest%*%fit3$coefficients[-1]
+sd(res3)
+```
+
+```{r}
+fit4 = regcell::slm(ytrain,xtrain, type = "lasso")
+sort(fit4$betahat, decreasing = T)[1:10]
+fit4$sigmahat
+res4 = ytest - fit4$betahat[1] - xtest%*%fit4$betahat[-1]
+sd(res4)
+```
+
+```{r}
+fit5 = shootings::sparseshooting(xtrain,ytrain)
+
+res5 = ytest - fit5$coef[1] - xtest%*%fit5$coef[-1]
+sd(res5)
+```
+
+
+
+
+
+

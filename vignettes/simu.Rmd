@@ -29,55 +29,70 @@ options(show.error.locations = TRUE)
 
 
 ```{r, message = F, warning = F,echo=FALSE}
-load("result_simu_p20_newcode_1201.RData")
-#assign('result111', get(load('result_simu_p200_new2.RData')))
+# load("result_simu_p20_newcode_0106.RData")
+# assign('result111', get(load('result_simu_p200_new2.RData')))
 ```
+
+```{r}
+result_test = as.data.frame(t(as.data.frame(result)))
+```
+
+
 
 ```{r}
 result1 = as.data.frame(t(as.data.frame(result)))
-result1 = result1 %>% mutate(across(c(1:4, 12:21), as.numeric), 
-                             across(5:11, as.factor), 
-                             bacc = (TP/pr + (p-pr-FP)/(p-pr))/2)
-#glimpse(result1)
-#result1$fp = result1$fp-5
-max(result1$m)
+names(result1) = c("m", "n", "p", "pr", "e", "r", "gamma", "outtype", "df", "method", "seed",
+                        "MSPE", "MAPE", "RTMSPE", "TP", "FP", "Time", paste("betahat", 1:10))
 
-levels(result1$e) = c("e = 0%", "e = 2%", "e = 5%", "e = 10%")
-levels(result1$df) = c("Normal", "t(3)", "t(5)")
-levels(result1$gamma) = c(" ", "2", "4", "6", "8", "10")
-
-result1$df = factor(result1$df, levels = c("t(3)", "t(5)", "Normal"))
-#result1$method = factor(result1$method, levels = c("rlars", "rob_row", "rob_cell", "rob_imp", "ols_row", "ols_cell", "ols_imp"))
+# unique(result1$m)
 ```
 
 
-```{r , warning = F, echo=FALSE}
-result2 = result1[complete.cases(result1),]
-#result2[(result2$e=="e = 0%")&(result2$gamma!="2"),]=NA
-#result2 = result2[complete.cases(result2),]
-#result2$gamma[result2$e=="e = 0%"] = " "
-names(result2)[c(12:15,21,22)] = c("MAPE", "RTMSPE", "TP", "FP", "Time", "BACC")
+```{r}
+result2 = result1 %>% mutate(across(c(1:7,9, 11:21), as.numeric), 
+                             across(5:11, as.factor), 
+                             TN = p-pr-FP,
+                             FN = pr - TP,
+                             BACC = (TP/pr + TN/(p-pr))/2,
+                             F1 = 2*TP/(2*TP + FP + FN),
+                             MCC = (TP*TN-FP*FN)/sqrt((TP+FP)*(TN+FN)*pr*(p - pr)),
+                             RMSPE = sqrt(MSPE))
+# glimpse(result2)
+# unique(result2$method)
+
+levels(result2$e) = c("e = 0%", "e = 2%", "e = 5%")
+levels(result2$df) = c("t(4)", "Normal")
+result2$df = factor(result2$df, levels = c("Normal", "t(4)"))
+
+levels(result2$gamma) = c(" ", "2", "4", "6", "8")
+# levels(result2$r) = c("r = 0.25", "r = 0.5", "r = 0.75")
+levels(result2$method) = c("CR-Lasso", "Lasso", "MM-Lasso", "RLars", "SLTS", "SSS")
+
+result2 = result2[complete.cases(result2),]
 
 ```
 
 ```{r}
-result_new= result2
-save(result_new, file = "result_simu_new_cleaned.RData")
-load("result_simu_new_cleaned.RData")
+#result2[which.max(result2$rtmspe),] 
+result3 = result2 %>% filter((pr==10))
+
+# result3 = result2 #%>% filter((n==100)&(pr==10)&(method %in% c("CR-Lasso", "Lasso", "MM-Lasso", "RLars")))
+
+# result4 = result3 %>% filter((m==89)&(n==100)&(p==20)&(pr==10)&(e=="e = 2%")&(r=="0.5")&(gamma=="10")&(df=="t(3)"))
+# result5 = result3[which.max(result3$RMSPE),]
+
+# result5 = result3 %>% filter((method %in% c("cell_lasso_post3", "lasso", "mmlasso", "rlars")))
+# unique(result3$p)
 ```
 
 
-```{r fig.width=10, fig.height=8, echo=FALSE}
-
-#result2[which.max(result2$rtmspe),] 
-
-result3 = result2 %>% filter(pr==10)
-
+```{r fig.width=10, fig.height=6, echo=FALSE}
 
 p1 = ggplot(data = result3)+
-  geom_boxplot(aes(fill = method, x = gamma, y = MAPE))+
+  geom_boxplot(aes(fill = method, x = gamma, y = RMSPE),outlier.size = 0.2, lwd = 0.4)+
   facet_grid(df~e, scales = "free", space = "free_x") +
-  #scale_y_continuous(limits = quantile(result3$MAPE, c(0.1, 0.8)))+
+  #scale_y_continuous(limits = quantile(result3$MAPE, c(0, 0.95)))+
+  # ylim(0,6)+
   theme_bw()+
   labs(x = expression(gamma*": magnitude of outlyingness"))+
   theme(text= element_text(size=12), 
@@ -85,35 +100,285 @@ p1 = ggplot(data = result3)+
         legend.position = "right")
 p1
 
-
-#ggsave("plots_mape_p200.eps", plot = p1, width = 10,height = 7)
+names = paste("plot_rmspe_sigma3_n200_p",unique(result3$p), ".eps", sep = "")
+ggsave(names, plot = p1, width = 10,height = 6)
 ```
 
 ```{r}
 
-summary = result2 %>% group_by(n,p,e,r,gamma, df, method,outtype) %>% summarise(
+summary = result3 %>% group_by(n,p, pr,e,r,gamma, df, method,outtype) %>% summarise(
+  TP = mean(TP, na.rm = T),
+  FP = mean(FP, na.rm = T),
   TPR = mean(TP/pr, na.rm = T),
   FPR = mean(FP/(p-pr), na.rm = T),
   TNR = 1-FPR,
-  BACCA = mean(BACC),
-  MAPE = mean(MAPE), 
-  RTMSPE = mean(RTMSPE),
+  BACC = mean(BACC),
+  F1 = mean(F1),
+  MCC = mean(MCC),
   Time = mean(Time))
 
 
+summ =  result3 %>% group_by(method) %>% summarise(
+  Time = mean(Time))
 ```
 
-```{r fig.width=10, fig.height=8, echo=FALSE}
-summary3 = summary #%>% filter(df == "Normal")
-summary3$BACC = summary3$BACCA
-#summary3 = reshape2::melt(summary3, id = "gamma")
 
-summary3
-p2 = ggplot(data = summary3, aes(x = gamma, y = BACCA, group = method))+
+```{r fig.width=10, fig.height=6, echo=FALSE}
+p2 = ggplot(data = summary, aes(x = gamma, y = TPR, group = method))+
   geom_point(aes(color = method))+
   geom_line(aes(linetype = method, color = method))+ 
   facet_grid(df~e, scales = "free", space = "free_x") +
-  scale_y_continuous(limits = c(0, 1))+
+  #scale_y_continuous(limits = c(0, 1))+
+  ylim(0,1)+
+  theme_bw()+
+  labs(x = expression(gamma*": magnitude of outlyingness"))+
+  theme(text= element_text(size=12), 
+        #axis.text.x = element_blank(),
+        legend.position = "right")
+p2
+
+names = paste("plot_tpr_sigma3_n200_p",unique(result3$p), ".eps", sep = "")
+ggsave(names, plot = p2, width = 10,height = 6)
+```
+
+
+
+```{r fig.width=10, fig.height=6, echo=FALSE}
+
+p2 = ggplot(data = summary, aes(x = gamma, y = FPR, group = method))+
+  geom_point(aes(color = method))+
+  geom_line(aes(linetype = method, color = method))+ 
+  facet_grid(df~e, scales = "free", space = "free_x") +
+  #scale_y_continuous(limits = c(0, 1))+
+  ylim(0,1)+
+  theme_bw()+
+  labs(x = expression(gamma*": magnitude of outlyingness"))+
+  theme(text= element_text(size=12), 
+        #axis.text.x = element_blank(),
+        legend.position = "right")
+p2
+
+names = paste("plot_fpr_sigma3_n200_p",unique(result3$p), ".eps", sep = "")
+# ggsave(names, plot = p2, width = 10,height = 6)
+```
+
+
+```{r fig.width=10, fig.height=6, echo=FALSE}
+
+p2 = ggplot(data = summary, aes(x = gamma, y = F1, group = method))+
+  geom_point(aes(color = method))+
+  geom_line(aes(linetype = method, color = method))+ 
+  facet_grid(df~e, scales = "free", space = "free_x") +
+  #scale_y_continuous(limits = c(0, 1))+
+  ylim(0,1)+
+  theme_bw()+
+  labs(x = expression(gamma*": magnitude of outlyingness"))+
+  theme(text= element_text(size=12), 
+        #axis.text.x = element_blank(),
+        legend.position = "right")
+p2
+
+names = paste("plot_f1_sigma3_n200_p",unique(result3$p), ".eps", sep = "")
+ggsave(names, plot = p2, width = 10,height = 6)
+```
+
+
+
+
+
+```{r}
+result1 = as.data.frame(t(as.data.frame(result)))
+names(result1) = c("m", "n", "p", "pr", "e", "sigma", "r", "gamma", "outtype", "df", "penal","penaldelta", "method", "seed",
+                        "MSPE", "MAPE", "RTMSPE", "TP", "FP", "Time", paste("betahat", 1:10))
+```
+
+
+```{r}
+result2 = result1 %>% mutate(across(c(1:8,10:12, 14:24), as.numeric), 
+                             across(6:14, as.factor), 
+                             TN = p-pr-FP,
+                             FN = pr - TP,
+                             BACC = (TP/pr + TN/(p-pr))/2,
+                             F1 = 2*TP/(2*TP + FP + FN),
+                             MCC = (TP*TN-FP*FN)/sqrt((TP+FP)*(TN+FN)*pr*(p - pr)),
+                             RMSPE = sqrt(MSPE) )
+# glimpse(result2)
+# unique(result2$method)
+
+# levels(result2$e) = c("e = 0%", "e = 2%", "e = 5%", "e = 10%")
+# levels(result2$df) = c("t(3)", "t(5)", "Normal")
+# levels(result2$gamma) = c(" ", "2", "4", "6", "8", "10")
+# levels(result2$r) = c("r = 0.25", "r = 0.5", "r = 0.75")
+# levels(result2$method)
+# result2$method = factor(Method, levels = c("CS-Lasso", "CS-Scad", "Lasso", "MM-Lasso", "RLars", "SSS"))
+
+
+result2 = result2[complete.cases(result2),]
+
+```
+
+
+
+```{r}
+result3 = result2 %>% filter((sigma==3)&(p!=150))
+# result3 = result2 %>% filter((n==100)&(pr==10)&(penal!=2)&(method=="cell_lasso_post"))
+
+unique(result2$sigma)
+```
+
+
+```{r fig.width=10, fig.height=4, echo=FALSE}
+
+# p1 = ggplot(data = result3)+
+#   geom_boxplot(aes( fill = as.factor(penal), x = as.factor(p), y = F1),outlier.size = 0.2, lwd = 0.4)+
+#   facet_grid(n~pr, scales = "free", space = "free_x") +
+#   #scale_y_continuous(limits = quantile(result3$MAPE, c(0, 0.95)))+
+#   # ylim(0,6)+
+#   theme_bw()+
+#   theme(text= element_text(size=12),
+#         #axis.text.x = element_blank(),
+#         legend.position = "right")
+# p1
+
+
+#ggsave("plots_rmspe_p20_pr10.eps", plot = p1, width = 10,height = 6)
+```
+
+```{r}
+
+summary = result3 %>% group_by(n,p, pr,e,r,gamma, penal, penaldelta, df, method,outtype) %>% summarise(
+  MAPE = mean(MAPE, na.rm = T),
+  RMSPE = mean(RMSPE, na.rm = T),
+  RTMSPE = mean(RTMSPE, na.rm = T),
+  TPR = mean(TP/pr, na.rm = T),
+  FPR = mean(FP/(p-pr), na.rm = T),
+  TNR = 1-FPR,
+  BACC = mean(BACC),
+  MCC = mean(MCC),
+  F1 = mean(F1),
+  Time = mean(Time),
+  size = n())%>%ungroup()
+
+summary$pr = as.factor(summary$pr)
+summary$n = as.factor(summary$n)
+summary$penal = as.factor(summary$penal)
+
+levels(summary$pr) = c("5 active predictors", "10 active predictors")
+levels(summary$n) = c("n = 100", "n = 200")
+
+```
+
+
+
+
+```{r fig.width=6, fig.height=4, echo=FALSE}
+
+summary$penal = as.numeric(as.character(summary$penal))
+summary$`p: dimension` = as.factor(summary$p)
+p1 = ggplot(data = summary)+
+  geom_point(aes(color = `p: dimension`, x = penal, y = F1))+ 
+  geom_line(aes( color = `p: dimension`, x = penal, y = F1),outlier.size = 0.2, lwd = 0.4)+
+  facet_grid(n~pr, scales = "free", space = "free_x") +
+  labs(fill = " ", x = expression("c: penalty parameter"), y = expression(F[1]))+ 
+  #scale_y_continuous(limits = quantile(result3$MAPE, c(0, 0.95)))+
+  ylim(0,1)+
+  theme_bw()+
+  theme(text= element_text(size=12), 
+        #axis.text.x = element_blank(),
+        legend.position = "right")
+p1
+
+
+#ggsave("plot_f1sigma3.eps", plot = p1, width = 6,height = 4)
+```
+
+
+```{r}
+df <- expand.grid(X1 = 1:10, X2 = 1:10)
+df$value <- df$X1 * df$X2
+
+p1 <- ggplot(df, aes(X1, X2)) + geom_tile(aes(fill = value))
+p2 <- p1 + geom_point(aes(size = value))
+
+# Basic form
+p1 + scale_fill_continuous(guide = guide_legend(title = "aaa"))
+```
+
+
+
+
+
+
+
+
+
+
+
+
+```{r}
+summary2 = summary %>% select(n, p, pr, penal, BACC, MCC, F1)
+summary3 = gather(summary2, key = "Measurement", value = "value", -c(penal, p, pr, n))
+summary3 = summary3 %>% mutate(penal = as.numeric(as.character(penal)))
+summary4 = summary3 %>% filter(p==50)
+
+```
+
+
+```{r fig.width=7, fig.height=3, echo=FALSE}
+p23 = ggplot(data = summary4, aes(x = penal, y = value))+
+  geom_point(aes(shape = Measurement ,color = Measurement))+
+  geom_line(aes(linetype = Measurement, color = Measurement))+ 
+  facet_grid(n~pr, scales = "free", space = "free_x") +
+  #scale_y_continuous(limits = c(0, 1))+
+  # ylim(0,1)+
+  theme_bw()+
+  labs(x = "c", y = "Value")+
+  theme(text= element_text(size=12), 
+        #axis.text.x = element_blank(),
+        legend.position = "right")
+p23
+#ggsave("plot_bacc.eps", plot = p23, width = 7,height = 3)
+```
+
+```{r}
+summary4 = summary %>% select(penal, RMSPE, MAPE, RTMSPE)
+summary4 = gather(summary4, key = "Measurement", value = "value", -penal)
+summary5 = summary4 %>% mutate(penal = as.numeric(as.character(penal)))
+```
+
+```{r fig.width=4, fig.height=3, echo=FALSE}
+p24 = ggplot(data = summary5, aes(x = penal, y = value))+
+  geom_point(aes(shape = Measurement ,color = Measurement))+
+  geom_line(aes(linetype = Measurement, color = Measurement))+ 
+  # facet_grid(.~pr, scales = "free", space = "free_x") +
+  #scale_y_continuous(limits = c(0, 1))+
+  ylim(0,2)+
+  theme_bw()+
+  labs(x = "c", y = "Value")+
+  theme(text= element_text(size=12), 
+        #axis.text.x = element_blank(),
+        legend.position = "right")
+#ggsave("plots_tpr_p20_pr10.eps", plot = p2, width = 10,height = 6)
+```
+
+
+```{r fig.width=8, fig.height=3}
+p234 = grid.arrange(p23, p24, nrow = 1)
+# robcovsel::grid_arrange_shared_legend(p23,p24, nrow = 1, ncol = 2, position = "right")
+p234
+```
+
+
+
+
+```{r fig.width=10, fig.height=12, echo=FALSE}
+
+p2 = ggplot(data = summary, aes(x = penal, y = TPR, group = method))+
+  geom_point(aes(color = method))+
+  geom_line(aes(linetype = method, color = method))+ 
+  facet_grid(.~pr, scales = "free", space = "free_x") +
+  #scale_y_continuous(limits = c(0, 1))+
+  ylim(0,1)+
   theme_bw()+
   labs(x = expression(gamma*": magnitude of outlyingness"))+
   theme(text= element_text(size=12), 
@@ -122,204 +387,39 @@ p2 = ggplot(data = summary3, aes(x = gamma, y = BACCA, group = method))+
 p2
 
 
-#ggsave("plots_fpr_p20.eps", plot = p2, width = 10,height = 7)
-```
-
-
-```{r, fig.width=12, fig.height=12}
-library(cellWise)
-set.seed(5)
-dataset = srlmcell::genevar(p = 2, n = 20, beta = c(1,1), df = 0, r = 0, e = 0)
-
-
-x = dataset$x
-x[1,1] = c(6)
-x[2,1] = c(-6.5)
-y = x[,1] + x[,2]+rnorm(n = 20, sd = 0.5)
-x[3,1] = c(6)
-x[1,2] = c(6)
-
-fit1 <- DDC(x)
-
-
-
-x = rbind(x, fit1$Ximp[1:3,])
-label = factor(c(rep(1,20), rep(2,3)),labels = c("Origion", "Imputation"))
-x = cbind(x, label)
-mat  = as.data.frame(cbind(y,x))
-colnames(mat) = c("y", "X1", "X2","label")
-#mat$label = factor(c(rep(1,20), 2:4),labels = c("clean observations", "Point a", "Point b", "Point c"))
-
-#pairs(mat[,1:3], pch = 19, xaxt='n', yaxt='n')
-upper.panel<-function(x, y){
-  points(x,y, pch=19, col=c("black", "red")[mat$label], cex = 2)
-  r <- round(cor(x, y), digits=2)
-  #usr <- par("usr")
-  #on.exit(par(usr))
-  # #par(usr = c(0, 1, 0, 1))
-  # text(x[3], y[3], "a", col = "white")
-  # text(x[2], y[2], "b", col = "white")
-  # text(x[1], y[1], "c", col = "white")
-  # text(x[23]-0.4, y[23], "a'")
-  # text(x[22]-0.4, y[22], "b'")
-  # text(x[21]-0.4, y[21], "c'")
-}
-pairs(mat[,1:3], lower.panel = NULL, 
-      upper.panel = upper.panel)
-
-
-fit1$Ximp[1:3,]
+#ggsave("plots_fpr_p20_pr10.eps", plot = p2, width = 10,height = 6)
 ```
 
 ```{r}
-plot(fit1$Ximp, col = "red", pch = 19, cex = 0.5, xlim = c(-6, 6), ylim = c(-6, 6), font = 1)
-points(dataset$x, pch = 19, cex = 0.5,)
-#text(fit1$Ximp, labels=1:n, cex=1, font=2)
-```
-
-
-```{r}
-upper.panel<-function(x, y){
-  points(x,y, pch=19, col=c("red", "green3", "blue")[iris$Species])
-  r <- round(cor(x, y), digits=2)
-  txt <- paste0("R = ", r)
-  usr <- par("usr"); on.exit(par(usr))
-  par(usr = c(0, 1, 0, 1))
-  text(0.5, 0.9, txt)
-}
-pairs(iris[,1:3], lower.panel = NULL, 
-      upper.panel = upper.panel)
-```
-
-
-```{r}
-library(GGally)
-
-ggpairs(mat, columns = 1:3, ggplot2::aes(colour = label), upper = NULL, , axisLabels="none") 
-```
-
-
-
-
-```{r, message = F, warning = F,echo=FALSE}
-library(tidyverse)
-load("result_regression_new.RData")
-
 result1 = as.data.frame(t(as.data.frame(result)))
-result1 = result1 %>% mutate(across(c(1:4, 12:18), as.numeric), 
-                             across(5:11, as.factor))
+names(result1) = c("m", "n", "p", "pr", "e", "r", "gamma", "outtype", "df", 
+                   "eta1", "eta2", "seed", "MSPE", "MAPE", "RTMSPE", 1:5, "Time")
 
-unique(result1$method)
-levels(result1$e) = c("e = 0%", "e = 2%", "e = 5%", "e = 10%")
-levels(result1$df) = c( "Normal","t(3)", "t(5)")
-levels(result1$gamma) = c( "2", "4", "6", "8", "10", " ")
+result1 = result1 %>% mutate(across(c(m:gamma, df:Time), as.numeric))
+# glimpse(result1)
+
+result1$df = factor(result1$df, labels = c("Normal", "t(3)", "t(5)"))
 result1$df = factor(result1$df, levels = c("t(3)", "t(5)", "Normal"))
 
-#result1[which.max(result1$MAPE),]
-levels(result1$method)
+result1$eta2 = factor(result1$eta2)
+
+result1$eta1 = factor(result1$eta1)
+
+max(result1$MSPE)
 ```
 
-```{r , warning = F, echo=FALSE}
-result2 = result1
-result2[(result2$e=="e = 0%")&(result2$gamma!="2"),]=NA
-result2 = result2[complete.cases(result2$m),]
-result2$gamma[result2$e=="e = 0%"] = " "
-levels(result2$method) = c("RobReg_DDCimp", "RobReg_Rlars_Cell_Restoration","RobReg_Rlars_Row_Restoration",
-                           "RobSel_DDCimp", "RobSel_Rlars_Cell_Restoration","RobSel_Rlars_Row_Restoration")
-```
 
-```{r}
-result_regression_new= result2
-save(result_regression_new, file = "result_simu_regression_new_cleaned.RData")
-load("result_simu_regression_new_cleaned.RData")
-#result_high$method %in% c("sss",   "rlars", "smddcrow", "smddccell", "smrlarsrow", "smrlarscell")
-```
-
-```{r fig.width=10, fig.height=10, echo=FALSE}
-
-result3 = result2 %>% filter(df == "Normal")
-#result3 = result2 %>% filter(method == "RobReg_DDCimp")
-result3 = result3[complete.cases(result3$TPD),]
-
-
-p1 = ggplot(data = result3)+
-  geom_boxplot(aes(fill = method, x = gamma, y = TND))+
-  facet_grid(outtype~e, scales = "free", space = "free_x") +
-  #scale_y_continuous(limits = c(0,10))+
-  theme_bw()+
-  labs(x = expression(gamma*": magnitude of outlyingness"))+
-  theme(text= element_text(size=12), 
-        #axis.text.x = element_blank(),
-        legend.position = "right")
+```{r fig.width=10, fig.height=4, echo=FALSE}
+result2 = result1 %>% filter(eta1 == 100)
+p1 = ggplot(data = result2)+
+  geom_boxplot(aes(x = eta2, fill = eta2, y = MSPE),outlier.size = 0.2, lwd = 0.4)+
+  #ylim(0,10)+
+  facet_grid(.~df, scales = "free", space = "free_x")
 p1
 
-result3[which.max(result3$MAPE),]
 
-levels(result3$method)
-head(result3$TPD)
-#ggsave("plots_time_p200.eps", plot = p1, width = 10,height = 7)
+#ggsave("plots_eta100.eps", plot = p1, width = 10,height = 4)
 ```
-
-
-```{r}
-library(pense)
-data(freeny)
-x <- as.matrix(freeny[ , 2:5])
-regpath <- pense(x, freeny$y, alpha = 0.5)
-plot(regpath)
-# Extract the coefficients at a certain penalization level
-coef(regpath, lambda = regpath$lambda[[1]][[40]])
-
-
-# What penalization level leads to good prediction performance?
-set.seed(123)
-cv_results <- pense_cv(x, freeny$y, alpha = 0.5,
-cv_repl = 2, cv_k = 4)
-plot(cv_results, se_mult = 1)
-# Extract the coefficients at the penalization level with
-# smallest prediction error ...
-coef(cv_results)
-# ... or at the penalization level with prediction error
-# statistically indistinguishable from the minimum.
-coef(cv_results, lambda = '1-se')
-```
-
-
-
-
-```{r}
-set.seed(5)
-data = srlmcell::genevar(n = 20, e = 0.1, p = 20, pr = 5, df = 3,r = 0.5, gamma = 10, outtype = "cellwise")
-ximp <- suppressMessages(cellWise::DDC(data$x)$Ximp)
-df <- expand.grid(n = 1:20,p = c(1:21))
-df$n = as.factor(df$n)
-levels(df$n) = as.character(20:1)
-df$p = as.factor(df$p)
-levels(df$p) = c(" ", as.character(1:20))
-df$type = rep(factor(c("Y","X", "X(inactive)"), levels = c("Y","X", "X(inactive)")),times = 20*c(1,5,15))
-df$`True outlier` = factor(c(rep(0,20),as.numeric(data$outlierlabel)), labels = c("No", "Yes"))
-df$`Detected outlier` = factor(c(rep(0,20),as.numeric(ximp!=data$x)), labels = c("No", "Yes"))
-```
-
-```{r, fig.width=10, fig.height=9}
-p111 = ggplot(df,aes(p, n)) +
-  geom_tile(aes(colour = `Detected outlier`, fill = `True outlier`, size = `Detected outlier`))+
-  scale_size_manual(values = c(0.5,1))+
-  scale_fill_manual(values=c("gray", "yellow"))+
-  scale_color_manual(values=c("black", "red"))+
-  facet_grid(.~type,space = "free", scale = "free")+
-  theme_minimal()
-#ggsave("illis2.eps", plot = p111, width = 10,height = 9)
-```
-
-
-
-
-
-
-
-
-
 
 
 

@@ -1,27 +1,42 @@
-# lambdamax_beta = function(y,x,betahat,intercept, softbeta){
-#
-#   n = dim(x)[1]
-#   p = dim(x)[2]
-#
-#   lambdamax = max(t(x)%*%(y-mean(y)))
-#
-#   iovec = rep(5,2)
-#   ind = 0
-#   k = 0
-#   while((min(iovec)<10)|(ind=FALSE)){
-#     outputs_beta = reg_beta(y = y, x = x, betahat = betahat, intercept = intercept,
-#                             alambdavec_beta = rep(lambdamax,p), softbeta = softbeta)
-#
-#     betaget = outputs_beta$betahat
-#     ind = (sum(abs(betaget))==0)
-#     lambdamax = ((1/2)^((ind-0.5)*2*1/(2^min(iovec))))*lambdamax
-#     iovec[ind+1] = iovec[ind+1]+1
-#     k = k+1
-#   }
-#   result = list(iovec = iovec, lambdamax = lambdamax, k = k)
-#   return(result)
-#
-# }
+require("cellWise")
+require("purrr")
+require("robustbase")
+require("robcovsel")
+
+lambdamax_beta = function(y, x, betahat, intercept,
+                          deltahat, zetahat,
+                          softbeta,
+                          lambda_delta, softdelta,
+                          lambda_zeta, softzeta,
+                          alpha, maxiter){
+
+  n = dim(x)[1]
+  p = dim(x)[2]
+
+  lambdamax = 2*max(t(x - deltahat)%*%(y-intercept - zetahat))
+
+
+  iovec = rep(5,2)
+  ind = 0
+  k = 0
+  while((min(iovec)<10)|(ind==FALSE)){
+    outputs = reg_beta_delta(y = y, x = x, betahat = betahat, intercept = intercept,
+                             deltahat = deltahat, zetahat = zetahat,
+                             lambda_beta = lambdamax, softbeta = softbeta,
+                             lambda_delta = lambda_delta, softdelta = softdelta,
+                             lambda_zeta = lambda_zeta, softzeta = softzeta,
+                             alpha = alpha, maxiter = maxiter)
+
+    betaget = outputs$betahat
+    ind = (sum(abs(betaget))==0)
+    lambdamax = ((1/2)^((ind-0.5)*2*1/(2^min(iovec))))*lambdamax
+    iovec[ind+1] = iovec[ind+1]+1
+    k = k+1
+  }
+  result = list(iovec = iovec, lambdamax = lambdamax, k = k)
+  return(result)
+
+}
 
 # lambdamax2_beta = function(y,x,betahat,intercept, softbeta){
 #
@@ -47,13 +62,14 @@ lambdamax3_beta = function(y, x, betahat, intercept,
   n = dim(x)[1]
   p = dim(x)[2]
 
-  lambdamax = 20*max(t(x - deltahat)%*%(y-intercept - zetahat))
+  lambdamax = 2*max(t(x - deltahat)%*%(y-intercept - zetahat))
   outputs = reg_beta_delta(y = y, x = x, betahat = betahat, intercept = intercept,
                            deltahat = deltahat, zetahat = zetahat,
                            lambda_beta = lambdamax, softbeta = softbeta,
                            lambda_delta = lambda_delta, softdelta = softdelta,
                            lambda_zeta = lambda_zeta, softzeta = softzeta,
                            alpha = alpha, maxiter = maxiter)
+  #outputs$mgradient
   lambdamax = max(abs(outputs$mgradient))*1.01
   return(list(lambdamax = lambdamax))
 }
@@ -63,7 +79,8 @@ lambdamax3_beta = function(y, x, betahat, intercept,
 sregcell = function(y,x, betahat = NULL, intercept = NULL,
                     softbeta = TRUE, softdelta = TRUE, softzeta = TRUE,
                     lambda_delta = 2.56, lambda_zeta = 2.56, alpha = 0.5,
-                    penal_beta = 2, penal_cell = 2, maxiter = 100){
+                    penal = 1, penaldelta = 1,
+                    maxiter = 100){
 
 
   n = dim(x)[1]
@@ -71,6 +88,10 @@ sregcell = function(y,x, betahat = NULL, intercept = NULL,
 
 
   deltahat = threshold_mat(x,matrix(lambda_delta, n,p))##这个没问题吧
+  # 根据deltahat设置adaptive lambda_deltavec
+  colSums(deltahat!=0)
+  colSums(data$outlier!=0)
+
   xc = x - deltahat
   zetahat = rep(0,n)
 
@@ -82,7 +103,7 @@ sregcell = function(y,x, betahat = NULL, intercept = NULL,
   { #lambda grid
     length = 50
     # grid = get_lambda_grid(y,xc, betahat,intercept, softbeta, length = length)
-    lambdamax = lambdamax3_beta(y = y, x = x, betahat = betahat, intercept = intercept,
+    lambdamax = lambdamax_beta(y = y, x = x, betahat = betahat, intercept = intercept,
                                 deltahat = deltahat, zetahat = zetahat,
                                 softbeta = softbeta,
                                 lambda_delta = lambda_delta, softdelta = softdelta,
@@ -102,36 +123,62 @@ sregcell = function(y,x, betahat = NULL, intercept = NULL,
                                                       alpha = alpha, maxiter = maxiter)})
 
 
-  regloss = unlist(lapply(1:length, function(i) allfits[[i]]$regloss))
-  scaleloss = unlist(lapply(1:length, function(i) allfits[[i]]$scaleloss))
-  penaltyloss = unlist(lapply(1:length, function(i) allfits[[i]]$penaltyloss))
-  penaltylossx = unlist(lapply(1:length, function(i) allfits[[i]]$penaltylossx))
-  penaltylossy = unlist(lapply(1:length, function(i) allfits[[i]]$penaltylossy))
-  activebeta = unlist(lapply(1:length, function(i)  sum(as.logical(allfits[[i]]$betahat))))#为什么会减一啊
-  loss = unlist(lapply(1:length, function(i) allfits[[i]]$loss))
+  regloss = unlist(lapply(allfits, function(fit) fit$regloss))
+  scaleloss = unlist(lapply(allfits, function(fit) fit$scaleloss))
+  penaltylossx = unlist(lapply(allfits, function(fit) fit$penaltylossx))
+  penaltylossy = unlist(lapply(allfits, function(fit) fit$penaltylossy))
+  activebeta = unlist(lapply(allfits, function(fit) sum(as.logical(fit$betahat))))
+  activedelta = unlist(lapply(allfits, function(fit)  sum(as.logical(fit$deltahat))))
+  activedeltabeta = unlist(lapply(allfits, function(fit)  sum((fit$deltahat!=0)[,as.logical(fit$betahat)])))
+  betamat = as.data.frame(t(as.data.frame(lapply(allfits, function(fit) fit$betahat))))
+  colactivedelta = unlist(lapply(allfits, function(fit)  max(colSums(fit$deltahat!=0)*(fit$betahat!=0))))
 
-  activedelta = unlist(lapply(1:length, function(i)  sum(as.logical(allfits[[i]]$delta))))
-  activezeta = unlist(lapply(1:length, function(i)  sum(as.logical(allfits[[i]]$zeta))))
 
-  # penal_beta = log(n)
-  # penal_cell = 1
+  ic = regloss + 2*penaltylossy + penal*log(n)*activebeta + penaldelta*activedeltabeta
+  icadj = ic
+  icadj[colactivedelta>30] = NA
+  # penalize active delta
+  # cs-lasso is good but scad is bad
+
   # plot(ic)
-  # plot(activezeta)
-  # plot(activedelta)
-  # plot(penaltyloss)
-  # plot(penaltylossx)
-  # plot(penaltylossy)
-  # plot(regloss + penaltylossy)
-  # plot(activebeta + activedelta)
-  # plot(regloss + penaltylossy + log(n)*(activebeta + activedelta))
+  # plot(activebeta, ic)
 
-  # ic = alpha*regloss + (1-alpha)*scaleloss + penal_beta*(activebeta) + penal_cell*(penaltyloss)
-  ic = alpha*regloss + (1-alpha)*scaleloss + penaltylossy + penal_beta*(activebeta + activedelta)
-  result_opt = allfits[[which.min(ic)]]
-  # result_opt$betahat
 
+  # ic = alpha*regloss + (1-alpha)*scaleloss + lambda_delta*penaltyloss + 2*log(n)*activeseq
+  # ic = alpha*regloss + (1-alpha)*scaleloss + lambda_delta*(penaltylossx + penaltylossy) + log(n)*activebeta
+  # the original bic selection还是很差，prediction也不是很好， 在zeta = 0.5时
+
+  # ic = alpha*regloss + (1-alpha)*scaleloss + 2*(1-alpha)*penaltylossx + 2*(alpha)*penaltylossy + penal*log(n)*activebeta
+  # the classic bic
+  # zeta = 0.5 lasso非常差
+  # zeta= 1 有很多outlier
+
+  # ic = regloss + 2*penaltylossy + penal*log(n)*activebeta
+  # 这样的话scad非常差
+  # ic = alpha*regloss + 2*(alpha)*penaltylossy + penal*log(n)*activebeta
+  # only consider regression loss
+  # zeta =1, lasso and post-lasso is very good but with a few outliers, scad is worse with little contamination
+
+  # ic = alpha*regloss + (1-alpha)*scaleloss + 2*(1-alpha)*activedelta + 2*(alpha)*penaltylossy + log(n)*activebeta
+  # penalize active delta
+  # cs-lasso is good but scad is bad
+
+  # ic = 2*(regloss + 2*penaltylossy) + 10*log(n)*activebeta
+
+  # penalize how many non-zero delta in active variables
+  # penalize active delta
+  # cs-lasso is good but scad is bad
+
+
+  # ic = alpha*regloss + (1-alpha)*scaleloss + 2*(alpha)*penaltylossy + (activebeta + activedelta)
+  # penalize on delta
+
+
+  label = which.min(icadj)
+  result_opt = allfits[[label]]
   betahat = result_opt$betahat
   intercept_hat = result_opt$intercept
+
 
   { # post regression
     betahat_post = rep(0,p)
@@ -157,6 +204,7 @@ sregcell = function(y,x, betahat = NULL, intercept = NULL,
 
 
   return(list(allfits = allfits, result_opt = result_opt,
+              grid = grid, activebeta = activebeta, ic = ic,  colactivedelta = colactivedelta, betamat = betamat, label = label,
               betahat = betahat, intercept_hat = intercept_hat,
               betahat_post = betahat_post, intercept_hat_post = intercept_hat_post))
 }
@@ -190,7 +238,7 @@ sregcell = function(y,x, betahat = NULL, intercept = NULL,
 
 
 ### STD
-quantscale = function(xvec, df = Inf, tau = 0.9){
+quantscale = function(xvec, df = Inf, tau = 0.95){
   (quantile(xvec, tau) - quantile(xvec, 1-tau))/(qt(tau, df = df) - qt(1-tau, df = df))
 }
 
@@ -208,12 +256,12 @@ robstd = function(x, centerf = median, scalef = qnscale, df = df){
 }
 
 
-sregcell_std = function(y,x, scale.method = qnscale,
+sregcell_std = function(y,x,
+                        scale.method = qnscale,  df = Inf,
                         softbeta = TRUE, softdelta = TRUE, softzeta = TRUE,
-                        df = Inf,
-                        lambda_delta = NULL, lambda_zeta = 2.58,
+                        lambda_delta = NULL, lambda_zeta = 1, prob = 0.995,
                         alpha = 0.5,
-                        penal_beta = 2, penal_cell = 2,
+                        penal = 1, penaldelta = 0,
                         maxiter = 100){
 
 
@@ -221,7 +269,7 @@ sregcell_std = function(y,x, scale.method = qnscale,
   p = dim(x)[2]
 
   if(is.null(lambda_delta)){
-    lambda_delta = qt(0.995, df = df)
+    lambda_delta = qt(p = prob, df = df)
   }
 
   { # standardization
@@ -229,31 +277,47 @@ sregcell_std = function(y,x, scale.method = qnscale,
     mux = stdrst$center
     scalex = stdrst$scale
     xstd = stdrst$x
-
   }
 
-  { # initialization #####################################could be improved
-    fit0 = regcell::Rlars(y,x)
-    sigmahat = fit0$sigmahat
+  { # initialization #########could be improved
+    # gausscor = robcovsel::paircorxyf(x,y)
+    # thresh = sort(abs(gausscor), decreasing = T)[min(10,p)]
+    # indx = which(abs(gausscor)>=thresh)
+    # xscreen = x[,indx]
+    #
+    # ximp = purrr::quietly(cellWise::DDC)(xscreen)$result$Ximp
+    # fit000 = suppressWarnings(robustbase::lmrob(y~ximp))
+    # sigmahat = fit000$scale
+
+    # fit00 = robcovsel::covlasso(xstd,y)
+    # sigmahat = sqrt(fit00$sigma2hat_opt)
+
+    set.seed(2)
+    fit0 = regcell::Rlars(y,xstd)
+    sigmahat = fit0$sigmahat # tend to overestimate
+
     yscl = y/sigmahat
-    fit00 = regcell::Rlars(yscl,xstd)
-    intercept = fit00$betahat[1]
-    betahat = fit00$betahat[-1]
+
+    # fit00 = regcell::Rlars(yscl,xstd)
+    # intercept = fit00$betahat[1]
+    # betahat = fit00$betahat[-1]
   }
 
-  rst = sregcell(y = yscl, x = xstd, betahat = betahat, intercept = intercept,
+  rst = sregcell(y = yscl, x = xstd, betahat = rep(0,p), intercept = 0,
                  softbeta = softbeta, softdelta = softdelta, softzeta = softzeta,
                  lambda_delta = lambda_delta, lambda_zeta = lambda_zeta, alpha = alpha,
-                 penal_beta = penal_beta, penal_cell = penal_cell, maxiter = 100)
+                 penal = penal, penaldelta = penaldelta,
+                 maxiter = 20)
 
   #de-standardization
   betahat = as.numeric((1/scalex)*rst$betahat*sigmahat)
   intercept_hat = (rst$intercept_hat - sum((1/scalex)*mux*rst$betahat))*sigmahat
+  label = rst$label
 
   betahat_post = (1/scalex)*rst$betahat_post*sigmahat
   intercept_hat_post = (rst$intercept_hat_post - sum((1/scalex)*mux*rst$betahat_post))*sigmahat
 
-  return(list(betahat = betahat, intercept_hat = intercept_hat,
+  return(list(betahat = betahat, intercept_hat = intercept_hat, label = label,
               betahat_post = betahat_post, intercept_hat_post = intercept_hat_post,
               sigmahat = sigmahat, mux = mux, scalex = scalex))
 }

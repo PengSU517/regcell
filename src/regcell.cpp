@@ -56,7 +56,7 @@ arma::mat threshold_svd(arma::mat x, arma::vec lambdavec, bool soft = true){   /
 
   svd(U, s, V, x);
   arma::vec snew(dim);
-  snew = threshold_vec(s, lambdavec);//什么毛病
+  snew = threshold_vec(s, lambdavec);
 
   arma::mat S(n,p);
   S.diag() =  snew;
@@ -111,14 +111,14 @@ List rob_pca(arma::mat x, arma::mat xc, arma::mat delta, double lambda, int maxi
 
 // [[Rcpp::export]]
 List reg_beta(arma::vec yclean, arma::mat xclean, arma::vec betahat, double intercept,
-              arma::vec alambdavec_beta, bool softbeta = true, double maxiterbeta = 2){
+              arma::vec alambdavec_beta, bool softbeta = true, double maxiterbeta = 5){
 
   //initialize variables
   unsigned int n = xclean.n_rows; //sample size
   unsigned int p = xclean.n_cols; //dimension size
 
   //arma::mat weightmat = eye(n,n);
-  double L = arma::eig_sym(trans(xclean)*xclean).max();//直接用奇异值分解不好吗
+  double L = arma::eig_sym(trans(xclean)*xclean).max();// better to use svd decomposition
   arma::vec steptvec(p);// a constant vector filled with 1/pi
   steptvec.fill(0.995/L);
 
@@ -139,7 +139,7 @@ List reg_beta(arma::vec yclean, arma::mat xclean, arma::vec betahat, double inte
     betanew = threshold_vec(betapos, steptvec%alambdavec_beta, softbeta);
     if(((abs(betanew-betahat)).max() < pow(10, -6))&(mean(res) < pow(10, -6))) {break;};
     betahat = betanew;
-    // 收敛速度太慢
+    // too slow
     //res = yclean - xclean*betahat;//residuals
     intercept  = intercept + mean(res);
     k++;
@@ -148,6 +148,8 @@ List reg_beta(arma::vec yclean, arma::mat xclean, arma::vec betahat, double inte
   List results = List::create(
     Named("mgradient") = mgradient,
     Named("betahat") = betahat,
+    Named("res") = res,
+    Named("xclean") = xclean,
     Named("intercept") = intercept
     );
   return(results);
@@ -158,7 +160,7 @@ List reg_beta(arma::vec yclean, arma::mat xclean, arma::vec betahat, double inte
 
 // [[Rcpp::export]]
 List reg_delta(arma::vec yclean, arma::mat x, arma::vec betahat, arma::mat deltahat,
-               arma::mat alambdamat_delta, double alpha, bool softdelta = true, double maxiterdelta = 2){
+               arma::mat alambdamat_delta, double alpha, bool softdelta = true, double maxiterdelta = 5){
 
   //initialize variables
   unsigned int n = x.n_rows; //sample size
@@ -170,7 +172,7 @@ List reg_delta(arma::vec yclean, arma::mat x, arma::vec betahat, arma::mat delta
   one_minus_alphamatnp.fill(1-alpha);
 
   double L = alpha*as_scalar(trans(betahat)*betahat) + (1-alpha);
-  //在pca时步长如何选择是个问题
+  //how to choose step size
 
   arma::mat stepmat(n,p);
   stepmat.fill(0.995/L);
@@ -188,11 +190,10 @@ List reg_delta(arma::vec yclean, arma::mat x, arma::vec betahat, arma::mat delta
   {
     //xclean = x - deltahat;
     //resclean = yclean - xclean*betahat;
-    //gradient = alphamatnp%(resclean*trans(betahat)) - (one_minus_alphamatnp%xclean);//这里是不是有问题
+    //gradient = alphamatnp%(resclean*trans(betahat)) - (one_minus_alphamatnp%xclean);
     gradient = gradientfixed + alphamatnp%(deltahat*betahat*trans(betahat)) + one_minus_alphamatnp%deltahat;
     deltapos = deltahat - stepmat%gradient;
     deltanew = threshold_mat(deltapos, stepmat%one_minus_alphamatnp%alambdamat_delta, softdelta);
-    //------------------------------关于加罚的选择，也是结果好坏的决定因素
     if((abs(deltanew-deltahat)).max() < pow(10, -6)) {break;};
     deltahat = deltanew;
     k++;
@@ -239,7 +240,7 @@ List reg_beta_delta(arma::vec y, arma::mat x,
                     double lambda_beta, bool softbeta,
                     double lambda_delta,bool softdelta,
                     double lambda_zeta, bool softzeta,
-                    double alpha, double maxiter = 20){
+                    double alpha, double maxiter = 30){
 
   //initialize variables
   unsigned int n = x.n_rows; //sample size
@@ -275,8 +276,8 @@ List reg_beta_delta(arma::vec y, arma::mat x,
   double k = 1;//iterator
   while(k <= maxiter)//start iteration
   {
-    outputs_delta = reg_delta(ycenterclean, x, betahat, deltahat,alambdamat_delta, alpha, softdelta);
-    //调用函数的时候必须按顺序
+    outputs_delta = reg_delta(ycenterclean, x, betahat, deltahat,alambdamat_delta, alpha, softdelta, 20);
+    //should add arguments in correct orders
     deltahat = as<arma::mat>(outputs_delta["deltahat"]);
     //arma::vec y, arma::mat x, arma::vec betahat, double intercept, arma::vec lambdavec_beta, double maxiter = 20
     xclean = x - deltahat;
@@ -287,7 +288,7 @@ List reg_beta_delta(arma::vec y, arma::mat x,
 
     // yclean = y;
 
-    outputs_beta = reg_beta(yclean, xclean, betahat, intercept, alambdavec_beta, softbeta);
+    outputs_beta = reg_beta(yclean, xclean, betahat, intercept, alambdavec_beta, softbeta, 20);
     betaget = as<arma::vec>(outputs_beta["betahat"]);
     intercept = double(outputs_beta["intercept"]);
     interceptvec.fill(intercept);
@@ -300,6 +301,12 @@ List reg_beta_delta(arma::vec y, arma::mat x,
 
   };
 
+  arma::vec resclean1 = as<arma::vec>(outputs_beta["res"]);
+  arma::mat xclean1 = as<arma::mat>(outputs_beta["xclean"]);
+  arma::vec mgradient = as<arma::vec>(outputs_beta["mgradient"]);
+  arma::vec res = y - interceptvec - x*betahat;
+  arma::vec deltabeta = abs(deltahat)*abs(betahat);
+
   double regloss = accu(pow(ycenterclean - (x - deltahat)*betahat,2));
   double scaleloss = accu(pow(x-deltahat,2));
   double penaltylossx = accu(alambdamat_delta%abs(deltahat));
@@ -307,9 +314,7 @@ List reg_beta_delta(arma::vec y, arma::mat x,
   double penaltyloss = penaltylossx + penaltylossy;
   double loss = alpha*regloss + (1-alpha)*scaleloss + penaltyloss;
 
-
-  arma::vec mgradient = as<arma::vec>(outputs_beta["mgradient"]);
-  //-------------------------------------------------------------有大问题
+  //-------------------------------------------------------------
 
   List results = List::create(
     Named("intercept") = intercept,
@@ -321,6 +326,10 @@ List reg_beta_delta(arma::vec y, arma::mat x,
     Named("alambdavec_zeta") = alambdavec_zeta,
     Named("alambdamat_delta") = alambdamat_delta,
     Named("k") = k,
+    Named("resclean1") = resclean1,
+    Named("xclean1") = xclean1,
+    Named("res") = res,
+    Named("deltabeta") = deltabeta,
     Named("regloss") = regloss,
     Named("scaleloss") = scaleloss,
     Named("penaltyloss") = penaltyloss,
