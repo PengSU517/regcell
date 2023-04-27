@@ -40,11 +40,20 @@ result_test = as.data.frame(t(as.data.frame(result)))
 
 
 ```{r}
-result1 = as.data.frame(t(as.data.frame(result)))
-names(result1) = c("m", "n", "p", "pr", "e", "r", "gamma", "outtype", "df", "method", "seed",
+result1low = as.data.frame(t(as.data.frame(result)))
+names(result1low) = c("m", "n", "p", "pr", "e", "r", "gamma", "outtype", "df", "method", "seed",
                         "MSPE", "MAPE", "RTMSPE", "TP", "FP", "Time", paste("betahat", 1:10))
+result1high = as.data.frame(t(as.data.frame(result)))
+names(result1high) = c("m", "n", "p", "pr", "e", "r", "gamma", "outtype", "df", "method", "seed",
+                        "MSPE", "MAPE", "RTMSPE", "TP", "FP", "Time", paste("betahat", 1:10))
+result1lasso = as.data.frame(t(as.data.frame(result)))
+names(result1lasso) = c("m", "n", "p", "pr", "e", "r", "gamma", "outtype", "df", "method", "seed",
+                        "MSPE", "MAPE", "RTMSPE", "TP", "FP", "Time", paste("betahat", 1:10))
+remove(result)
+result1 = rbind(result1high, result1low, result1lasso)
+result1 = result1high
 
-# unique(result1$m)
+save(result1, file = "data_all_in_one.RData")
 ```
 
 
@@ -66,15 +75,15 @@ result2$df = factor(result2$df, levels = c("Normal", "t(4)"))
 
 levels(result2$gamma) = c(" ", "2", "4", "6", "8")
 # levels(result2$r) = c("r = 0.25", "r = 0.5", "r = 0.75")
-levels(result2$method) = c("CR-Lasso", "Lasso", "MM-Lasso", "RLars", "SLTS", "SSS")
-
+levels(result2$method) = c("CR-Lasso", "Lasso_old", "Lasso", "MM-Lasso", "RLars", "SLTS", "SSS")
+result2$method = factor(result2$method, levels = c("CR-Lasso", "SSS", "RLars", "MM-Lasso", "SLTS", "Lasso", "Lasso_old"))
 result2 = result2[complete.cases(result2),]
 
 ```
 
 ```{r}
 #result2[which.max(result2$rtmspe),] 
-result3 = result2 %>% filter((pr==10))
+result3 = result2 %>% filter((p==50)&(method!="Lasso_old"))
 
 # result3 = result2 #%>% filter((n==100)&(pr==10)&(method %in% c("CR-Lasso", "Lasso", "MM-Lasso", "RLars")))
 
@@ -86,7 +95,7 @@ result3 = result2 %>% filter((pr==10))
 ```
 
 
-```{r fig.width=10, fig.height=6, echo=FALSE}
+```{r fig.width=10, fig.height=7, echo=FALSE}
 
 p1 = ggplot(data = result3)+
   geom_boxplot(aes(fill = method, x = gamma, y = RMSPE),outlier.size = 0.2, lwd = 0.4)+
@@ -95,13 +104,13 @@ p1 = ggplot(data = result3)+
   # ylim(0,6)+
   theme_bw()+
   labs(x = expression(gamma*": magnitude of outlyingness"))+
-  theme(text= element_text(size=12), 
+  theme(text= element_text(size=20), 
         #axis.text.x = element_blank(),
-        legend.position = "right")
+        legend.position = "bottom")
 p1
 
 names = paste("plot_rmspe_sigma3_n200_p",unique(result3$p), ".eps", sep = "")
-ggsave(names, plot = p1, width = 10,height = 6)
+ggsave(names, plot = p1, width = 10,height = 7)
 ```
 
 ```{r}
@@ -123,7 +132,7 @@ summ =  result3 %>% group_by(method) %>% summarise(
 ```
 
 
-```{r fig.width=10, fig.height=6, echo=FALSE}
+```{r fig.width=10, fig.height=7, echo=FALSE}
 p2 = ggplot(data = summary, aes(x = gamma, y = TPR, group = method))+
   geom_point(aes(color = method))+
   geom_line(aes(linetype = method, color = method))+ 
@@ -132,18 +141,18 @@ p2 = ggplot(data = summary, aes(x = gamma, y = TPR, group = method))+
   ylim(0,1)+
   theme_bw()+
   labs(x = expression(gamma*": magnitude of outlyingness"))+
-  theme(text= element_text(size=12), 
+  theme(text= element_text(size=20), 
         #axis.text.x = element_blank(),
-        legend.position = "right")
+        legend.position = "bottom")
 p2
 
 names = paste("plot_tpr_sigma3_n200_p",unique(result3$p), ".eps", sep = "")
-ggsave(names, plot = p2, width = 10,height = 6)
+ggsave(names, plot = p2, width = 10,height = 7)
 ```
 
 
 
-```{r fig.width=10, fig.height=6, echo=FALSE}
+```{r fig.width=10, fig.height=7, echo=FALSE}
 
 p2 = ggplot(data = summary, aes(x = gamma, y = FPR, group = method))+
   geom_point(aes(color = method))+
@@ -153,17 +162,17 @@ p2 = ggplot(data = summary, aes(x = gamma, y = FPR, group = method))+
   ylim(0,1)+
   theme_bw()+
   labs(x = expression(gamma*": magnitude of outlyingness"))+
-  theme(text= element_text(size=12), 
+  theme(text= element_text(size=20), 
         #axis.text.x = element_blank(),
-        legend.position = "right")
+        legend.position = "bottom")
 p2
 
 names = paste("plot_fpr_sigma3_n200_p",unique(result3$p), ".eps", sep = "")
-# ggsave(names, plot = p2, width = 10,height = 6)
+# ggsave(names, plot = p2, width = 10,height = 7)
 ```
 
 
-```{r fig.width=10, fig.height=6, echo=FALSE}
+```{r fig.width=10, fig.height=7, echo=FALSE}
 
 p2 = ggplot(data = summary, aes(x = gamma, y = F1, group = method))+
   geom_point(aes(color = method))+
@@ -172,14 +181,15 @@ p2 = ggplot(data = summary, aes(x = gamma, y = F1, group = method))+
   #scale_y_continuous(limits = c(0, 1))+
   ylim(0,1)+
   theme_bw()+
-  labs(x = expression(gamma*": magnitude of outlyingness"))+
-  theme(text= element_text(size=12), 
+  labs(x = expression(gamma*": magnitude of outlyingness"), 
+       y = expression(F[1]))+
+  theme(text= element_text(size=20), 
         #axis.text.x = element_blank(),
-        legend.position = "right")
+        legend.position = "bottom")
 p2
 
 names = paste("plot_f1_sigma3_n200_p",unique(result3$p), ".eps", sep = "")
-ggsave(names, plot = p2, width = 10,height = 6)
+ggsave(names, plot = p2, width = 10,height = 7)
 ```
 
 

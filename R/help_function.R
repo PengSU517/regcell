@@ -30,5 +30,16 @@ slm = function(y,x, type = "lasso"){
 }
 
 
+slm2 = function(y,x){
+  fit = glmnet::cv.glmnet(x, y)
+  betatilde = as.numeric(coef(fit, s = "lambda.min"))
+  return(list(betahat = betatilde))
+}
+
+
+
+
+
+
 
 

@@ -17,17 +17,17 @@ getDoParWorkers()
   outtypes = c("mixed")
 }
 
-# {
-#   m = 1
-#   n = 100
-#   p = c(20)
-#   pr = c(10)
-#   e = c(0.05)
-#   r = c(0.5)
-#   gamma = c(6)
-#   df = c(Inf)
-#   outtype = c("mixed")
-# }
+{
+  m = 1
+  n = 100
+  p = c(50)
+  pr = c(10)
+  e = c(0)
+  r = c(0.5)
+  gamma = c(6)
+  df = c(Inf)
+  outtype = c("mixed")
+}
 
 
 
@@ -55,7 +55,7 @@ mtds = list(
   # },
 
   lasso  = function(y,x){
-    return(regcell::slm(y,x, type = "lasso")$betahat)
+    return(regcell::slm2(y,x, type = "lasso")$betahat)
   }
 
 )

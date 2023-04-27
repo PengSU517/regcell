@@ -89,8 +89,8 @@ sregcell = function(y,x, betahat = NULL, intercept = NULL,
 
   deltahat = threshold_mat(x,matrix(lambda_delta, n,p))##这个没问题吧
   # 根据deltahat设置adaptive lambda_deltavec
-  colSums(deltahat!=0)
-  colSums(data$outlier!=0)
+  # colSums(deltahat!=0)
+  # colSums(data$outlier!=0)
 
   xc = x - deltahat
   zetahat = rep(0,n)
