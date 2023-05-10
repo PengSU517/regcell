@@ -10,7 +10,7 @@ getDoParWorkers()
   ps = c(20, 50, 100, 200)
   prs = c(5, 10)
   es = c(0.05)
-  sigmas = c(1,2)
+  sigmas = c(1,3)
   rs = c(0.5)
   gammas = c(6)
   dfs = Inf
@@ -107,7 +107,7 @@ mtds = list(
       rst
     }
 
-  save(result, file = "result_debug_0330.RData")
+  save(result, file = "result_debug_0411.RData")
 }
 
 

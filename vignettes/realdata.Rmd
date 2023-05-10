@@ -60,6 +60,17 @@ pairs(cbind(y,xscreen[,1:5]))
 datascreen = cbind(y,xscreen)
 # save(datascreen, file = "datascreen_corh.RData")
 # save(datascreen, file = "datascreen.RData")
+
+redundant = sort(sample(101:dim(xnormal)[2],100))
+
+xscreen2 = xnormal[,orders][,c(1:100, redundant)]
+corhs2 = apply(xscreen2,2, function(xvec){robustHD::corHuber(xvec,y)}) 
+sort(abs(corhs2), decreasing = T)[1]
+# barplot(abs(corhs2))
+# pairs(cbind(y,xscreen[,1:5]))
+
+datascreen2 = cbind(y,xscreen2)
+save(datascreen2, file = "datascreen_corh2.RData")
 ```
 
 ```{r}
@@ -132,34 +143,38 @@ colnames(betamat) = names(mtds)
 
 betamat[which(rowSums(betamat!=0)==5),]
 colSums(betamat!=0)
+sum(rowSums(betamat[,-1]!=0)==5)
 ```
 
 
 
 
-```{r fig.width=6, fig.height=5}
+```{r fig.width=15, fig.height=2}
 library(cellWise)
 library(tidyverse)
 
-y = datascreen[,1]
-x = datascreen[,2:101]
+# y = datascreen[,1]
+# x = datascreen[,2:101]
+
+x = bodyfat[,-(1:3)]
 
 # x = datascreen[1:40,1:30]
 
 fit1 <- cellWise::DDC(x)
-p1 = newcellmap(fit1$remX, fit1$stdResid, columnlabels = c(1,rep(" ",dim(x)[2]-2),dim(x)[2]), rowlabels = c(1,rep(" ",dim(x)[1]-2),dim(x)[1]), columnangle = 0,
+p1 = cellWise::cellMap(fit1$remX, fit1$stdResid, columnlabels = c(1,rep(" ",dim(x)[2]-2),dim(x)[2]), rowlabels = c(1,rep(" ",dim(x)[1]-2),dim(x)[1]), columnangle = 0,
         rowtitle = "Observations", columntitle = "Genes", sizetitles = 2,adjustrowlabels = 0.5, adjustcolumnlabels = 0.5)+
    theme(axis.text.x = element_text(size = 12),
         axis.text.y = element_text(size = 12),
         axis.title.x = element_text(size = 14),
         axis.title.y = element_text(size = 14),
         legend.title = element_text(size=14), #change legend title font size
-        legend.text = element_text(size=12))
+        legend.text = element_text(size=12)) + coord_flip()
 p1
 
 #ggsave( "tbone.eps", plot = p1, width = 6, height = 5)
 
 ```
+
 
 ```{r}
 corrplot::corrplot(cor(x), method = "shade", tl.col ="black",shade.col = NA, tl.srt = 45, order = "FPC")
@@ -265,6 +280,136 @@ boxplot(t(errormat))
 apply(errormat, 1, sd)
 ```
 
+```{r}
+
+```
+
+
+
+```{r}
+library(robustbase)
+data("tuna", package = "bayesm")
+data("data_philips", package = "cellWise")
+data("data_brands", package = "cellWise")
+data("data_glass", package = "cellWise")
+pairs(data_glass[,10:15])
+
+
+data("bodyfat", package = "mfp")
+data("TopGear", package = "robustHD")
+data("coleman",package = "robustbase")
+data("nci60", package = "robustHD")
+data("aircraft", package="robustbase")
+data("airmay", package="robustbase")
+data("Animals2", package = "robustbase")
+data(carrots, package = "robustbase")
+data(salinity, package = "robustbase")
+data("biomassTill", package="robustbase")
+data(bushfire, package="robustbase")
+data(vaso)
+data(carrots, package="robustbase")
+data(CrohnD, package="robustbase")
+data(cushny, package="robustbase")
+data(education, package="robustbase")
+data(epilepsy, package="robustbase")
+data(kootenay)
+data(starsCYG, package = "robustbase")
+data(stackloss)
+glimpse(TopGear)
+
+# x = log(TopGear[,c(7,9,10,11)])
+x = cbind(log(TopGear[,c(7,9, 10, 12,14:17)]),TopGear$Acceleration)
+y = TopGear[,13]
+
+hist(TopGear$Acceleration)
+
+dat = na.omit(cbind(y,x)) 
+pairs(dat)
+x = dat[,-1]
+y = dat[,1]
+xtrain = as.matrix(robustHD::robStandardize(x))
+ytrain = robustHD::robStandardize(y)
+
+
+# dat = as.data.frame(data_brands)
+# xtrain = as.matrix(dat[,1:6])
+# ytrain = dat[,7]
+# ytrain = dat$y
+# xtrain = as.matrix(robustHD::robStandardize(dat[,2:14]))
+# xtrain = as.matrix(robustHD::robStandardize(bodyfat[,6:17]))
+# ytrain = bodyfat$brozek-median(bodyfat$brozek)
+
+```
+
+
+
+```{r}
+data(auto_mpg, package = "ascentTraining")
+```
+
+
+
+
+```{r}
+library(tidyverse)
+data("Boston", package = "MASS")
+ytrain = log(Boston$medv)
+Boston = Boston %>% mutate(loglstat = log(lstat), logdis = log(dis), logcrim = log(crim))
+predictors = Boston[, c("loglstat", "rm", "logdis", "tax", "ptratio","nox", "age", "black", "logcrim")]
+xtrain = as.matrix(predictors)
+
+corrs = cor(predictors)
+rownames(corrs) = colnames(corrs) = c("log(lstat)", "rm", "log(dis)", "tax", "ptratio","nox", "age", "black", "log(crim)")
+corrsplot = corrplot::corrplot(corrs, method = "shade", tl.col ="black",shade.col = NA, tl.srt = 45, order = "FPC")
+corrsplot
+
+pairs(x)
+```
+
+
+```{r}
+data("Diabetes",package = "heplots")
+pairs(log(Diabetes[,1:5]))
+```
+
+
+```{r}
+dat = read.table("slump_test.data.txt", sep = ",", header = T)
+
+pairs(dat[,-1])
+
+xtrain = as.matrix(dat[,2:8])
+ytrain = dat[,9]
+```
+
+
+
+# Swiss nutrition data
+
+```{r}
+library(tidyverse)
+dat = readxl::read_xlsx("swiss.xlsx")
+
+dat[,12]
+dim(dat)
+
+
+
+labels = (1:39)*3 + 9
+labels2 = (2:11)*3 + 9 # ingredient with water
+dat1 = dat[,labels]
+dat2 = dat[,labels2]
+
+glimpse(dat2)
+
+dat3 = dat2 %>% mutate(across(.fns = as.numeric))
+# dat4 = dat3 %>% mutate_all(~replace(., is.na(.), 0))
+dat5 = log(dat3)
+pairs(log(dat5))
+
+ytrain = dat5$`Cholesterol (mg)`
+xtrain = dat5[,-5]
+```
 
 
 
@@ -278,36 +423,60 @@ apply(errormat, 1, sd)
 
 
 ```{r}
-fit1 = Rlars(ytrain,xtrain)
+fit1 = regcell::Rlars(ytrain,xtrain)
 # sort(fit1$betahat, decreasing = T)[1:10]
+fit1$betahat
 fit1$sigmahat
 
-res2 = ytest - fit1$betahat[1] - xtest%*%fit1$betahat[-1]
-sd(res2)
+# res2 = ytest - fit1$betahat[1] - xtest%*%fit1$betahat[-1]
+# sd(res2)
+
+```
+
+```{r}
+# ytrain = datascreen[,1]
+# xtrain = as.matrix(datascreen[,-1])
+fit2 = regcell::sregcell_std(ytrain, xtrain, penal = 1)
+fit2$intercept_hat_post
+fit2$betahat_post
+
+sum(fit2$betahat_post!=0)
 ```
 
 
 ```{r}
 fit3 = robustHD::sparseLTS(xtrain, ytrain)
+fit3$coefficients
 fit3$raw.scale
-res3 = ytest - fit3$coefficients[1] - xtest%*%fit3$coefficients[-1]
-sd(res3)
+# res3 = ytest - fit3$coefficients[1] - xtest%*%fit3$coefficients[-1]
+# sd(res3)
+anyNA(x)
 ```
 
 ```{r}
 fit4 = regcell::slm(ytrain,xtrain, type = "lasso")
-sort(fit4$betahat, decreasing = T)[1:10]
-fit4$sigmahat
-res4 = ytest - fit4$betahat[1] - xtest%*%fit4$betahat[-1]
-sd(res4)
+fit4$betahat
+# sort(fit4$betahat, decreasing = T)[1:10]
+# fit4$sigmahat
+# res4 = ytest - fit4$betahat[1] - xtest%*%fit4$betahat[-1]
+# sd(res4)
 ```
 
 ```{r}
 fit5 = shootings::sparseshooting(xtrain,ytrain)
-
-res5 = ytest - fit5$coef[1] - xtest%*%fit5$coef[-1]
-sd(res5)
+fit5$coef
+# res5 = ytest - fit5$coef[1] - xtest%*%fit5$coef[-1]
+# sd(res5)
 ```
+
+
+
+
+```{r}
+lm(ytrain~xtrain)
+```
+
+
 
 
 
@@ -338,16 +507,22 @@ result2$res = as.numeric(result2$res)
 
 
 ```{r}
-summ2 = result2 %>% group_by(p, method) %>% summarise(RMSPE = round(mean(res^2),2), MAPE = round(mean(abs(res)),2))
-summ2
-xtable::xtable(t(summ2))
+library(tidyverse)
+summ3 = result2 %>% group_by(method) %>% summarise(
+  RMSPE = round(mean(res^2),2), 
+  RTMSPE = round(mean(sort(res^2, decreasing = FALSE)[1:200]),2),
+  MAPE = round(mean(abs(res)),2))
+summ3
+# xtable::xtable(t(summ3))
+
+boxplot(res~method, data = result2,  ylab="LOO predictor error", xlab = "")
 ```
 
 
 
 ```{r fig.width=6, fig.height=3}
 p1 = ggplot(data = result2)+
-  geom_boxplot(aes(fill = p,x = method, y = res),outlier.size = 0.2, lwd = 0.4)+
+  geom_boxplot(aes(x = method, y = res),outlier.size = 0.2, lwd = 0.4)+
   facet_grid(.~., scales = "free", space = "free_x") +
   #scale_y_continuous(limits = quantile(result3$MAPE, c(0, 0.95)))+
   # ylim(0,6)+
@@ -388,7 +563,7 @@ summ2 = result2 %>% group_by(method, pr, sigma) %>% summarise(
   TN = round(mean(tn),2),
   F1 = round(mean(F1),2))
 
-summ3 = summ2 %>% filter(pr==10, sigma==1)
+summ3 = summ2 %>% filter(pr==10, sigma==0.5)
 # xtable::xtable(t(summ3))
 ```
 

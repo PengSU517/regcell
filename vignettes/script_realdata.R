@@ -30,9 +30,10 @@ x = as.matrix(robustHD::robStandardize(datascreen[,-1]))
 result <- foreach(mtd = 1:length(mtds),
                   .packages = c("lars", "robustHD", "robustbase" , "mmlasso",
                                 "shootings", "cellWise", "regcell", "purrr", "robcovsel"))%:%
-  foreach(p = c(100))%:%
+  foreach(p = c(100,200))%:%
   foreach(obs = 1:84)%dopar%{
 
+    set.seed(1)
     x = x[,1:p]
     ytrain = y[-obs]
     xtrain = as.matrix(x[-obs,])
@@ -48,7 +49,7 @@ result <- foreach(mtd = 1:length(mtds),
   }
 
 
-save(result, file = "result_real_data_corh_0425.RData")
+save(result, file = "result_real_data_corh_0504.RData")
 
 
 
