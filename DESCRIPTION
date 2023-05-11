@@ -1,12 +1,12 @@
 Package: regcell
 Type: Package
-Title: What the package does (short line)
+Title: Cellwise regularized robust sparse regression
 Version: 1.0
 Date: 2022-08-28
 Author: Peng SU
 Maintainer: Peng SU <peng.su@sydney.edu.au>
-Description: Regression under cellwise contamination
-License: What license is it under?
+Description: Sparse regression under cellwise contamination
+License: GPL-2
 Imports: Rcpp (>= 1.0.7)
 LinkingTo: Rcpp, RcppArmadillo
 Suggests: 
