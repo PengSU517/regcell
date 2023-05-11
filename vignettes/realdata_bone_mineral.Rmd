@@ -12,10 +12,10 @@ knitr::opts_chunk$set(echo = TRUE)
 
 
 ```{r}
-data("datascreen_corh")
+dat = data("datascreen_corh", package = "regcell")
 
-y = datascreen[,1] # t-bone scores
-x = as.matrix(datascreen[,2:101]) # gene expression
+y = dat[,1] # t-bone scores
+x = as.matrix(dat[,2:101]) # gene expression
 
 set.seed(1)
 inTrain <- caret::createDataPartition(y, p = 0.7)[[1]]
