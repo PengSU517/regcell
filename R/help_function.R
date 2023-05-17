@@ -62,7 +62,7 @@ slm = function(y,x, type = "lasso"){
 #' data = genevar()
 #' y = data$y
 #' x = data$x
-#' fit = lasso.cv(y,x)
+#' fit = lassocv(y,x)
 #'
 lassocv = function(y,x){
   fit = glmnet::cv.glmnet(x, y)

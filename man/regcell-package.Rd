@@ -30,8 +30,9 @@ cellwise contamination; sparse regression; robust variable selection
 ~~ \code{\link[<pkg>:<pkg>-package]{<pkg>}} ~~
 }
 \examples{
-y = data_screened$y
-x = data_screened[,-1]
+data = genevar()
+y = data$y
+x = data$x
 fit = sregcell_std(y,x)
 
 }

@@ -276,7 +276,7 @@ robstd = function(x, centerf = median, scalef = qnscale, df = df){
 #' data = genevar()
 #' y = data$y
 #' x = data$x
-#' fit = sregcell_lambda_std(y,x)
+#' fit = sregcell_std(y,x)
 sregcell_std = function(y,x,
                         scale.method = qnscale,  df = Inf,
                         softbeta = TRUE, softdelta = TRUE, softzeta = TRUE,
