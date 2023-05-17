@@ -18,12 +18,31 @@ knitr::opts_chunk$set(
 library(regcell)
 ```
 
+
+# The (screened) bone mineral density data
 ```{r}
 data("datascreen_corh", package = "regcell")
 
 y = datascreen[,1]
-x = as.matrix(datascreen[,2:101])
+x = datascreen[,2:101]
+```
 
+## Outlier detection
+```{r}
+fit1 <- cellWise::DDC(x)
+p1 = cellWise::cellMap(fit1$stdResid, columnlabels = c(1,rep(" ",dim(x)[2]-2),dim(x)[2]), rowlabels = c(1,rep(" ",dim(x)[1]-2),dim(x)[1]), columnangle = 0,
+        rowtitle = "Observations", columntitle = "Genes", sizetitles = 2,adjustrowlabels = 0.5, adjustcolumnlabels = 0.5)+
+   theme(axis.text.x = element_text(size = 12),
+        axis.text.y = element_text(size = 12),
+        axis.title.x = element_text(size = 14),
+        axis.title.y = element_text(size = 14),
+        legend.title = element_text(size=14), #change legend title font size
+        legend.text = element_text(size=12)) 
+p1
+```
+
+## Model training
+```{r}
 inTrain <- caret::createDataPartition(y, p = 0.7)[[1]]
 
 
@@ -32,15 +51,98 @@ xtrain = x[inTrain,]
 
 ytest = y[-inTrain]
 xtest = x[-inTrain,]
+```
 
-
+```{r}
+#fit a model using CR-Lasso
 fit0 = sregcell_std(ytrain,xtrain, penal = 1, softbeta = T, prob = 0.99, softzeta = 1, maxiter = 30)
 res = ytest - fit0$intercept_hat - xtest%*%fit0$betahat
 
+#fit a model using RLars
 fit1 = Rlars(ytrain,xtrain)
 res2 = ytest - fit1$betahat[1] - xtest%*%fit1$betahat[-1]
+```
 
+```{r}
 hist(res)
 hist(res2)
 ```
+
+
+
+
+
+# The Bodyfat dataset
+
+## methods compared
+```{r}
+mtds = list(
+  # sss = function(y, x){shootings::sparseshooting(x,y)$coef},
+  rlars = function(y, x){regcell::Rlars(y, x)$betahat},
+  # mmlasso = function(y,x){mmlasso::mmlasso(x,y)$coef.MMLasso.ad},
+  slts = function(y,x){robustHD::sparseLTS(x,y)$coefficients},
+
+  cell_lasso_post = function(y,x){
+    fit = regcell::sregcell_std(y = y, x = x, softbeta = TRUE,
+                                lambda_zeta = 1, penal = 1, penaldelta = 0, prob = 0.99995)##这里好奇怪啊
+    return(c(fit$intercept_hat_post, fit$betahat_post))
+  },
+
+  lasso  = function(y,x){
+    return(regcell::slm2(y,x)$betahat)
+  }
+
+)
+
+```
+
+```{r}
+library(mfp)
+data("bodyfat")
+y = bodyfat$brozek
+x = robustHD::robStandardize(bodyfat[,-c(1:4)])
+x = as.matrix(x)
+```
+
+## Leave-one-out Cross-Validation
+```{r eval = FALSE}
+library(doParallel)
+result <- foreach(mtd = 1:length(mtds),
+                  .packages = c("lars", "robustHD", "robustbase" , "mmlasso",
+                                "shootings", "cellWise", "regcell", "purrr", "robcovsel", "mfp"))%:%
+  foreach(obs = 1:dim(x)[1])%dopar%{
+
+    ytrain = y[-obs]
+    xtrain = as.matrix(x[-obs,])
+    ytest = y[obs]
+    xtest = x[obs,]
+
+    betahat = mtds[[mtd]](ytrain,xtrain)
+
+    res = ytest - betahat[1] - sum(xtest*betahat[-1])
+    rst = c(mtd = names(mtds)[mtd], n = obs, res = res)
+
+    rst
+  }
+
+
+save(result, file = "result_bodyfat.RData")
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
