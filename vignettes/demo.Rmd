@@ -90,7 +90,7 @@ mtds = list(
   },
 
   lasso  = function(y,x){
-    return(regcell::slm2(y,x)$betahat)
+    return(regcell::lassocv(y,x)$betahat)
   }
 
 )
