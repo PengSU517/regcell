@@ -24,11 +24,12 @@ library(regcell)
 data("datascreen_corh", package = "regcell")
 
 y = datascreen[,1]
-x = datascreen[,2:101]
+x = as.matrix(datascreen[,2:101])
 ```
 
 ## Outlier detection
 ```{r}
+library(tidyverse)
 fit1 <- cellWise::DDC(x)
 p1 = cellWise::cellMap(fit1$stdResid, columnlabels = c(1,rep(" ",dim(x)[2]-2),dim(x)[2]), rowlabels = c(1,rep(" ",dim(x)[1]-2),dim(x)[1]), columnangle = 0,
         rowtitle = "Observations", columntitle = "Genes", sizetitles = 2,adjustrowlabels = 0.5, adjustcolumnlabels = 0.5)+
