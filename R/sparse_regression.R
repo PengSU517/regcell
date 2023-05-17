@@ -4,26 +4,7 @@ require("robustbase")
 require("robcovsel")
 
 
-#' find the max lambda value for variable selection
-#'
-#' @param y the input response
-#' @param x the input designmatrix
-#' @param betahat an initial estimate of beta
-#' @param intercept an initial estimate of intercept
-#' @param deltahat an initial estimate of outliers in x
-#' @param zetahat an initial estimate of outliers in y
-#' @param softbeta indicator of whether using lasso/scad for beta
-#' @param lambda_delta tuning parameter of delta
-#' @param softdelta indicator of whether using lasso/scad for delta
-#' @param lambda_zeta
-#' @param softzeta indicator of whether using lasso/scad for zeta
-#' @param alpha
-#' @param maxiter
-#'
-#' @return
-#' @export
-#'
-#' @examples
+
 lambdamax_beta = function(y, x, betahat, intercept,
                           deltahat, zetahat,
                           softbeta,
@@ -59,64 +40,43 @@ lambdamax_beta = function(y, x, betahat, intercept,
 
 }
 
-# lambdamax2_beta = function(y,x,betahat,intercept, softbeta){
-#
-#   n = dim(x)[1]
-#   p = dim(x)[2]
-#
-#   lambdamax = 20*max(t(x)%*%(y-mean(y)))
-#   outputs = reg_beta(y = y, x = x, betahat = betahat, intercept = intercept,
-#                           alambdavec_beta = rep(lambdamax,p), softbeta = softbeta, maxiterbeta = 100)
-#   lambdamax = max(abs(outputs$mgradient))*1.01
-#   return(list(lambdamax = lambdamax))
-#
-# }
 
 
-# lambdamax3_beta = function(y, x, betahat, intercept,
-#                            deltahat, zetahat,
-#                            softbeta,
-#                            lambda_delta, softdelta,
-#                            lambda_zeta, softzeta,
-#                            alpha, maxiter){
-#
-#   n = dim(x)[1]
-#   p = dim(x)[2]
-#
-#   lambdamax = 2*max(t(x - deltahat)%*%(y-intercept - zetahat))
-#   outputs = reg_beta_delta(y = y, x = x, betahat = betahat, intercept = intercept,
-#                            deltahat = deltahat, zetahat = zetahat,
-#                            lambda_beta = lambdamax, softbeta = softbeta,
-#                            lambda_delta = lambda_delta, softdelta = softdelta,
-#                            lambda_zeta = lambda_zeta, softzeta = softzeta,
-#                            alpha = alpha, maxiter = maxiter)
-#   #outputs$mgradient
-#   lambdamax = max(abs(outputs$mgradient))*1.01
-#   return(list(lambdamax = lambdamax))
-# }
 
-
-## Cellwise regularized robust sparse regression (with a grid of lambdas)
-#' Title
+#' robust sparse regression under cellwise contaminaton (with a grid of lambdas)
 #'
-#' @param y
-#' @param x
-#' @param betahat
-#' @param intercept
-#' @param softbeta
-#' @param softdelta
-#' @param softzeta
-#' @param lambda_delta
-#' @param lambda_zeta
-#' @param alpha
-#' @param penal
-#' @param penaldelta
-#' @param maxiter
+#' @param y response
+#' @param x design matrix
+#' @param betahat initial estimate of beta
+#' @param intercept initial estimate of intercept
+#' @param softbeta whether to use soft/hard threshold for beta
+#' @param softdelta whether to use soft/hard threshold for delta(outliers in x)
+#' @param softzeta whether to use soft/hard threshold for zeta(outliers in y)
+#' @param lambda_delta tuning parameter of delta
+#' @param lambda_zeta tuning parameter of zeta
+#' @param alpha the importance factor of the regression loss (between 0-1, by default is 0.5)
+#' @param penal the penalty parameter for model selection (by default is 1, equivalent to BIC )
+#' @param penaldelta the penalty of number of detected outliers (for debug, by default is 0)
+#' @param maxiter number of interations
 #'
 #' @return
+#' betahat: the estimated beta
+#'
+#' intercept_hat: the estiamted intercept
+#'
+#' betahat_opt: the estimated beta with post-cellwise-robust regression
+#'
+#' intercept_opt: the estimated intercept with post-cellwise-robust regression
+
 #' @export
 #'
 #' @examples
+#'
+#' data = genevar()
+#' y = data$y
+#' x = data$x
+#' fit = sregcell(y,x)
+#'
 sregcell = function(y,x, betahat = NULL, intercept = NULL,
                     softbeta = TRUE, softdelta = TRUE, softzeta = TRUE,
                     lambda_delta = 2.56, lambda_zeta = 2.56, alpha = 0.5,
@@ -128,10 +88,7 @@ sregcell = function(y,x, betahat = NULL, intercept = NULL,
   p = dim(x)[2]
 
 
-  deltahat = threshold_mat(x,matrix(lambda_delta, n,p))##这个没问题吧
-  # 根据deltahat设置adaptive lambda_deltavec
-  # colSums(deltahat!=0)
-  # colSums(data$outlier!=0)
+  deltahat = threshold_mat(x,matrix(lambda_delta, n,p))
 
   xc = x - deltahat
   zetahat = rep(0,n)
@@ -179,41 +136,6 @@ sregcell = function(y,x, betahat = NULL, intercept = NULL,
   ic = regloss + 2*penaltylossy + penal*log(n)*activebeta + penaldelta*activedeltabeta
   icadj = ic
   icadj[colactivedelta>(length(y)*0.3)] = NA
-  # penalize active delta
-  # cs-lasso is good but scad is bad
-
-  # plot(ic)
-  # plot(activebeta, ic)
-
-
-  # ic = alpha*regloss + (1-alpha)*scaleloss + lambda_delta*penaltyloss + 2*log(n)*activeseq
-  # ic = alpha*regloss + (1-alpha)*scaleloss + lambda_delta*(penaltylossx + penaltylossy) + log(n)*activebeta
-  # the original bic selection is bad，predictionnot well， 在zeta = 0.5时
-
-  # ic = alpha*regloss + (1-alpha)*scaleloss + 2*(1-alpha)*penaltylossx + 2*(alpha)*penaltylossy + penal*log(n)*activebeta
-  # the classic bic
-  # zeta = 0.5 lasso非常差
-  # zeta= 1 many outlier
-
-  # ic = regloss + 2*penaltylossy + penal*log(n)*activebeta
-  # 这样的话scad非常差
-  # ic = alpha*regloss + 2*(alpha)*penaltylossy + penal*log(n)*activebeta
-  # only consider regression loss
-  # zeta =1, lasso and post-lasso is very good but with a few outliers, scad is worse with little contamination
-
-  # ic = alpha*regloss + (1-alpha)*scaleloss + 2*(1-alpha)*activedelta + 2*(alpha)*penaltylossy + log(n)*activebeta
-  # penalize active delta
-  # cs-lasso is good but scad is bad
-
-  # ic = 2*(regloss + 2*penaltylossy) + 10*log(n)*activebeta
-
-  # penalize how many non-zero delta in active variables
-  # penalize active delta
-  # cs-lasso is good but scad is bad
-
-
-  # ic = alpha*regloss + (1-alpha)*scaleloss + 2*(alpha)*penaltylossy + (activebeta + activedelta)
-  # penalize on delta
 
 
   label = which.min(icadj)
@@ -254,28 +176,36 @@ sregcell = function(y,x, betahat = NULL, intercept = NULL,
 
 #' Cellwise regularized robust sparse regression (with a specific lambda)
 #'
-#' @param y
-#' @param x
-#' @param softbeta
-#' @param softdelta
-#' @param softzeta
-#' @param lambda_delta
-#' @param lambda_zeta
-#' @param lambda
-#' @param alpha
-#' @param maxiter
+#' @param y response
+#' @param x design matrix
+#' @param softbeta whether to use soft/hard threshold for beta
+#' @param softdelta whether to use soft/hard threshold for delta(outliers in x)
+#' @param softzeta whether to use soft/hard threshold for zeta(outliers in y)
+#' @param lambda_delta tuning parameter of delta
+#' @param lambda_zeta tuning parameter of zeta
+#' @param lambda tuning parameter of beta
+#' @param alpha the importance factor of the regression loss (between 0-1, by default is 0.5)
+#' @param maxiter number of interations
 #'
 #' @return
+#' fit
 #' @export
 #'
 #' @examples
+#'
+#'
+#' data = genevar()
+#' y = data$y
+#' x = data$x
+#' fit = sregcell_lambda(y,x, lambda = 1)
+#'
 sregcell_lambda = function(y,x, softbeta = TRUE, softdelta = TRUE, softzeta = TRUE,
                            lambda_delta = 2.56, lambda_zeta = 2.56, lambda = 0, alpha = 0.5, maxiter = 100){
 
   n = dim(x)[1]
   p = dim(x)[2]
 
-  delta = threshold_mat(x,matrix(lambda_delta, n,p))##这个没问题吧
+  delta = threshold_mat(x,matrix(lambda_delta, n,p))
   xc = x - delta
   intercept = 0
   zetahat = rep(0,n)
@@ -315,6 +245,38 @@ robstd = function(x, centerf = median, scalef = qnscale, df = df){
 }
 
 
+#' robust sparse regression under cellwise contamination with a grid of lambdas (standardize predictors first)
+#'
+#' @param y response
+#' @param x design matrix
+#' @param scale.method method we used to obtain robust scales, by default is qn
+#' @param df degrees of freedom of the assumed distribution
+#' @param softbeta whether to use soft/hard threshold for beta
+#' @param softdelta whether to use soft/hard threshold for delta(outliers in x)
+#' @param softzeta whether to use soft/hard threshold for zeta(outliers in y)
+#' @param lambda_delta tuning parameter of delta
+#' @param lambda_zeta tuning parameter of zeta
+#' @param prob probability of quantiles, by default is 0.995
+#' @param the importance factor of the regression loss (between 0-1, by default is 0.5)
+#' @param penal the penalty parameter for model selection (by default is 1, equivalent to BIC )
+#' @param penaldelta the penalty of number of detected outliers (for debug, by default is 0)
+#' @param maxiter number of interations
+#'
+#' @return
+#' betahat: the estimated beta
+#'
+#' intercept_hat: the estiamted intercept
+#'
+#' betahat_opt: the estimated beta with post-cellwise-robust regression
+#'
+#' intercept_opt: the estimated intercept with post-cellwise-robust regression
+#' @export
+#'
+#' @examples
+#' data = genevar()
+#' y = data$y
+#' x = data$x
+#' fit = sregcell_lambda_std(y,x)
 sregcell_std = function(y,x,
                         scale.method = qnscale,  df = Inf,
                         softbeta = TRUE, softdelta = TRUE, softzeta = TRUE,
@@ -339,20 +301,7 @@ sregcell_std = function(y,x,
     xstd = stdrst$x
   }
 
-  { # initialization #########could be improved
-    # gausscor = robcovsel::paircorxyf(x,y)
-    # thresh = sort(abs(gausscor), decreasing = T)[min(10,p)]
-    # indx = which(abs(gausscor)>=thresh)
-    # xscreen = x[,indx]
-    #
-    # ximp = purrr::quietly(cellWise::DDC)(xscreen)$result$Ximp
-    # fit000 = suppressWarnings(robustbase::lmrob(y~ximp))
-    # sigmahat = fit000$scale
-
-    # fit00 = robcovsel::covlasso(xstd,y)
-    # sigmahat = sqrt(fit00$sigma2hat_opt)
-
-    set.seed(2)
+  { set.seed(2)
     fit0 = regcell::Rlars(y,xstd)
     sigmahat = fit0$sigmahat # tend to overestimate
 

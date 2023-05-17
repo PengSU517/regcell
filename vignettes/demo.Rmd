@@ -1,0 +1,46 @@
+---
+title: "demo"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{demo}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(regcell)
+```
+
+```{r}
+data("datascreen_corh", package = "regcell")
+
+y = datascreen[,1]
+x = as.matrix(datascreen[,2:101])
+
+inTrain <- caret::createDataPartition(y, p = 0.7)[[1]]
+
+
+ytrain = y[inTrain]
+xtrain = x[inTrain,]
+
+ytest = y[-inTrain]
+xtest = x[-inTrain,]
+
+
+fit0 = sregcell_std(ytrain,xtrain, penal = 1, softbeta = T, prob = 0.99, softzeta = 1, maxiter = 30)
+res = ytest - fit0$intercept_hat - xtest%*%fit0$betahat
+
+fit1 = Rlars(ytrain,xtrain)
+res2 = ytest - fit1$betahat[1] - xtest%*%fit1$betahat[-1]
+
+hist(res)
+hist(res2)
+```
+

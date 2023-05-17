@@ -13,7 +13,7 @@
 The DESCRIPTION file:
 \packageDESCRIPTION{regcell}
 \packageIndices{regcell}
-~~ An overview of how to use the package, including the most important functions ~~
+robust sparse regression under cellwise contamination
 }
 \author{
 \packageAuthor{regcell}
@@ -21,14 +21,17 @@ The DESCRIPTION file:
 Maintainer: \packageMaintainer{regcell}
 }
 \references{
-~~ Literature or other references for background information ~~
+will be on arxiv soon
 }
-~~ Optionally other standard keywords, one per line, from file KEYWORDS in the R documentation directory ~~
+cellwise contamination; sparse regression; robust variable selection
 \keyword{ package }
 \seealso{
 ~~ Optional links to other man pages, e.g. ~~
 ~~ \code{\link[<pkg>:<pkg>-package]{<pkg>}} ~~
 }
 \examples{
-~~ simple examples of the most important functions ~~
+y = data_screened$y
+x = data_screened[,-1]
+fit = sregcell_std(y,x)
+
 }

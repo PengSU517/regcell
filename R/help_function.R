@@ -2,7 +2,26 @@ require(robustbase)
 require(robustHD)
 
 
-## robust lars ###tried to use AIC
+
+#' robust Lars
+#'
+#' @param y response
+#' @param x design matrix
+#'
+#' @return
+#' betahat: estimated beta
+#'
+#' sigmahat: estimated scale
+#'
+#' res: residuals
+#' @export
+#'
+#' @examples
+#'
+#' data = genevar()
+#' y = data$y
+#' x = data$x
+#' fit = Rlars(y,x)
 Rlars = function(y, x){
   fit = suppressWarnings(robustHD::rlars(x,y))
   #winsorize = F, prob = 0.99,
@@ -30,7 +49,22 @@ slm = function(y,x, type = "lasso"){
 }
 
 
-slm2 = function(y,x){
+#' Lasso with cross validation
+#'
+#' @param y response
+#' @param x the design matrix
+#'
+#' @return
+#' betahat: the estimated regression coefficient vector
+#' @export
+#'
+#' @examples
+#' data = genevar()
+#' y = data$y
+#' x = data$x
+#' fit = lasso.cv(y,x)
+#'
+lassocv = function(y,x){
   fit = glmnet::cv.glmnet(x, y)
   betatilde = as.numeric(coef(fit, s = "lambda.min"))
   return(list(betahat = betatilde))

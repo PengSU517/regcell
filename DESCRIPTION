@@ -14,3 +14,5 @@ Suggests:
     knitr
 VignetteBuilder: knitr
 URL: https://pengsu517.github.io/regcell/
+RoxygenNote: 7.2.1
+Encoding: UTF-8
