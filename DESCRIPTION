@@ -2,7 +2,7 @@ Package: regcell
 Type: Package
 Title: Cellwise regularized robust sparse regression
 Version: 1.0
-Date: 2022-08-28
+Date: 2023-05-12
 Author: Peng SU
 Maintainer: Peng SU <peng.su@sydney.edu.au>
 Description: Sparse regression under cellwise contamination

@@ -6,17 +6,17 @@ require("robcovsel")
 
 #' find the max lambda value for variable selection
 #'
-#' @param y
-#' @param x
-#' @param betahat
-#' @param intercept
-#' @param deltahat
-#' @param zetahat
-#' @param softbeta
-#' @param lambda_delta
-#' @param softdelta
+#' @param y the input response
+#' @param x the input designmatrix
+#' @param betahat an initial estimate of beta
+#' @param intercept an initial estimate of intercept
+#' @param deltahat an initial estimate of outliers in x
+#' @param zetahat an initial estimate of outliers in y
+#' @param softbeta indicator of whether using lasso/scad for beta
+#' @param lambda_delta tuning parameter of delta
+#' @param softdelta indicator of whether using lasso/scad for delta
 #' @param lambda_zeta
-#' @param softzeta
+#' @param softzeta indicator of whether using lasso/scad for zeta
 #' @param alpha
 #' @param maxiter
 #'
