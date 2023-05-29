@@ -137,7 +137,7 @@ List reg_beta(arma::vec yclean, arma::mat xclean, arma::vec betahat, double inte
     betapos = betahat + steptvec%mgradient;
 
     betanew = threshold_vec(betapos, steptvec%alambdavec_beta, softbeta);
-    if(((abs(betanew-betahat)).max() < pow(10, -6))&(mean(res) < pow(10, -6))) {break;};
+    if((abs(betanew-betahat)).max() < pow(10, -6)) {break;};
     betahat = betanew;
     // too slow
     //res = yclean - xclean*betahat;//residuals
