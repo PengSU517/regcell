@@ -1,7 +1,5 @@
 require("cellWise")
-require("purrr")
 require("robustbase")
-require("robcovsel")
 
 
 

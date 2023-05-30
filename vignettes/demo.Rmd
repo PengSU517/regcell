@@ -21,10 +21,10 @@ library(regcell)
 
 # The (screened) bone mineral density data
 ```{r}
-data("datascreen_corh", package = "regcell")
+dat = regcell::genevar(n = 200, p = 100, e = 0.05, sigma = 3)
 
-y = datascreen[,1]
-x = as.matrix(datascreen[,2:101])
+y = dat$y
+x = dat$x
 ```
 
 ## Outlier detection
@@ -32,7 +32,7 @@ x = as.matrix(datascreen[,2:101])
 library(tidyverse)
 fit1 <- cellWise::DDC(x)
 p1 = cellWise::cellMap(fit1$stdResid, columnlabels = c(1,rep(" ",dim(x)[2]-2),dim(x)[2]), rowlabels = c(1,rep(" ",dim(x)[1]-2),dim(x)[1]), columnangle = 0,
-        rowtitle = "Observations", columntitle = "Genes", sizetitles = 2,adjustrowlabels = 0.5, adjustcolumnlabels = 0.5)+
+        rowtitle = "Observations", columntitle = "Variables", sizetitles = 2,adjustrowlabels = 0.5, adjustcolumnlabels = 0.5)+
    theme(axis.text.x = element_text(size = 12),
         axis.text.y = element_text(size = 12),
         axis.title.x = element_text(size = 14),
@@ -56,7 +56,7 @@ xtest = x[-inTrain,]
 
 ```{r}
 #fit a model using CR-Lasso
-fit0 = sregcell_std(ytrain,xtrain, penal = 1, softbeta = T, prob = 0.99, softzeta = 1, maxiter = 30)
+fit0 = sregcell_std(ytrain,xtrain, penal = 1, softbeta = T, prob = 0.995, softzeta = 1, maxiter = 30)
 res = ytest - fit0$intercept_hat - xtest%*%fit0$betahat
 
 #fit a model using RLars
@@ -65,8 +65,10 @@ res2 = ytest - fit1$betahat[1] - xtest%*%fit1$betahat[-1]
 ```
 
 ```{r}
-hist(res)
-hist(res2)
+df = data.frame(res = c(res, res2), 
+                method = c(rep("CR-Lasso", length(res)),rep("RLars", length(res)) ))
+boxplot(res~method, outline = FALSE, data = df)
+
 ```
 
 
