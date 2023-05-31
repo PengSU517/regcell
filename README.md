@@ -41,7 +41,7 @@ Replace `C:\path\to\gfortran\lib` with the actual path where the gfortran librar
 
 Retry package installation: After installing gfortran and setting the LD_LIBRARY_PATH environment variable, attempt to install the 'regcell' package again using the following command:
 
-```
+```r
 remotes::install_github("PengSU517/regcell")
 ```
 
