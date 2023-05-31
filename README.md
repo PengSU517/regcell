@@ -10,7 +10,7 @@ To get started, you can install the package using:
 remotes::install_github("PengSU517/regcell", build = FALSE)
 ```
 
-If there are some problems in installing the package, you can try the following steps:
+If there are some problems with `gfortran`, you can try the following steps:
 
 Install `gfortran`: Ensure that the gfortran compiler and associated libraries are installed on your system. You can typically install it through a package manager specific to your operating system. For example, on macOS with Homebrew, you can run the following command to install gfortran:
 
@@ -28,7 +28,7 @@ On Unix-like systems (macOS, Linux, etc.), use the following command to set the 
 export LD_LIBRARY_PATH=/path/to/gfortran/lib:$LD_LIBRARY_PATH
 ```
 
-Replace /path/to/gfortran/lib with the actual path where the gfortran library is installed on your system.
+Replace `/path/to/gfortran/lib` with the actual path where the gfortran library is installed on your system.
 
 
 On Windows, you can set the environment variable through the system settings or by using the setx command:
