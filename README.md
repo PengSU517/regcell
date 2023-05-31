@@ -46,3 +46,8 @@ remotes::install_github("PengSU517/regcell", build = FALSE)
 ```
 
 With the gfortran library properly installed and the environment variable set, the linker should be able to find and link against the library, resolving the previous linker error.
+
+
+
+If there are still some errors, you could extract functions from `R` and `src` folders.
+
