@@ -1,5 +1,13 @@
 useDynLib(regcell, .registration=TRUE)
 importFrom(Rcpp, evalCpp)
+importFrom("robustbase","Qn")
+importFrom("robustHD","rlars", "sparseLTS", "robStandardize")
+importFrom("glmnet", "cv.glmnet")
+importFrom("mvtnorm","rmvt")
+importFrom("cellWise","DDC", "cellMap")
+importFrom("caret","createDataPartition")
+
+
 #exportPattern("^[[:alpha:]]+")
 
 export(sregcell)

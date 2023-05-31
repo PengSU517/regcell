@@ -1,6 +1,6 @@
 require(robustbase)
 require(robustHD)
-
+require(glmnet)
 
 
 #' robust Lars
@@ -33,20 +33,20 @@ Rlars = function(y, x){
 }
 
 ### sparse linear model
-slm = function(y,x, type = "lasso"){
-  n = dim(x)[1]
-  p = dim(x)[2]
-  fit = lars::lars(x, y, type = type, #max.steps = min(n/4, p),
-                   intercept = T)
-
-  bic = fit$RSS + fit$df*log(n)##
-
-  betahat = fit$beta[which.min(bic),]
-  beta0 = mean(y - x%*%betahat)
-  betahat = c(beta0, betahat)
-  sigmahat = sqrt(fit$RSS[which.min(bic)]/n)
-  return(list(betahat = betahat, sigmahat = sigmahat))
-}
+# slm = function(y,x, type = "lasso"){
+#   n = dim(x)[1]
+#   p = dim(x)[2]
+#   fit = lars::lars(x, y, type = type, #max.steps = min(n/4, p),
+#                    intercept = T)
+#
+#   bic = fit$RSS + fit$df*log(n)##
+#
+#   betahat = fit$beta[which.min(bic),]
+#   beta0 = mean(y - x%*%betahat)
+#   betahat = c(beta0, betahat)
+#   sigmahat = sqrt(fit$RSS[which.min(bic)]/n)
+#   return(list(betahat = betahat, sigmahat = sigmahat))
+# }
 
 
 #' Lasso with cross validation
