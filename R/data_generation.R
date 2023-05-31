@@ -16,8 +16,11 @@
 #'
 #' @return
 #' x: design matrix
+#'
 #' xc: clean design matrix
+#'
 #' y: response
+#'
 #' ynew: another response (as an independent test set)
 #' @export
 #'

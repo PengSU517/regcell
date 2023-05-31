@@ -65,7 +65,7 @@
 </ul>
 <p>To get started, you can install the package using:</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu">remotes</span><span class="fu">::</span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"PengSU517/regcell"</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu">remotes</span><span class="fu">::</span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"PengSU517/regcell"</span>, build <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
 <p>If there are some problems in installing the package, you can try the following steps:</p>
 <p>Install <code>gfortran</code>: Ensure that the gfortran compiler and associated libraries are installed on your system. You can typically install it through a package manager specific to your operating system. For example, on macOS with Homebrew, you can run the following command to install gfortran:</p>
 <pre><code>brew install gcc</code></pre>
@@ -79,7 +79,7 @@
 <p>Replace <code>C:\path\to\gfortran\lib</code> with the actual path where the gfortran library is installed on your system.</p>
 <p>Retry package installation: After installing gfortran and setting the LD_LIBRARY_PATH environment variable, attempt to install the ‘regcell’ package again using the following command:</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu">remotes</span><span class="fu">::</span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"PengSU517/regcell"</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu">remotes</span><span class="fu">::</span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"PengSU517/regcell"</span>, build <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
 <p>With the gfortran library properly installed and the environment variable set, the linker should be able to find and link against the library, resolving the previous linker error.</p>
 </div>
   </main><aside class="col-md-3"><div class="license">

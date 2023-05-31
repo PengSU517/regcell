@@ -7,7 +7,7 @@
 To get started, you can install the package using:
 
 ```r
-remotes::install_github("PengSU517/regcell")
+remotes::install_github("PengSU517/regcell", build = FALSE)
 ```
 
 If there are some problems in installing the package, you can try the following steps:
@@ -42,7 +42,7 @@ Replace `C:\path\to\gfortran\lib` with the actual path where the gfortran librar
 Retry package installation: After installing gfortran and setting the LD_LIBRARY_PATH environment variable, attempt to install the 'regcell' package again using the following command:
 
 ```r
-remotes::install_github("PengSU517/regcell")
+remotes::install_github("PengSU517/regcell", build = FALSE)
 ```
 
 With the gfortran library properly installed and the environment variable set, the linker should be able to find and link against the library, resolving the previous linker error.
