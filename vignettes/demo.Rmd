@@ -14,13 +14,15 @@ knitr::opts_chunk$set(
 )
 ```
 
-```{r setup}
+```{r setup, message=FALSE, warning=FALSE}
+library(tidyverse)
 library(regcell)
 ```
 
 
-# The (screened) bone mineral density data
+# A simulated dataset
 ```{r}
+set.seed(2023)
 dat = regcell::genevar(n = 200, p = 100, e = 0.05, sigma = 3)
 
 y = dat$y
@@ -28,8 +30,8 @@ x = dat$x
 ```
 
 ## Outlier detection
-```{r}
-library(tidyverse)
+```{r fig.height=14, fig.width=7}
+
 fit1 <- cellWise::DDC(x)
 p1 = cellWise::cellMap(fit1$stdResid, columnlabels = c(1,rep(" ",dim(x)[2]-2),dim(x)[2]), rowlabels = c(1,rep(" ",dim(x)[1]-2),dim(x)[1]), columnangle = 0,
         rowtitle = "Observations", columntitle = "Variables", sizetitles = 2,adjustrowlabels = 0.5, adjustcolumnlabels = 0.5)+
@@ -44,6 +46,7 @@ p1
 
 ## Model training
 ```{r}
+set.seed(1234)
 inTrain <- caret::createDataPartition(y, p = 0.7)[[1]]
 
 
@@ -55,6 +58,7 @@ xtest = x[-inTrain,]
 ```
 
 ```{r}
+set.seed(1234)
 #fit a model using CR-Lasso
 fit0 = sregcell_std(ytrain,xtrain, penal = 1, softbeta = T, prob = 0.995, softzeta = 1, maxiter = 30)
 res = ytest - fit0$intercept_hat - xtest%*%fit0$betahat
@@ -64,7 +68,7 @@ fit1 = Rlars(ytrain,xtrain)
 res2 = ytest - fit1$betahat[1] - xtest%*%fit1$betahat[-1]
 ```
 
-```{r}
+```{r fig.height=7, fig.width=7}
 df = data.frame(res = c(res, res2), 
                 method = c(rep("CR-Lasso", length(res)),rep("RLars", length(res)) ))
 boxplot(res~method, outline = FALSE, data = df)
