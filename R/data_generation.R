@@ -1,3 +1,31 @@
+#' Title
+#'
+#' @param n number of obs
+#' @param p number of predictors
+#' @param pr number of active predictors
+#' @param e contamination rate
+#' @param r correlation of predictors
+#' @param df degrees of freedom of predictors
+#' @param beta regression coefficients
+#' @param intercept intercept of the regression model
+#' @param sigma scale of the error item
+#' @param mux averages of predictors
+#' @param scalex scales of predictors
+#' @param gamma magnitudes of outliers
+#' @param outtype type of outliers: cellwise, rowwise or mixed
+#'
+#' @return
+#' x: design matrix
+#' xc: clean design matrix
+#' y: response
+#' ynew: another response (as an independent test set)
+#' @export
+#'
+#' @examples
+#' data = genevar()
+#' y = data$y
+#' x = data$x
+#'
 genevar = function(n = 100, p = 10, pr = 5, e = 0, r = 0.5, df = Inf,
                    beta = NULL, intercept = 0, sigma = 1,  mux = rep(0,p), scalex = 1,  gamma = 6,
                    outtype = "mixed"){
