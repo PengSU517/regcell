@@ -66,5 +66,5 @@ robust sparse regression under cellwise contamination with a grid of lambdas (st
 data = genevar()
 y = data$y
 x = data$x
-fit = sregcell_lambda_std(y,x)
+fit = sregcell_std(y,x)
 }

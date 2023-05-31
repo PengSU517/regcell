@@ -1,4 +1,4 @@
-#' Title
+#' generate simulated datasets
 #'
 #' @param n number of obs
 #' @param p number of predictors

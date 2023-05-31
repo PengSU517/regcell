@@ -21,6 +21,6 @@ Lasso with cross validation
 data = genevar()
 y = data$y
 x = data$x
-fit = lasso.cv(y,x)
+fit = lassocv(y,x)
 
 }
