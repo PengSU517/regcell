@@ -7,7 +7,7 @@ Author: Peng SU
 Maintainer: Peng SU <peng.su@sydney.edu.au>
 Description: Sparse regression under cellwise contamination
 License: GPL-2
-Imports: Rcpp (>= 1.0.7)
+Imports: Rcpp, robustHD, robustbase, glmnet, mvtnorm, cellWise, caret
 LinkingTo: Rcpp, RcppArmadillo
 Suggests: 
     rmarkdown,
