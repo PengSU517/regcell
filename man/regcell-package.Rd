@@ -23,8 +23,8 @@ Maintainer: \packageMaintainer{regcell}
 \references{
 will be on arxiv soon
 }
-cellwise contamination; sparse regression; robust variable selection
-\keyword{ package }
+
+\keyword{ cellwise contamination; sparse regression; robust variable selection }
 \seealso{
 ~~ Optional links to other man pages, e.g. ~~
 ~~ \code{\link[<pkg>:<pkg>-package]{<pkg>}} ~~
