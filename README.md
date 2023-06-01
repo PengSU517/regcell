@@ -4,7 +4,7 @@
 
 - We added a demonstration (demo) in vignettes.
 
-- We also created an online R repository with some example scripts.  https://posit.cloud/content/6047811
+- We also created an online R repository with some example scripts.  https://posit.cloud/content/6051440
 
 To get started, you can install the package using:
 
