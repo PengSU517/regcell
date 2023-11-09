@@ -81,6 +81,22 @@ sregcell = function(y,x, betahat = NULL, intercept = NULL,
                     penal = 1, penaldelta = 1,
                     maxiter = 100){
 
+  {
+    betahat = NULL
+    intercept = NULL
+
+    softbeta = TRUE
+    softdelta = TRUE
+    softzeta = TRUE
+
+    lambda_delta = 2.56
+    lambda_zeta = 2.56
+    alpha = 0.5
+    penal = 1
+    penaldelta = 1
+
+    maxiter = 100
+  }
 
   n = dim(x)[1]
   p = dim(x)[2]
@@ -100,11 +116,11 @@ sregcell = function(y,x, betahat = NULL, intercept = NULL,
     length = 50
     # grid = get_lambda_grid(y,xc, betahat,intercept, softbeta, length = length)
     lambdamax = lambdamax_beta(y = y, x = x, betahat = betahat, intercept = intercept,
-                                deltahat = deltahat, zetahat = zetahat,
-                                softbeta = softbeta,
-                                lambda_delta = lambda_delta, softdelta = softdelta,
-                                lambda_zeta = lambda_zeta, softzeta = softzeta,
-                                alpha = alpha, maxiter = maxiter)$lambdamax
+                               deltahat = deltahat, zetahat = zetahat,
+                               softbeta = softbeta,
+                               lambda_delta = lambda_delta, softdelta = softdelta,
+                               lambda_zeta = lambda_zeta, softzeta = softzeta,
+                               alpha = alpha, maxiter = maxiter)$lambdamax
 
     lmin = lambdamax/10^3
     grid = c(exp(seq(log(lambdamax),log(lmin),length = length)))
@@ -112,11 +128,11 @@ sregcell = function(y,x, betahat = NULL, intercept = NULL,
   }
 
   allfits = lapply(grid, function(lambda){reg_beta_delta(y = y, x = x, betahat = betahat, intercept = intercept,
-                                                      deltahat = deltahat, zetahat = zetahat,
-                                                      lambda_beta = lambda, softbeta = softbeta,
-                                                      lambda_delta = lambda_delta, softdelta = softdelta,
-                                                      lambda_zeta = lambda_zeta, softzeta = softzeta,
-                                                      alpha = alpha, maxiter = maxiter)})
+                                                         deltahat = deltahat, zetahat = zetahat,
+                                                         lambda_beta = lambda, softbeta = softbeta,
+                                                         lambda_delta = lambda_delta, softdelta = softdelta,
+                                                         lambda_zeta = lambda_zeta, softzeta = softzeta,
+                                                         alpha = alpha, maxiter = maxiter)})
 
 
   regloss = unlist(lapply(allfits, function(fit) fit$regloss))
