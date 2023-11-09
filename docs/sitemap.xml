@@ -16,9 +16,6 @@
     <loc>https://pengsu517.github.io/regcell/index.html</loc>
   </url>
   <url>
-    <loc>https://pengsu517.github.io/regcell/reference/Rlars.html</loc>
-  </url>
-  <url>
     <loc>https://pengsu517.github.io/regcell/reference/genevar.html</loc>
   </url>
   <url>
@@ -29,6 +26,9 @@
   </url>
   <url>
     <loc>https://pengsu517.github.io/regcell/reference/regcell-package.html</loc>
+  </url>
+  <url>
+    <loc>https://pengsu517.github.io/regcell/reference/Rlars.html</loc>
   </url>
   <url>
     <loc>https://pengsu517.github.io/regcell/reference/sregcell.html</loc>
