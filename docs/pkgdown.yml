@@ -1,9 +1,10 @@
-pandoc: 2.19.2
+pandoc: 3.1.1
 pkgdown: 2.0.7
 pkgdown_sha: ~
 articles:
   demo: demo.html
-last_built: 2023-06-01T20:13Z
+  simu: simu.html
+last_built: 2023-11-09T03:51Z
 urls:
   reference: https://pengsu517.github.io/regcell/reference
   article: https://pengsu517.github.io/regcell/articles
