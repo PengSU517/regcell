@@ -240,7 +240,9 @@ List reg_beta_delta(arma::vec y, arma::mat x,
                     double lambda_beta, bool softbeta,
                     double lambda_delta,bool softdelta,
                     double lambda_zeta, bool softzeta,
-                    double alpha, double maxiter = 30){
+                    double alpha,
+                    double tol = 0.0001,
+                    double maxiter = 30){
 
   //initialize variables
   unsigned int n = x.n_rows; //sample size
@@ -295,7 +297,7 @@ List reg_beta_delta(arma::vec y, arma::mat x,
     ycenter = y - interceptvec;
     ycenterclean = y - zetahat - interceptvec;
 
-    if((abs(betaget-betahat)).max() < pow(10, -6)) {break;};
+    if((abs(betaget-betahat)).max() < tol) {break;};
     betahat = betaget;
     k++;
 

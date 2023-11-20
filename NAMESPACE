@@ -15,11 +15,11 @@ importFrom("cellWise","DDC", "cellMap")
 importFrom("caret","createDataPartition")
 
 
-#exportPattern("^[[:alpha:]]+")
+exportPattern("^[[:alpha:]]+")
 
-export(sregcell)
-export(sregcell_std)
-export(sregcell_lambda)
-export(genevar)
-export(Rlars)
-export(lassocv)
+#export(sregcell)
+#export(sregcell_std)
+#export(sregcell_lambda)
+#export(genevar)
+#export(Rlars)
+#export(lassocv)

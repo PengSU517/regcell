@@ -29,7 +29,7 @@ reg_zeta <- function(y, xclean, betahat, alambdavec_zeta, softzeta = TRUE) {
     .Call(`_regcell_reg_zeta`, y, xclean, betahat, alambdavec_zeta, softzeta)
 }
 
-reg_beta_delta <- function(y, x, betahat, intercept, deltahat, zetahat, lambda_beta, softbeta, lambda_delta, softdelta, lambda_zeta, softzeta, alpha, maxiter = 30) {
-    .Call(`_regcell_reg_beta_delta`, y, x, betahat, intercept, deltahat, zetahat, lambda_beta, softbeta, lambda_delta, softdelta, lambda_zeta, softzeta, alpha, maxiter)
+reg_beta_delta <- function(y, x, betahat, intercept, deltahat, zetahat, lambda_beta, softbeta, lambda_delta, softdelta, lambda_zeta, softzeta, alpha, tol = 0.0001, maxiter = 30) {
+    .Call(`_regcell_reg_beta_delta`, y, x, betahat, intercept, deltahat, zetahat, lambda_beta, softbeta, lambda_delta, softdelta, lambda_zeta, softzeta, alpha, tol, maxiter)
 }
 

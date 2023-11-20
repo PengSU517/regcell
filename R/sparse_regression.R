@@ -8,7 +8,7 @@ lambdamax_beta = function(y, x, betahat, intercept,
                           softbeta,
                           lambda_delta, softdelta,
                           lambda_zeta, softzeta,
-                          alpha, maxiter){
+                          alpha, tol, maxiter){
 
   n = dim(x)[1]
   p = dim(x)[2]
@@ -25,7 +25,7 @@ lambdamax_beta = function(y, x, betahat, intercept,
                              lambda_beta = lambdamax, softbeta = softbeta,
                              lambda_delta = lambda_delta, softdelta = softdelta,
                              lambda_zeta = lambda_zeta, softzeta = softzeta,
-                             alpha = alpha, maxiter = maxiter)
+                             alpha = alpha, tol = tol, maxiter = maxiter)
 
     betaget = outputs$betahat
     ind = (sum(abs(betaget))==0)
@@ -55,6 +55,7 @@ lambdamax_beta = function(y, x, betahat, intercept,
 #' @param alpha the importance factor of the regression loss (between 0-1, by default is 0.5)
 #' @param penal the penalty parameter for model selection (by default is 1, equivalent to BIC )
 #' @param penaldelta the penalty of number of detected outliers (for debug, by default is 0)
+#' @param tol the tolerence of convergence
 #' @param maxiter number of interations
 #'
 #' @return
@@ -79,24 +80,24 @@ sregcell = function(y,x, betahat = NULL, intercept = NULL,
                     softbeta = TRUE, softdelta = TRUE, softzeta = TRUE,
                     lambda_delta = 2.56, lambda_zeta = 2.56, alpha = 0.5,
                     penal = 1, penaldelta = 1,
-                    maxiter = 100){
+                    tol = 1e-4, maxiter = 100){
 
-  {
-    betahat = NULL
-    intercept = NULL
-
-    softbeta = TRUE
-    softdelta = TRUE
-    softzeta = TRUE
-
-    lambda_delta = 2.56
-    lambda_zeta = 2.56
-    alpha = 0.5
-    penal = 1
-    penaldelta = 1
-
-    maxiter = 100
-  }
+  # {
+  #   betahat = NULL
+  #   intercept = NULL
+  #
+  #   softbeta = TRUE
+  #   softdelta = TRUE
+  #   softzeta = TRUE
+  #
+  #   lambda_delta = 2.56
+  #   lambda_zeta = 2.56
+  #   alpha = 0.5
+  #   penal = 1
+  #   penaldelta = 1
+  #
+  #   maxiter = 100
+  # }
 
   n = dim(x)[1]
   p = dim(x)[2]
@@ -120,7 +121,7 @@ sregcell = function(y,x, betahat = NULL, intercept = NULL,
                                softbeta = softbeta,
                                lambda_delta = lambda_delta, softdelta = softdelta,
                                lambda_zeta = lambda_zeta, softzeta = softzeta,
-                               alpha = alpha, maxiter = maxiter)$lambdamax
+                               alpha = alpha, tol = tol, maxiter = maxiter)$lambdamax
 
     lmin = lambdamax/10^3
     grid = c(exp(seq(log(lambdamax),log(lmin),length = length)))
@@ -132,7 +133,7 @@ sregcell = function(y,x, betahat = NULL, intercept = NULL,
                                                          lambda_beta = lambda, softbeta = softbeta,
                                                          lambda_delta = lambda_delta, softdelta = softdelta,
                                                          lambda_zeta = lambda_zeta, softzeta = softzeta,
-                                                         alpha = alpha, maxiter = maxiter)})
+                                                         alpha = alpha, tol = tol, maxiter = maxiter)})
 
 
   regloss = unlist(lapply(allfits, function(fit) fit$regloss))
@@ -172,7 +173,7 @@ sregcell = function(y,x, betahat = NULL, intercept = NULL,
                                 lambda_beta = 0, softbeta = TRUE,
                                 lambda_delta = lambda_delta, softdelta = softdelta,
                                 lambda_zeta = lambda_zeta, softzeta = softzeta,
-                                alpha = alpha, maxiter = maxiter)
+                                alpha = alpha, tol = tol, maxiter = maxiter)
 
       betahat_post[labels] = fit_post$betahat
       intercept_hat_post = fit_post$intercept
@@ -182,7 +183,9 @@ sregcell = function(y,x, betahat = NULL, intercept = NULL,
 
 
   return(list(allfits = allfits, result_opt = result_opt,
-              grid = grid, activebeta = activebeta, ic = ic,  colactivedelta = colactivedelta, betamat = betamat, label = label,
+              grid = grid, activebeta = activebeta, ic = ic,
+              colactivedelta = colactivedelta, betamat = betamat, label = label,
+              k = result_opt$k, k_post = fit_post$k,
               betahat = betahat, intercept_hat = intercept_hat,
               betahat_post = betahat_post, intercept_hat_post = intercept_hat_post))
 }
@@ -199,7 +202,8 @@ sregcell = function(y,x, betahat = NULL, intercept = NULL,
 #' @param lambda_zeta tuning parameter of zeta
 #' @param lambda tuning parameter of beta
 #' @param alpha the importance factor of the regression loss (between 0-1, by default is 0.5)
-#' @param maxiter number of interations
+#' @param tol the tolerence of convergence
+#' @param maxiter the number of interations
 #'
 #' @return
 #' fit
@@ -214,7 +218,8 @@ sregcell = function(y,x, betahat = NULL, intercept = NULL,
 #' fit = sregcell_lambda(y,x, lambda = 1)
 #'
 sregcell_lambda = function(y,x, softbeta = TRUE, softdelta = TRUE, softzeta = TRUE,
-                           lambda_delta = 2.56, lambda_zeta = 2.56, lambda = 0, alpha = 0.5, maxiter = 100){
+                           lambda_delta = 2.56, lambda_zeta = 2.56, lambda = 0, alpha = 0.5,
+                           tol = 1e-4, maxiter = 100){
 
   n = dim(x)[1]
   p = dim(x)[2]
@@ -231,7 +236,7 @@ sregcell_lambda = function(y,x, softbeta = TRUE, softdelta = TRUE, softzeta = TR
                           lambda_beta = lambda, softbeta = softbeta,
                           lambda_delta = lambda_delta, softdelta = softdelta,
                           lambda_zeta = lambda_zeta, softzeta = softzeta,
-                          alpha = alpha, maxiter = maxiter)
+                          alpha = alpha, tol = tol, maxiter = maxiter)
   return(result)
 }
 
@@ -274,7 +279,8 @@ robstd = function(x, centerf = median, scalef = qnscale, df = df){
 #' @param the importance factor of the regression loss (between 0-1, by default is 0.5)
 #' @param penal the penalty parameter for model selection (by default is 1, equivalent to BIC )
 #' @param penaldelta the penalty of number of detected outliers (for debug, by default is 0)
-#' @param maxiter number of interations
+#' @param tol tolerence of convergence
+#' @param maxiter the number of interations
 #'
 #' @return
 #' betahat: the estimated beta
@@ -297,7 +303,7 @@ sregcell_std = function(y,x,
                         lambda_delta = NULL, lambda_zeta = 1, prob = 0.995,
                         alpha = 0.5,
                         penal = 1, penaldelta = 0,
-                        maxiter = 100){
+                        tol = 1e-4, maxiter = 100){
 
 
   x = as.matrix(x)
@@ -332,7 +338,7 @@ sregcell_std = function(y,x,
                  softbeta = softbeta, softdelta = softdelta, softzeta = softzeta,
                  lambda_delta = lambda_delta, lambda_zeta = lambda_zeta, alpha = alpha,
                  penal = penal, penaldelta = penaldelta,
-                 maxiter = 20)
+                 tol = tol, maxiter = maxiter)
 
   #de-standardization
   betahat = as.numeric((1/scalex)*rst$betahat*sigmahat)
