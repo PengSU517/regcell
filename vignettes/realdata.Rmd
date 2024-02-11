@@ -1,8 +1,10 @@
 ---
 title: "realdata"
-author: "pengsu"
-date: "2023-03-23"
-output: html_document
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{realdata}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
 ---
 
 ```{r, include = FALSE}
