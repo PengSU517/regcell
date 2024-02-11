@@ -1,0 +1,197 @@
+---
+title: "realdata"
+author: "pengsu"
+date: "2023-03-23"
+output: html_document
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>", echo = TRUE, eval = FALSE, message = FALSE, warning = FALSE
+)
+```
+
+```{r setup}
+library(regcell)
+library(tidyverse)
+```
+
+# Load raw datasets
+
+Load the original datasets and retain the necessary variables.
+
+Raw datasets are from https://www.ebi.ac.uk/arrayexpress/experiments/E-MEXP-1618/.
+
+```{r}
+###load the micro-array dataset
+dat = as.data.frame(t(read.csv("Normarrayexpressdata.txt.magetab", sep = "\t")))
+datc = dat
+colnames(datc) = datc[1,]
+datcc = datc[-1,]
+
+colnames(datcc)[1] = "id"
+datcc$id = extract_numeric(rownames(datcc))
+
+### load the feature dataset
+featuredat = read.csv("E-MEXP-1618.sdrf.txt", sep = "\t")
+featuredat$id = extract_numeric(featuredat$Source.Name)
+
+# merge them and keep necessary variables
+datall = merge(featuredat, datcc, by = "id")
+y = datall$Characteristics..Total.Hip.T.score.
+x = datall[,-(1:50)] %>% mutate(across(.fns = as.numeric))
+logx = log(x)
+
+data_bmd = cbind(y, logx)
+save(data_bmd, file = "data_bmd.RData")
+```
+
+
+# Screen variables
+
+Screen correlated variables according to a robust correlation estimate based on Winsorization.
+The screened dataset `datascreen` is included in this package.
+
+```{r}
+x = data_bmd[,-1]
+y = data_bmd[,1]
+
+xnormal = x
+
+## calculate robust correlation and screen variables
+corh = apply(xnormal,2, function(xvec){robustHD::corHuber(xvec,y)})   ## huber correlation
+orders = order(abs(corh), decreasing = T)
+xscreen = (xnormal[,orders])[,1:100]
+# corh_screened = apply(xscreen,2, function(xvec){robustHD::corHuber(xvec,y)})
+# pairs(cbind(y,xscreen[,1:5]))
+
+datascreen = cbind(y,xscreen)
+save(datascreen, file = "datascreen.RData")
+
+
+```
+
+
+# All methods compared
+
+```{r}
+##### methods compared
+mtds = list(
+  ## spase shooting S, codes arefrom https://github.com/ineswilms/sparse-shooting-S 
+  ## package is available from https://github.com/PengSU517/shootings
+  # sss = function(y, x){shootings::sparseshooting(x,y)$coef},
+  
+  ## Rlars, from package robustHD
+  rlars = function(y, x){regcell::Rlars(y, x)$betahat}, 
+  
+  ## MM-Lasso, from https://github.com/esmucler/mmlasso
+  # mmlasso = function(y,x){mmlasso::mmlasso(x,y)$coef.MMLasso.ad}, 
+  
+  ## sparse LTS, from package robustHD
+  slts = function(y,x){regcell::SLTS(y,x)$betahat},
+  
+  ## cellwise regularized Lasso without post regression
+  cell_lasso = function(y,x){ 
+    fit = regcell::sregcell_std(y = y, x = x, softbeta = TRUE, lambda_zeta = 1, penal = 1, penaldelta =0)
+    return(c(fit$intercept_hat, fit$betahat))
+  },
+
+  ## cellwise regularized Lasso with post regression
+  cell_lasso_post = function(y,x){
+    fit = regcell::sregcell_std(y = y, x = x, softbeta = TRUE, lambda_zeta = 1, penal = 1, penaldelta =0)
+    return(c(fit$intercept_hat_post, fit$betahat_post))
+  },
+
+  ## Lasso, from package glmnet
+  lasso  = function(y,x){ 
+    return(regcell::lassocv(y,x)$betahat)
+  }
+
+)
+```
+
+
+# Analysis with artifically generated response
+
+```{r}
+library(doParallel)
+registerDoParallel(cores=10)
+getDoParWorkers()
+
+data(datascreen)
+x = as.matrix(robustHD::robStandardize(datascreen[,-1])[,1:100])
+ximp = cellWise::DDC(x)$Ximp
+
+result <- foreach(mtd = 1:length(mtds),
+                  .packages = c("robustHD", "robustbase" , "mmlasso", "shootings", "cellWise", "regcell"))%:%
+  foreach(pr = c(5,10))%:%
+  foreach(sigma = c(0.5, 1))%:%
+  foreach(m = 1:200)%dopar%{
+    set.seed(m)
+    error = rnorm(84, sd = sigma)
+    beta = sample(c(runif(pr, 1, 1.5),rep(0,100-pr)))
+
+    y = ximp%*%beta + error
+    obs = sample(1:84, 17, replace = FALSE)
+
+    ytrain = y[-obs]
+    xtrain = x[-obs,]
+    ytest = y[obs]
+    xtest = ximp[obs,]
+
+    betahat = mtds[[mtd]](ytrain,xtrain)
+
+    tpf<-function(betahat, beta){sum((as.logical(betahat)==as.logical(beta))[which(beta!=0)])}
+    tnf<-function(betahat,beta){sum((as.logical(betahat)==as.logical(beta))[which(beta==0)])}
+    tp = tpf(betahat[-1], beta)
+    tn = tnf(betahat[-1], beta)
+
+    res = ytest - betahat[1] - xtest%*%betahat[-1]
+    mape = mean(abs(res))
+    rmspe = sqrt(mean(res^2))
+    rst = c(m = m, mtd = names(mtds)[mtd], pr = pr, sigma = sigma,
+            tp = tp, tn = tn, rmspe = rmspe, mape = mape)
+
+    rst
+  }
+
+
+save(result, file = "result_realdata_artificial.RData")
+
+```
+
+
+# Leave-one-out Cross-Validation
+
+
+```{r}
+
+data(datascreen)
+
+y = datascreen[,1]
+x = as.matrix(robustHD::robStandardize(datascreen[,-1]))
+result <- foreach(mtd = 1:length(mtds),
+                  .packages = c("robustHD", "robustbase" , "mmlasso","shootings", "cellWise", "regcell"))%:%
+  foreach(p = c(100))%:%
+  foreach(obs = 1:84)%dopar%{
+
+    set.seed(1)
+    x = x[,1:p]
+    ytrain = y[-obs]
+    xtrain = as.matrix(x[-obs,])
+    ytest = y[obs]
+    xtest = x[obs,]
+
+    betahat = mtds[[mtd]](ytrain,xtrain)
+
+    res = ytest - betahat[1] - sum(xtest*betahat[-1])
+    rst = c(mtd = names(mtds)[mtd], n = obs, p = p, res = res)
+
+    rst
+  }
+
+
+save(result, file = "result_realdata.RData")
+```
+

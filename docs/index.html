@@ -42,7 +42,9 @@
   <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-articles">Articles</a>
   <div class="dropdown-menu" aria-labelledby="dropdown-articles">
     <a class="dropdown-item" href="articles/demo.html">demo</a>
+    <a class="dropdown-item" href="articles/realdata.html">realdata</a>
     <a class="dropdown-item" href="articles/simu.html">simu</a>
+    <a class="dropdown-item" href="articles/test.html">test</a>
   </div>
 </li>
       </ul>
@@ -62,12 +64,12 @@
 </h1></div>
 <ul>
 <li><p>This package provides the functions to compute the CR-Lasso (cellwise regularized Lasso) proposed by Peng Su, Samuel Muller, Garth Tarr and Suojin Wang. The manuscript can be found <a href="https://arxiv.org/abs/2307.05234" class="external-link">here</a>.</p></li>
-<li><p>We added a demonstration (demo) in vignettes.</p></li>
+<li><p>We added a demonstration (demo), a simulation demonstration (simu) and a real data demonstration (realdata) in vignettes.</p></li>
 <li><p>We also created an online R repository with some example scripts. <a href="https://posit.cloud/content/6051440" class="external-link uri">https://posit.cloud/content/6051440</a></p></li>
 </ul>
 <p>To get started, you can install the package using:</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu">remotes</span><span class="fu">::</span><span class="fu">install_github</span><span class="op">(</span><span class="st">"PengSU517/regcell"</span>, build <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu">remotes</span><span class="fu">::</span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"PengSU517/regcell"</span>, build <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
 <p>For macOS users, if there are some problems with <code>gfortran</code>, you can try install the GNU Fortran compiler from this page: <a href="https://mac.r-project.org/tools/" class="external-link uri">https://mac.r-project.org/tools/</a>.</p>
 <p>If there are still some errors, you could extract functions from <code>R</code> and <code>src</code> folders.</p>
 </div>

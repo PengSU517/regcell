@@ -94,7 +94,7 @@ List rob_pca(arma::mat x, arma::mat xc, arma::mat delta, double lambda, int maxi
     delta = threshold_mat(x - xc + stepmat%zeta, stepmat%lambdamat);
     xc = threshold_svd(x - delta + stepmat%zeta, stepvec);
     zeta = zeta + lmat%(x - xc - delta);
-    if(abs(x-xc-delta).max() < pow(10, -8)){break;}
+    if(abs(x-xc-delta).max() < pow(10, -6)){break;}
     k = k+1;
   }
 
@@ -111,7 +111,7 @@ List rob_pca(arma::mat x, arma::mat xc, arma::mat delta, double lambda, int maxi
 
 // [[Rcpp::export]]
 List reg_beta(arma::vec yclean, arma::mat xclean, arma::vec betahat, double intercept,
-              arma::vec alambdavec_beta, bool softbeta = true, double maxiterbeta = 5){
+              arma::vec alambdavec_beta, bool softbeta = true, double tol = 0.001, double maxiterbeta = 5){
 
   //initialize variables
   unsigned int n = xclean.n_rows; //sample size
@@ -241,7 +241,7 @@ List reg_beta_delta(arma::vec y, arma::mat x,
                     double lambda_delta,bool softdelta,
                     double lambda_zeta, bool softzeta,
                     double alpha,
-                    double tol = 0.0001,
+                    double tol = 0.001,
                     double maxiter = 30){
 
   //initialize variables
@@ -278,7 +278,7 @@ List reg_beta_delta(arma::vec y, arma::mat x,
   double k = 1;//iterator
   while(k <= maxiter)//start iteration
   {
-    outputs_delta = reg_delta(ycenterclean, x, betahat, deltahat,alambdamat_delta, alpha, softdelta, 20);
+    outputs_delta = reg_delta(ycenterclean, x, betahat, deltahat,alambdamat_delta, alpha, softdelta, 5);
     //should add arguments in correct orders
     deltahat = as<arma::mat>(outputs_delta["deltahat"]);
     //arma::vec y, arma::mat x, arma::vec betahat, double intercept, arma::vec lambdavec_beta, double maxiter = 20
@@ -290,7 +290,7 @@ List reg_beta_delta(arma::vec y, arma::mat x,
 
     // yclean = y;
 
-    outputs_beta = reg_beta(yclean, xclean, betahat, intercept, alambdavec_beta, softbeta, 20);
+    outputs_beta = reg_beta(yclean, xclean, betahat, intercept, alambdavec_beta, softbeta, tol, 5);
     betaget = as<arma::vec>(outputs_beta["betahat"]);
     intercept = double(outputs_beta["intercept"]);
     interceptvec.fill(intercept);

@@ -42,7 +42,9 @@
   <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-articles">Articles</a>
   <div class="dropdown-menu" aria-labelledby="dropdown-articles">
     <a class="dropdown-item" href="../articles/demo.html">demo</a>
+    <a class="dropdown-item" href="../articles/realdata.html">realdata</a>
     <a class="dropdown-item" href="../articles/simu.html">simu</a>
+    <a class="dropdown-item" href="../articles/test.html">test</a>
   </div>
 </li>
       </ul>
@@ -72,25 +74,26 @@
     
     
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://tidyverse.tidyverse.org" class="external-link">tidyverse</a></span><span class="op">)</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://pengsu517.github.io/regcell/">regcell</a></span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://pengsu517.github.io/regcell/">regcell</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://tidyverse.tidyverse.org" class="external-link">tidyverse</a></span><span class="op">)</span></span></code></pre></div>
 <div class="section level2">
 <h2 id="a-simulated-dataset">A simulated dataset<a class="anchor" aria-label="anchor" href="#a-simulated-dataset"></a>
 </h2>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">2023</span><span class="op">)</span></span>
-<span><span class="va">dat</span> <span class="op">=</span> <span class="fu">regcell</span><span class="fu">::</span><span class="fu"><a href="../reference/genevar.html">genevar</a></span><span class="op">(</span>n <span class="op">=</span> <span class="fl">200</span>, p <span class="op">=</span> <span class="fl">100</span>, e <span class="op">=</span> <span class="fl">0.05</span>, sigma <span class="op">=</span> <span class="fl">3</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">1234</span><span class="op">)</span></span>
+<span><span class="va">dat</span> <span class="op">=</span> <span class="fu">regcell</span><span class="fu">::</span><span class="fu"><a href="../reference/genevar.html">genevar</a></span><span class="op">(</span>n <span class="op">=</span> <span class="fl">200</span>, p <span class="op">=</span> <span class="fl">50</span>, e <span class="op">=</span> <span class="fl">0.05</span>, sigma <span class="op">=</span> <span class="fl">3</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">y</span> <span class="op">=</span> <span class="va">dat</span><span class="op">$</span><span class="va">y</span></span>
 <span><span class="va">x</span> <span class="op">=</span> <span class="va">dat</span><span class="op">$</span><span class="va">x</span></span></code></pre></div>
 <div class="section level3">
 <h3 id="outlier-detection">Outlier detection<a class="anchor" aria-label="anchor" href="#outlier-detection"></a>
 </h3>
+<p>Detect outliers using DDC (Rousseeuw and Van Den Bossche, 2018).</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span></span>
 <span><span class="va">fit1</span> <span class="op">&lt;-</span> <span class="fu">cellWise</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/cellWise/man/DDC.html" class="external-link">DDC</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span></span>
 <span><span class="co">#&gt;  </span></span>
-<span><span class="co">#&gt;  The input data has 200 rows and 100 columns.</span></span>
+<span><span class="co">#&gt;  The input data has 200 rows and 50 columns.</span></span>
 <span><span class="va">p1</span> <span class="op">=</span> <span class="fu">cellWise</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/cellWise/man/cellMap.html" class="external-link">cellMap</a></span><span class="op">(</span><span class="va">fit1</span><span class="op">$</span><span class="va">stdResid</span>, columnlabels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="st">" "</span>,<span class="fu"><a href="https://rdrr.io/r/base/dim.html" class="external-link">dim</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span><span class="op">-</span><span class="fl">2</span><span class="op">)</span>,<span class="fu"><a href="https://rdrr.io/r/base/dim.html" class="external-link">dim</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span><span class="op">)</span>, rowlabels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="st">" "</span>,<span class="fu"><a href="https://rdrr.io/r/base/dim.html" class="external-link">dim</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span><span class="op">-</span><span class="fl">2</span><span class="op">)</span>,<span class="fu"><a href="https://rdrr.io/r/base/dim.html" class="external-link">dim</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span><span class="op">)</span>, columnangle <span class="op">=</span> <span class="fl">0</span>,</span>
 <span>        rowtitle <span class="op">=</span> <span class="st">"Observations"</span>, columntitle <span class="op">=</span> <span class="st">"Variables"</span>, sizetitles <span class="op">=</span> <span class="fl">2</span>,adjustrowlabels <span class="op">=</span> <span class="fl">0.5</span>, adjustcolumnlabels <span class="op">=</span> <span class="fl">0.5</span><span class="op">)</span><span class="op">+</span></span>
 <span>   <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/theme.html" class="external-link">theme</a></span><span class="op">(</span>axis.text.x <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html" class="external-link">element_text</a></span><span class="op">(</span>size <span class="op">=</span> <span class="fl">12</span><span class="op">)</span>,</span>
@@ -98,13 +101,15 @@
 <span>        axis.title.x <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html" class="external-link">element_text</a></span><span class="op">(</span>size <span class="op">=</span> <span class="fl">14</span><span class="op">)</span>,</span>
 <span>        axis.title.y <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html" class="external-link">element_text</a></span><span class="op">(</span>size <span class="op">=</span> <span class="fl">14</span><span class="op">)</span>,</span>
 <span>        legend.title <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html" class="external-link">element_text</a></span><span class="op">(</span>size<span class="op">=</span><span class="fl">14</span><span class="op">)</span>, <span class="co">#change legend title font size</span></span>
-<span>        legend.text <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html" class="external-link">element_text</a></span><span class="op">(</span>size<span class="op">=</span><span class="fl">12</span><span class="op">)</span><span class="op">)</span> </span>
+<span>        legend.text <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html" class="external-link">element_text</a></span><span class="op">(</span>size<span class="op">=</span><span class="fl">12</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/coord_flip.html" class="external-link">coord_flip</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="va">p1</span></span></code></pre></div>
 <p><img src="demo_files/figure-html/unnamed-chunk-3-1.png" width="672"></p>
 </div>
 <div class="section level3">
 <h3 id="model-training">Model training<a class="anchor" aria-label="anchor" href="#model-training"></a>
 </h3>
+<p>Create a training set and a testing set.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">1234</span><span class="op">)</span></span>
 <span><span class="va">inTrain</span> <span class="op">&lt;-</span> <span class="fu">caret</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/caret/man/createDataPartition.html" class="external-link">createDataPartition</a></span><span class="op">(</span><span class="va">y</span>, p <span class="op">=</span> <span class="fl">0.7</span><span class="op">)</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span></span>
@@ -115,15 +120,18 @@
 <span></span>
 <span><span class="va">ytest</span> <span class="op">=</span> <span class="va">y</span><span class="op">[</span><span class="op">-</span><span class="va">inTrain</span><span class="op">]</span></span>
 <span><span class="va">xtest</span> <span class="op">=</span> <span class="va">x</span><span class="op">[</span><span class="op">-</span><span class="va">inTrain</span>,<span class="op">]</span></span></code></pre></div>
+<p>Fit models using the training set and calculate prediction errors on
+the testing set.</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">1234</span><span class="op">)</span></span>
 <span><span class="co">#fit a model using CR-Lasso</span></span>
-<span><span class="va">fit0</span> <span class="op">=</span> <span class="fu"><a href="../reference/sregcell_std.html">sregcell_std</a></span><span class="op">(</span><span class="va">ytrain</span>,<span class="va">xtrain</span>, penal <span class="op">=</span> <span class="fl">1</span>, softbeta <span class="op">=</span> <span class="cn">T</span>, prob <span class="op">=</span> <span class="fl">0.995</span>, softzeta <span class="op">=</span> <span class="fl">1</span>, maxiter <span class="op">=</span> <span class="fl">30</span><span class="op">)</span></span>
+<span><span class="va">fit0</span> <span class="op">=</span> <span class="fu"><a href="../reference/sregcell_std.html">sregcell_std</a></span><span class="op">(</span><span class="va">ytrain</span>,<span class="va">xtrain</span><span class="op">)</span></span>
 <span><span class="va">res</span> <span class="op">=</span> <span class="va">ytest</span> <span class="op">-</span> <span class="va">fit0</span><span class="op">$</span><span class="va">intercept_hat</span> <span class="op">-</span> <span class="va">xtest</span><span class="op"><a href="https://rdrr.io/r/base/matmult.html" class="external-link">%*%</a></span><span class="va">fit0</span><span class="op">$</span><span class="va">betahat</span></span>
 <span></span>
 <span><span class="co">#fit a model using RLars</span></span>
 <span><span class="va">fit1</span> <span class="op">=</span> <span class="fu"><a href="../reference/Rlars.html">Rlars</a></span><span class="op">(</span><span class="va">ytrain</span>,<span class="va">xtrain</span><span class="op">)</span></span>
 <span><span class="va">res2</span> <span class="op">=</span> <span class="va">ytest</span> <span class="op">-</span> <span class="va">fit1</span><span class="op">$</span><span class="va">betahat</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span> <span class="op">-</span> <span class="va">xtest</span><span class="op"><a href="https://rdrr.io/r/base/matmult.html" class="external-link">%*%</a></span><span class="va">fit1</span><span class="op">$</span><span class="va">betahat</span><span class="op">[</span><span class="op">-</span><span class="fl">1</span><span class="op">]</span></span></code></pre></div>
+<p>Show the distribution of prediction errors.</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">df</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>res <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">res</span>, <span class="va">res2</span><span class="op">)</span>, </span>
 <span>                method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="st">"CR-Lasso"</span>, <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">res</span><span class="op">)</span><span class="op">)</span>,<span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="st">"RLars"</span>, <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">res</span><span class="op">)</span><span class="op">)</span> <span class="op">)</span><span class="op">)</span></span>
@@ -134,30 +142,48 @@
 <div class="section level2">
 <h2 id="the-bodyfat-dataset">The Bodyfat dataset<a class="anchor" aria-label="anchor" href="#the-bodyfat-dataset"></a>
 </h2>
+<p>This is a demonstration showcasing the comparison of methods on a
+real dataset.</p>
 <div class="section level3">
 <h3 id="methods-compared">methods compared<a class="anchor" aria-label="anchor" href="#methods-compared"></a>
 </h3>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">mtds</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
+<code class="sourceCode R"><span><span class="co">##### methods compared</span></span>
+<span><span class="va">mtds</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
+<span>  <span class="co">## spase shooting S, codes arefrom https://github.com/ineswilms/sparse-shooting-S </span></span>
+<span>  <span class="co">## package is available from https://github.com/PengSU517/shootings</span></span>
 <span>  <span class="co"># sss = function(y, x){shootings::sparseshooting(x,y)$coef},</span></span>
-<span>  rlars <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">y</span>, <span class="va">x</span><span class="op">)</span><span class="op">{</span><span class="fu">regcell</span><span class="fu">::</span><span class="fu"><a href="../reference/Rlars.html">Rlars</a></span><span class="op">(</span><span class="va">y</span>, <span class="va">x</span><span class="op">)</span><span class="op">$</span><span class="va">betahat</span><span class="op">}</span>,</span>
-<span>  <span class="co"># mmlasso = function(y,x){mmlasso::mmlasso(x,y)$coef.MMLasso.ad},</span></span>
-<span>  slts <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">y</span>,<span class="va">x</span><span class="op">)</span><span class="op">{</span><span class="fu">robustHD</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/robustHD/man/sparseLTS.html" class="external-link">sparseLTS</a></span><span class="op">(</span><span class="va">x</span>,<span class="va">y</span><span class="op">)</span><span class="op">$</span><span class="va">coefficients</span><span class="op">}</span>,</span>
+<span>  </span>
+<span>  <span class="co">## Rlars, from package robustHD</span></span>
+<span>  rlars <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">y</span>, <span class="va">x</span><span class="op">)</span><span class="op">{</span><span class="fu">regcell</span><span class="fu">::</span><span class="fu"><a href="../reference/Rlars.html">Rlars</a></span><span class="op">(</span><span class="va">y</span>, <span class="va">x</span><span class="op">)</span><span class="op">$</span><span class="va">betahat</span><span class="op">}</span>, </span>
+<span>  </span>
+<span>  <span class="co">## MM-Lasso, from https://github.com/esmucler/mmlasso</span></span>
+<span>  <span class="co"># mmlasso = function(y,x){mmlasso::mmlasso(x,y)$coef.MMLasso.ad}, </span></span>
+<span>  </span>
+<span>  <span class="co">## sparse LTS, from package robustHD</span></span>
+<span>  slts <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">y</span>,<span class="va">x</span><span class="op">)</span><span class="op">{</span><span class="fu">regcell</span><span class="fu">::</span><span class="fu">SLTS</span><span class="op">(</span><span class="va">y</span>,<span class="va">x</span><span class="op">)</span><span class="op">$</span><span class="va">betahat</span><span class="op">}</span>,</span>
+<span>  </span>
+<span>  <span class="co">## cellwise regularized Lasso without post regression</span></span>
+<span>  cell_lasso <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">y</span>,<span class="va">x</span><span class="op">)</span><span class="op">{</span> </span>
+<span>    <span class="va">fit</span> <span class="op">=</span> <span class="fu">regcell</span><span class="fu">::</span><span class="fu"><a href="../reference/sregcell_std.html">sregcell_std</a></span><span class="op">(</span>y <span class="op">=</span> <span class="va">y</span>, x <span class="op">=</span> <span class="va">x</span><span class="op">)</span></span>
+<span>    <span class="kw"><a href="https://rdrr.io/r/base/function.html" class="external-link">return</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">fit</span><span class="op">$</span><span class="va">intercept_hat</span>, <span class="va">fit</span><span class="op">$</span><span class="va">betahat</span><span class="op">)</span><span class="op">)</span></span>
+<span>  <span class="op">}</span>,</span>
 <span></span>
+<span>  <span class="co">## cellwise regularized Lasso with post regression</span></span>
 <span>  cell_lasso_post <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">y</span>,<span class="va">x</span><span class="op">)</span><span class="op">{</span></span>
-<span>    <span class="va">fit</span> <span class="op">=</span> <span class="fu">regcell</span><span class="fu">::</span><span class="fu"><a href="../reference/sregcell_std.html">sregcell_std</a></span><span class="op">(</span>y <span class="op">=</span> <span class="va">y</span>, x <span class="op">=</span> <span class="va">x</span>, softbeta <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>                                lambda_zeta <span class="op">=</span> <span class="fl">1</span>, penal <span class="op">=</span> <span class="fl">1</span>, penaldelta <span class="op">=</span> <span class="fl">0</span>, prob <span class="op">=</span> <span class="fl">0.99995</span><span class="op">)</span><span class="co">##这里好奇怪啊</span></span>
+<span>    <span class="va">fit</span> <span class="op">=</span> <span class="fu">regcell</span><span class="fu">::</span><span class="fu"><a href="../reference/sregcell_std.html">sregcell_std</a></span><span class="op">(</span>y <span class="op">=</span> <span class="va">y</span>, x <span class="op">=</span> <span class="va">x</span><span class="op">)</span></span>
 <span>    <span class="kw"><a href="https://rdrr.io/r/base/function.html" class="external-link">return</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">fit</span><span class="op">$</span><span class="va">intercept_hat_post</span>, <span class="va">fit</span><span class="op">$</span><span class="va">betahat_post</span><span class="op">)</span><span class="op">)</span></span>
 <span>  <span class="op">}</span>,</span>
 <span></span>
-<span>  lasso  <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">y</span>,<span class="va">x</span><span class="op">)</span><span class="op">{</span></span>
+<span>  <span class="co">## Lasso, from package glmnet</span></span>
+<span>  lasso  <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">y</span>,<span class="va">x</span><span class="op">)</span><span class="op">{</span> </span>
 <span>    <span class="kw"><a href="https://rdrr.io/r/base/function.html" class="external-link">return</a></span><span class="op">(</span><span class="fu">regcell</span><span class="fu">::</span><span class="fu"><a href="../reference/lassocv.html">lassocv</a></span><span class="op">(</span><span class="va">y</span>,<span class="va">x</span><span class="op">)</span><span class="op">$</span><span class="va">betahat</span><span class="op">)</span></span>
 <span>  <span class="op">}</span></span>
 <span></span>
 <span><span class="op">)</span></span></code></pre></div>
+<p>Load the Bodyfat dataset.</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">mfp</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Loading required package: survival</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="st">"bodyfat"</span><span class="op">)</span></span>
 <span><span class="va">y</span> <span class="op">=</span> <span class="va">bodyfat</span><span class="op">$</span><span class="va">brozek</span></span>
 <span><span class="va">x</span> <span class="op">=</span> <span class="fu">robustHD</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/robustHD/man/standardize.html" class="external-link">robStandardize</a></span><span class="op">(</span><span class="va">bodyfat</span><span class="op">[</span>,<span class="op">-</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">4</span><span class="op">)</span><span class="op">]</span><span class="op">)</span></span>
@@ -169,17 +195,19 @@
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/RevolutionAnalytics/doparallel" class="external-link">doParallel</a></span><span class="op">)</span></span>
 <span><span class="va">result</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/foreach/man/foreach.html" class="external-link">foreach</a></span><span class="op">(</span>mtd <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">mtds</span><span class="op">)</span>,</span>
-<span>                  .packages <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"lars"</span>, <span class="st">"robustHD"</span>, <span class="st">"robustbase"</span> , <span class="st">"mmlasso"</span>,</span>
-<span>                                <span class="st">"shootings"</span>, <span class="st">"cellWise"</span>, <span class="st">"regcell"</span>, <span class="st">"purrr"</span>, <span class="st">"robcovsel"</span>, <span class="st">"mfp"</span><span class="op">)</span><span class="op">)</span><span class="op"><a href="https://rdrr.io/pkg/foreach/man/foreach.html" class="external-link">%:%</a></span></span>
+<span>                  .packages <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"robustHD"</span>, <span class="st">"robustbase"</span> , <span class="st">"mmlasso"</span>,<span class="st">"shootings"</span>, <span class="st">"cellWise"</span>, <span class="st">"regcell"</span>, <span class="st">"mfp"</span><span class="op">)</span><span class="op">)</span><span class="op"><a href="https://rdrr.io/pkg/foreach/man/foreach.html" class="external-link">%:%</a></span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/pkg/foreach/man/foreach.html" class="external-link">foreach</a></span><span class="op">(</span>obs <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fu"><a href="https://rdrr.io/r/base/dim.html" class="external-link">dim</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span><span class="op">)</span><span class="op"><a href="https://rdrr.io/pkg/foreach/man/foreach.html" class="external-link">%dopar%</a></span><span class="op">{</span></span>
 <span></span>
+<span>    <span class="co">###set training sets and testing sets</span></span>
 <span>    <span class="va">ytrain</span> <span class="op">=</span> <span class="va">y</span><span class="op">[</span><span class="op">-</span><span class="va">obs</span><span class="op">]</span></span>
 <span>    <span class="va">xtrain</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">as.matrix</a></span><span class="op">(</span><span class="va">x</span><span class="op">[</span><span class="op">-</span><span class="va">obs</span>,<span class="op">]</span><span class="op">)</span></span>
 <span>    <span class="va">ytest</span> <span class="op">=</span> <span class="va">y</span><span class="op">[</span><span class="va">obs</span><span class="op">]</span></span>
 <span>    <span class="va">xtest</span> <span class="op">=</span> <span class="va">x</span><span class="op">[</span><span class="va">obs</span>,<span class="op">]</span></span>
 <span></span>
+<span>    <span class="co"># fit models</span></span>
 <span>    <span class="va">betahat</span> <span class="op">=</span> <span class="va">mtds</span><span class="op">[[</span><span class="va">mtd</span><span class="op">]</span><span class="op">]</span><span class="op">(</span><span class="va">ytrain</span>,<span class="va">xtrain</span><span class="op">)</span></span>
 <span></span>
+<span>    <span class="co">#calculate prediction errors</span></span>
 <span>    <span class="va">res</span> <span class="op">=</span> <span class="va">ytest</span> <span class="op">-</span> <span class="va">betahat</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span> <span class="op">-</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="va">xtest</span><span class="op">*</span><span class="va">betahat</span><span class="op">[</span><span class="op">-</span><span class="fl">1</span><span class="op">]</span><span class="op">)</span></span>
 <span>    <span class="va">rst</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>mtd <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">mtds</span><span class="op">)</span><span class="op">[</span><span class="va">mtd</span><span class="op">]</span>, n <span class="op">=</span> <span class="va">obs</span>, res <span class="op">=</span> <span class="va">res</span><span class="op">)</span></span>
 <span></span>

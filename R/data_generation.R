@@ -31,7 +31,7 @@
 #'
 genevar = function(n = 100, p = 10, pr = 5, e = 0, r = 0.5, df = Inf,
                    beta = NULL, intercept = 0, sigma = 1,  mux = rep(0,p), scalex = 1,  gamma = 6,
-                   outtype = "mixed"){
+                   outtype = "cellwise"){
 
   {
     if(is.null(beta)){
@@ -52,7 +52,7 @@ genevar = function(n = 100, p = 10, pr = 5, e = 0, r = 0.5, df = Inf,
     errornew = rnorm(n,0,sigma)
     ynew = intercept + xc%*%beta + errornew
 
-    if(outtype=="cellwise"){
+    if(outtype=="cellwise_x"){
 
       outlierlabel = apply(matrix(0, nrow = n, ncol = p), 2,
                            function(xvec) {xvec[sample(x = 1:n, size = e*n)] = 1; return(xvec)})
@@ -64,7 +64,7 @@ genevar = function(n = 100, p = 10, pr = 5, e = 0, r = 0.5, df = Inf,
 
     }
 
-    if(outtype=="mixed"){
+    if(outtype=="cellwise"){
       outlierlabel = apply(matrix(0, nrow = n, ncol = p), 2,
                            function(xvec) {xvec[sample(x = 1:n, size = e*n)] = 1; return(xvec)})
       outliervalue = rnorm(n = n*p, mean = gamma, sd = 1)

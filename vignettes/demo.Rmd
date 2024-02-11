@@ -10,27 +10,30 @@ vignette: >
 ```{r, include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
-  comment = "#>"
+  comment = "#>", echo = TRUE, message = FALSE, warning = FALSE
 )
 ```
 
-```{r setup, message=FALSE, warning=FALSE}
-library(tidyverse)
+```{r setup}
 library(regcell)
+library(tidyverse)
 ```
 
 
 # A simulated dataset
 ```{r}
-set.seed(2023)
-dat = regcell::genevar(n = 200, p = 100, e = 0.05, sigma = 3)
+set.seed(1234)
+dat = regcell::genevar(n = 200, p = 50, e = 0.05, sigma = 3)
 
 y = dat$y
 x = dat$x
 ```
 
 ## Outlier detection
-```{r fig.height=14, fig.width=7}
+
+Detect outliers using DDC (Rousseeuw and Van Den Bossche, 2018).
+
+```{r fig.height=3, fig.width=7}
 
 fit1 <- cellWise::DDC(x)
 p1 = cellWise::cellMap(fit1$stdResid, columnlabels = c(1,rep(" ",dim(x)[2]-2),dim(x)[2]), rowlabels = c(1,rep(" ",dim(x)[1]-2),dim(x)[1]), columnangle = 0,
@@ -40,11 +43,14 @@ p1 = cellWise::cellMap(fit1$stdResid, columnlabels = c(1,rep(" ",dim(x)[2]-2),di
         axis.title.x = element_text(size = 14),
         axis.title.y = element_text(size = 14),
         legend.title = element_text(size=14), #change legend title font size
-        legend.text = element_text(size=12)) 
+        legend.text = element_text(size=12)) +
+  coord_flip()
 p1
 ```
 
 ## Model training
+
+Create a training set and a testing set.
 ```{r}
 set.seed(1234)
 inTrain <- caret::createDataPartition(y, p = 0.7)[[1]]
@@ -57,16 +63,21 @@ ytest = y[-inTrain]
 xtest = x[-inTrain,]
 ```
 
+
+Fit models using the training set and calculate prediction errors on the testing set.
+
 ```{r}
 set.seed(1234)
 #fit a model using CR-Lasso
-fit0 = sregcell_std(ytrain,xtrain, penal = 1, softbeta = T, prob = 0.995, softzeta = 1, maxiter = 30)
+fit0 = sregcell_std(ytrain,xtrain)
 res = ytest - fit0$intercept_hat - xtest%*%fit0$betahat
 
 #fit a model using RLars
 fit1 = Rlars(ytrain,xtrain)
 res2 = ytest - fit1$betahat[1] - xtest%*%fit1$betahat[-1]
 ```
+
+Show the distribution of prediction errors.
 
 ```{r fig.height=7, fig.width=7}
 df = data.frame(res = c(res, res2), 
@@ -81,29 +92,49 @@ boxplot(res~method, outline = FALSE, data = df)
 
 # The Bodyfat dataset
 
-## methods compared
-```{r}
-mtds = list(
-  # sss = function(y, x){shootings::sparseshooting(x,y)$coef},
-  rlars = function(y, x){regcell::Rlars(y, x)$betahat},
-  # mmlasso = function(y,x){mmlasso::mmlasso(x,y)$coef.MMLasso.ad},
-  slts = function(y,x){robustHD::sparseLTS(x,y)$coefficients},
+This is a demonstration showcasing the comparison of methods on a real dataset.
 
+## methods compared
+```{r eval=FALSE}
+##### methods compared
+mtds = list(
+  ## spase shooting S, codes arefrom https://github.com/ineswilms/sparse-shooting-S 
+  ## package is available from https://github.com/PengSU517/shootings
+  # sss = function(y, x){shootings::sparseshooting(x,y)$coef},
+  
+  ## Rlars, from package robustHD
+  rlars = function(y, x){regcell::Rlars(y, x)$betahat}, 
+  
+  ## MM-Lasso, from https://github.com/esmucler/mmlasso
+  # mmlasso = function(y,x){mmlasso::mmlasso(x,y)$coef.MMLasso.ad}, 
+  
+  ## sparse LTS, from package robustHD
+  slts = function(y,x){regcell::SLTS(y,x)$betahat},
+  
+  ## cellwise regularized Lasso without post regression
+  cell_lasso = function(y,x){ 
+    fit = regcell::sregcell_std(y = y, x = x)
+    return(c(fit$intercept_hat, fit$betahat))
+  },
+
+  ## cellwise regularized Lasso with post regression
   cell_lasso_post = function(y,x){
-    fit = regcell::sregcell_std(y = y, x = x, softbeta = TRUE,
-                                lambda_zeta = 1, penal = 1, penaldelta = 0, prob = 0.99995)##这里好奇怪啊
+    fit = regcell::sregcell_std(y = y, x = x)
     return(c(fit$intercept_hat_post, fit$betahat_post))
   },
 
-  lasso  = function(y,x){
+  ## Lasso, from package glmnet
+  lasso  = function(y,x){ 
     return(regcell::lassocv(y,x)$betahat)
   }
 
 )
-
 ```
 
-```{r}
+
+Load the Bodyfat dataset.
+
+```{r eval=FALSE}
 library(mfp)
 data("bodyfat")
 y = bodyfat$brozek
@@ -115,17 +146,19 @@ x = as.matrix(x)
 ```{r eval = FALSE}
 library(doParallel)
 result <- foreach(mtd = 1:length(mtds),
-                  .packages = c("lars", "robustHD", "robustbase" , "mmlasso",
-                                "shootings", "cellWise", "regcell", "purrr", "robcovsel", "mfp"))%:%
+                  .packages = c("robustHD", "robustbase" , "mmlasso","shootings", "cellWise", "regcell", "mfp"))%:%
   foreach(obs = 1:dim(x)[1])%dopar%{
 
+    ###set training sets and testing sets
     ytrain = y[-obs]
     xtrain = as.matrix(x[-obs,])
     ytest = y[obs]
     xtest = x[obs,]
 
+    # fit models
     betahat = mtds[[mtd]](ytrain,xtrain)
 
+    #calculate prediction errors
     res = ytest - betahat[1] - sum(xtest*betahat[-1])
     rst = c(mtd = names(mtds)[mtd], n = obs, res = res)
 

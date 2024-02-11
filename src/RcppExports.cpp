@@ -66,8 +66,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // reg_beta
-List reg_beta(arma::vec yclean, arma::mat xclean, arma::vec betahat, double intercept, arma::vec alambdavec_beta, bool softbeta, double maxiterbeta);
-RcppExport SEXP _regcell_reg_beta(SEXP ycleanSEXP, SEXP xcleanSEXP, SEXP betahatSEXP, SEXP interceptSEXP, SEXP alambdavec_betaSEXP, SEXP softbetaSEXP, SEXP maxiterbetaSEXP) {
+List reg_beta(arma::vec yclean, arma::mat xclean, arma::vec betahat, double intercept, arma::vec alambdavec_beta, bool softbeta, double tol, double maxiterbeta);
+RcppExport SEXP _regcell_reg_beta(SEXP ycleanSEXP, SEXP xcleanSEXP, SEXP betahatSEXP, SEXP interceptSEXP, SEXP alambdavec_betaSEXP, SEXP softbetaSEXP, SEXP tolSEXP, SEXP maxiterbetaSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -77,8 +77,9 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< double >::type intercept(interceptSEXP);
     Rcpp::traits::input_parameter< arma::vec >::type alambdavec_beta(alambdavec_betaSEXP);
     Rcpp::traits::input_parameter< bool >::type softbeta(softbetaSEXP);
+    Rcpp::traits::input_parameter< double >::type tol(tolSEXP);
     Rcpp::traits::input_parameter< double >::type maxiterbeta(maxiterbetaSEXP);
-    rcpp_result_gen = Rcpp::wrap(reg_beta(yclean, xclean, betahat, intercept, alambdavec_beta, softbeta, maxiterbeta));
+    rcpp_result_gen = Rcpp::wrap(reg_beta(yclean, xclean, betahat, intercept, alambdavec_beta, softbeta, tol, maxiterbeta));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -146,7 +147,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_regcell_threshold_mat", (DL_FUNC) &_regcell_threshold_mat, 3},
     {"_regcell_threshold_svd", (DL_FUNC) &_regcell_threshold_svd, 3},
     {"_regcell_rob_pca", (DL_FUNC) &_regcell_rob_pca, 5},
-    {"_regcell_reg_beta", (DL_FUNC) &_regcell_reg_beta, 7},
+    {"_regcell_reg_beta", (DL_FUNC) &_regcell_reg_beta, 8},
     {"_regcell_reg_delta", (DL_FUNC) &_regcell_reg_delta, 8},
     {"_regcell_reg_zeta", (DL_FUNC) &_regcell_reg_zeta, 5},
     {"_regcell_reg_beta_delta", (DL_FUNC) &_regcell_reg_beta_delta, 15},

@@ -41,7 +41,7 @@ lambdamax_beta = function(y, x, betahat, intercept,
 
 
 
-#' robust sparse regression under cellwise contaminaton (with a grid of lambdas)
+#' robust sparse regression under cellwise contamination (with a grid of lambdas)
 #'
 #' @param y response
 #' @param x design matrix
@@ -55,8 +55,8 @@ lambdamax_beta = function(y, x, betahat, intercept,
 #' @param alpha the importance factor of the regression loss (between 0-1, by default is 0.5)
 #' @param penal the penalty parameter for model selection (by default is 1, equivalent to BIC )
 #' @param penaldelta the penalty of number of detected outliers (for debug, by default is 0)
-#' @param tol the tolerence of convergence
-#' @param maxiter number of interations
+#' @param tol the tolerance of convergence
+#' @param maxiter number of iterations
 #'
 #' @return
 #' betahat: the estimated beta
@@ -80,7 +80,7 @@ sregcell = function(y,x, betahat = NULL, intercept = NULL,
                     softbeta = TRUE, softdelta = TRUE, softzeta = TRUE,
                     lambda_delta = 2.56, lambda_zeta = 2.56, alpha = 0.5,
                     penal = 1, penaldelta = 1,
-                    tol = 1e-4, maxiter = 100){
+                    tol = 1e-3, maxiter = 100){
 
   # {
   #   betahat = NULL
@@ -185,7 +185,7 @@ sregcell = function(y,x, betahat = NULL, intercept = NULL,
   return(list(allfits = allfits, result_opt = result_opt,
               grid = grid, activebeta = activebeta, ic = ic,
               colactivedelta = colactivedelta, betamat = betamat, label = label,
-              k = result_opt$k, k_post = fit_post$k,
+              k = result_opt$k, k_post = fit_post$k,colactivedelta = colactivedelta,
               betahat = betahat, intercept_hat = intercept_hat,
               betahat_post = betahat_post, intercept_hat_post = intercept_hat_post))
 }
@@ -219,7 +219,7 @@ sregcell = function(y,x, betahat = NULL, intercept = NULL,
 #'
 sregcell_lambda = function(y,x, softbeta = TRUE, softdelta = TRUE, softzeta = TRUE,
                            lambda_delta = 2.56, lambda_zeta = 2.56, lambda = 0, alpha = 0.5,
-                           tol = 1e-4, maxiter = 100){
+                           tol = 1e-3, maxiter = 100){
 
   n = dim(x)[1]
   p = dim(x)[2]
@@ -303,7 +303,7 @@ sregcell_std = function(y,x,
                         lambda_delta = NULL, lambda_zeta = 1, prob = 0.995,
                         alpha = 0.5,
                         penal = 1, penaldelta = 0,
-                        tol = 1e-4, maxiter = 100){
+                        tol = 1e-3, maxiter = 30){
 
 
   x = as.matrix(x)
@@ -350,6 +350,7 @@ sregcell_std = function(y,x,
 
   return(list(betahat = betahat, intercept_hat = intercept_hat, label = label,
               betahat_post = betahat_post, intercept_hat_post = intercept_hat_post,
+              k = rst$k, k_post = rst$k_post, colactivedelta = rst$colactivedelta,
               sigmahat = sigmahat, mux = mux, scalex = scalex))
 }
 

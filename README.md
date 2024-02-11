@@ -2,7 +2,7 @@
 
 - This package provides the functions to compute the CR-Lasso (cellwise regularized Lasso) proposed by Peng Su, Samuel Muller, Garth Tarr and Suojin Wang. The manuscript can be found [here](https://arxiv.org/abs/2307.05234).
 
-- We added a demonstration (demo) in vignettes.
+- We added a demonstration (demo), a simulation demonstration (simu) and a real data demonstration (realdata) in vignettes.
 
 - We also created an online R repository with some example scripts.  https://posit.cloud/content/6051440
 

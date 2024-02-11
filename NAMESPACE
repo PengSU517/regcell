@@ -1,25 +1,20 @@
 useDynLib(regcell, .registration=TRUE)
-importFrom(Rcpp, evalCpp)
-#import("robustbase")
-#import("robustHD")
-#import("glmnet")
-#import("mvtnorm")
-#import("cellWise")
-#import("caret")
 
+importFrom(Rcpp, evalCpp)
 importFrom("robustbase","Qn")
 importFrom("robustHD","rlars", "sparseLTS", "robStandardize")
 importFrom("glmnet", "cv.glmnet")
 importFrom("mvtnorm","rmvt")
-importFrom("cellWise","DDC", "cellMap")
-importFrom("caret","createDataPartition")
 
 
-exportPattern("^[[:alpha:]]+")
 
-#export(sregcell)
-#export(sregcell_std)
-#export(sregcell_lambda)
-#export(genevar)
-#export(Rlars)
-#export(lassocv)
+#exportPattern("^[[:alpha:]]+")
+
+export(sregcell)
+export(sregcell_std)
+export(sregcell_lambda)
+export(genevar)
+export(Rlars)
+export(SLTS)
+export(lassocv)
+

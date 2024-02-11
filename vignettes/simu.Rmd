@@ -16,60 +16,50 @@ knitr::opts_chunk$set(
 
 ```{r setup}
 library(regcell)
+library(tidyverse)
 ```
 
-The following code is utilized for running simulations in parallel.
+
+The following code is utilized for running simulations (in parallel).
 
 ```{r echo=TRUE, eval=FALSE}
-library(doParallel)
+library(doParallel) ####parallel computation
 registerDoParallel(cores=10)
 getDoParWorkers()
 
 ###### data generation settings
 
 {
-  ms = 1:2 
-  ns = c(200)
-  ps = c(50)
-  prs = c(10)
-  es = c(0, 0.02, 0.05)
-  rs = c(0.5)
-  gammas = c(0, 2, 4, 6, 8)
-  # sigmas = c(2)
-  dfs = c(1, 4, Inf)
-  outtypes = c("rowwise", "cellwise")
-}
-
-{
-  m = 1
-  n = 100
-  p = c(20)
-  pr = c(10)
-  e = c(0.05)
-  r = c(0.5)
-  gamma = c(6)
-  df = c(Inf)
-  outtype = c("mixed")
+  ms = 1:2   # the number of simulations
+  ns = c(200) # sample size
+  ps = c(50) # num of candidate predictors
+  prs = c(10) # number of informative candidata predictors
+  es = c(0, 0.02, 0.05) # contamination rates
+  rs = c(0.5) # correlation among predictors
+  gammas = c(0, 2, 4, 6, 8) # magnitude of outlyingness
+  # sigmas = c(2) # variance of residuals, not used
+  dfs = c(1, 4, Inf) # degrees of freedom generating predictors
+  outtypes = c("rowwise", "cellwise") # types of contamination
 }
 
 
 
-
-##### methods
+##### methods compared
 mtds = list(
-  ## spase shooting S, from https://github.com/ineswilms/sparse-shooting-S
-  sss = function(y, x){shootings::sparseshooting(x,y)$coef},
+  ## spase shooting S, codes arefrom https://github.com/ineswilms/sparse-shooting-S 
+  ## package is available from https://github.com/PengSU517/shootings
+  # sss = function(y, x){shootings::sparseshooting(x,y)$coef},
   
   ## Rlars, from package robustHD
   rlars = function(y, x){regcell::Rlars(y, x)$betahat}, 
   
   ## MM-Lasso, from https://github.com/esmucler/mmlasso
-  mmlasso = function(y,x){mmlasso::mmlasso(x,y)$coef.MMLasso.ad}, 
+  # mmlasso = function(y,x){mmlasso::mmlasso(x,y)$coef.MMLasso.ad}, 
   
   ## sparse LTS, from package robustHD
-  slts = function(y,x){robustHD::sparseLTS(x,y)$coefficients}, 
+  slts = function(y,x){regcell::SLTS(y,x)$betahat},
   
-  ## cellwise regularized Lasso 
+  ## cellwise regularized Lasso without post regression
   cell_lasso = function(y,x){ 
     fit = regcell::sregcell_std(y = y, x = x, softbeta = TRUE, lambda_zeta = 1, penal = 1, penaldelta =0)
     return(c(fit$intercept_hat, fit$betahat))
@@ -90,8 +80,7 @@ mtds = list(
 
 {
   result <- foreach(m = ms,
-                    .packages = c("lars", "robustHD", "robustbase" , "mmlasso",
-                                  "shootings", "cellWise", "regcell", "purrr"))%:%
+                    .packages = c("robustHD", "robustbase" , "mmlasso","shootings", "cellWise", "regcell"))%:%
     foreach(n = ns)%:%
     foreach(p = ps)%:%
     foreach(pr = prs)%:%
@@ -104,15 +93,15 @@ mtds = list(
 
       {
         seed = m
-        set.seed(seed = seed)
-        beta = c(rep(1,pr),rep(0,p-pr))#*c(1,-1)
+        set.seed(seed = seed) ##set random seed
+        beta = c(rep(1,pr),rep(0,p-pr))#*c(1,-1)  ###set beta
         dataset = regcell::genevar(n = n, p = p, e = e, r = r, beta = beta,intercept = 1,
                                    gamma = gamma, df = df, outtype = outtype, sigma = 3,
-                                   mux = rep(0,p), scalex = 1)
-        x  = dataset$x
-        xc = dataset$xc
-        y  = dataset$y
-        ynew = dataset$ynew
+                                   mux = rep(0,p), scalex = 1) ##generate datasets
+        x  = dataset$x # the clean design matrix
+        xc = dataset$xc # the contaminated design matrix
+        y  = dataset$y # the response
+        ynew = dataset$ynew # # another response vector for calculating prediction errors
       }
 
       rst = list()
@@ -120,15 +109,15 @@ mtds = list(
         for (mtd in 1:length(mtds)) {
           rst[[mtd]]=rep(NA, 27)
           try({
-            timing  = system.time({betahat = mtds[[mtd]](y,x)})["elapsed"]
-            mspe = mean((ynew - cbind(1,xc)%*%betahat)^2)
-            mape = mean(abs(ynew - cbind(1,xc)%*%betahat))
-            rtmspe = sqrt(mean(sort((ynew - cbind(1,xc)%*%betahat)^2)[1:(0.9*n)]))##trimed mean 
+            timing  = system.time({betahat = mtds[[mtd]](y,x)})["elapsed"] ##calculate time consuming
+            mspe = mean((ynew - cbind(1,xc)%*%betahat)^2) #mean squared prediction error
+            mape = mean(abs(ynew - cbind(1,xc)%*%betahat)) # mean absolute prediction error
+            rtmspe = sqrt(mean(sort((ynew - cbind(1,xc)%*%betahat)^2)[1:(0.9*n)]))## root of trimed mspe 
 
-            tpf<-function(betahat, beta){sum((as.logical(betahat)==as.logical(beta))[1:pr])}
-            tnf<-function(betahat,beta){sum((as.logical(betahat)==as.logical(beta))[-(1:pr)])}
-            tp = tpf(betahat[-1], beta)
-            tn = tnf(betahat[-1], beta)
+            tpf<-function(betahat, beta){sum((as.logical(betahat)==as.logical(beta))[1:pr])} 
+            tnf<-function(betahat,beta){sum((as.logical(betahat)==as.logical(beta))[-(1:pr)])} 
+            tp = tpf(betahat[-1], beta) # true positive rate
+            tn = tnf(betahat[-1], beta) # true negative rate
 
             rst[[mtd]] = c(m = m, n = n, p = p, pr = pr, e = e, r = r,
                            gamma = gamma, outtype = outtype, df = df,
@@ -145,7 +134,7 @@ mtds = list(
       rst
     }
 
-  save(result, file = "result_n200_p50_sigma3.RData")
+  save(result, file = "result_simu.RData")
 }
 
 
