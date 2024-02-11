@@ -4,7 +4,7 @@
 
 - We added a demonstration (demo), a simulation demonstration (simu) and a real data demonstration (realdata) in vignettes.
 
-- We also created an online R repository with some example scripts.  https://posit.cloud/content/6051440
+- We also created an online R repository with some example scripts.  https://posit.cloud/content/7571075
 
 To get started, you can install the package using:
 
