@@ -20,6 +20,7 @@ library(tidyverse)
 ```
 
 
+# Simulation 
 The following code is utilized for running simulations (in parallel).
 
 ```{r echo=TRUE, eval=FALSE}
@@ -30,7 +31,7 @@ getDoParWorkers()
 ###### data generation settings
 
 {
-  ms = 1:2   # the number of simulations
+  ms = 1:200   # the number of simulations
   ns = c(200) # sample size
   ps = c(50) # num of candidate predictors
   prs = c(10) # number of informative candidata predictors
@@ -38,8 +39,8 @@ getDoParWorkers()
   rs = c(0.5) # correlation among predictors
   gammas = c(0, 2, 4, 6, 8) # magnitude of outlyingness
   # sigmas = c(2) # variance of residuals, not used
-  dfs = c(1, 4, Inf) # degrees of freedom generating predictors
-  outtypes = c("rowwise", "cellwise") # types of contamination
+  dfs = c(4, Inf) # degrees of freedom generating predictors
+  outtypes = c("cellwise") # types of contamination
 }
 
 
@@ -56,18 +57,18 @@ mtds = list(
   ## MM-Lasso, from https://github.com/esmucler/mmlasso
   # mmlasso = function(y,x){mmlasso::mmlasso(x,y)$coef.MMLasso.ad}, 
   
-  ## sparse LTS, from package robustHD
-  slts = function(y,x){regcell::SLTS(y,x)$betahat},
+  ## sparse LTS, from package robustHD, an alternative using BIC is regcell::SLTS
+  slts = function(y,x){robustHD::sparseLTS(x,y)$coefficients},
   
   ## cellwise regularized Lasso without post regression
   cell_lasso = function(y,x){ 
-    fit = regcell::sregcell_std(y = y, x = x, softbeta = TRUE, lambda_zeta = 1, penal = 1, penaldelta =0)
+    fit = regcell::sregcell_std(y = y, x = x)
     return(c(fit$intercept_hat, fit$betahat))
   },
 
   ## cellwise regularized Lasso with post regression
   cell_lasso_post = function(y,x){
-    fit = regcell::sregcell_std(y = y, x = x, softbeta = TRUE, lambda_zeta = 1, penal = 1, penaldelta =0)
+    fit = regcell::sregcell_std(y = y, x = x)
     return(c(fit$intercept_hat_post, fit$betahat_post))
   },
 
@@ -139,4 +140,155 @@ mtds = list(
 
 
 ```
+
+
+# Analysis
+
+The following code is employed to analyze the generated results.
+
+```{r}
+result1 = as.data.frame(t(as.data.frame(result)))
+names(result1) = c("m", "n", "p", "pr", "e", "r", "gamma", "outtype", "df", "method", "seed",
+                        "MSPE", "MAPE", "RTMSPE", "TP", "FP", "Time", paste("betahat", 1:10))
+
+result2 = result1 %>% mutate(across(c(1:7,9, 11:21), as.numeric), 
+                             across(5:11, as.factor), 
+                             TN = p-pr-FP,
+                             FN = pr - TP,
+                             BACC = (TP/pr + TN/(p-pr))/2,
+                             F1 = 2*TP/(2*TP + FP + FN),
+                             ## MCC = (TP*TN-FP*FN)/sqrt((TP+FP)*(TN+FN)*pr*(p - pr)),
+                             RMSPE = sqrt(MSPE))
+
+# levels(result2$e) = c("e = 0%", "e = 2%", "e = 5%")
+# levels(result2$df) = c("t(4)", "Normal")
+# result2$df = factor(result2$df, levels = c("Normal" ,"t(4)" ))
+
+# levels(result2$gamma) = c(" ", "2", "4", "6", "8")
+# levels(result2$r) = c("r = 0.25", "r = 0.5", "r = 0.75")
+# levels(result2$method) = c("CR-Lasso", "Lasso", "MM-Lasso", "RLars", "SLTS", "SSS")
+# result2$method = factor(result2$method, levels = c("CR-Lasso", "SSS", "RLars", "MM-Lasso", "SLTS", "Lasso"))
+# result2$method = factor(result2$method, levels = c("CR-Lasso", "SSS", "RLars", "MM-Lasso", "SLTS", "Lasso", "CR-Lasso_old", "Lasso_old"))
+result2 = result2[complete.cases(result2),]
+
+
+result3 = result2 %>% filter((p==50))
+
+
+```
+
+
+```{r fig.width=10, fig.height=7, echo=FALSE}
+
+p1 = ggplot(data = result3)+
+  geom_boxplot(aes(fill = method, x = gamma, y = RMSPE),outlier.size = 0.2, lwd = 0.4)+
+  facet_grid(df~e, scales = "free", space = "free_x") +
+  # scale_y_continuous(limits = quantile(result3$MAPE, c(0, 0.95)))+
+  # ylim(0,6)+
+  theme_bw()+
+  labs(x = " ")+
+  # labs(x = expression(gamma*": magnitude of outlyingness"))+
+  
+  theme(text= element_text(size=20), 
+        #axis.text.x = element_blank(),
+        legend.position = "bottom")
+p1
+
+# names = paste("plot_rmspe_rowwise_p",unique(result3$p), ".eps", sep = "")
+# # names = paste("plot_rmspe_sigma3_n200_p",unique(result3$p), ".eps", sep = "")
+# ggsave(names, plot = p1, width = 10,height = 7)
+```
+
+
+
+```{r}
+
+summary = result3 %>% group_by(n,p, pr,e,r,gamma, df, method,outtype) %>% summarise(
+  TP = mean(TP, na.rm = T),
+  FP = mean(FP, na.rm = T),
+  TPR = mean(TP/pr, na.rm = T),
+  FPR = mean(FP/(p-pr), na.rm = T),
+  TNR = 1-FPR,
+  BACC = mean(BACC),
+  F1 = mean(F1),
+  MCC = mean(MCC))
+
+# 
+# summ =  result3 %>% group_by(method) %>% summarise(
+#   Time = mean(Time))
+
+
+summ = summary[,c("e", "df", "method", "F1")]
+# summm = spread(summ, key = method, value = F1)
+# summm[,-(1:2)] = round(summm[,-(1:2)],2)
+# knitr::kable(summm, format = "latex")
+```
+
+
+```{r fig.width=10, fig.height=7, echo=FALSE}
+p2 = ggplot(data = summary, aes(x = gamma, y = TPR, group = method))+
+  geom_point(aes(color = method))+
+  geom_line(aes(linetype = method, color = method))+ 
+  facet_grid(df~e, scales = "free", space = "free_x") +
+  #scale_y_continuous(limits = c(0, 1))+
+  ylim(0,1)+
+  theme_bw()+
+  labs(x = expression(gamma*": magnitude of outlyingness"))+
+  theme(text= element_text(size=20), 
+        #axis.text.x = element_blank(),
+        legend.position = "bottom")
+p2
+
+# names = paste("plot_tpr_rowwise_p",unique(result3$p), ".eps", sep = "")
+# ggsave(names, plot = p2, width = 10,height = 7)
+```
+
+
+
+```{r fig.width=10, fig.height=7, echo=FALSE}
+
+p2 = ggplot(data = summary, aes(x = gamma, y = FPR, group = method))+
+  geom_point(aes(color = method))+
+  geom_line(aes(linetype = method, color = method))+ 
+  facet_grid(df~e, scales = "free", space = "free_x") +
+  #scale_y_continuous(limits = c(0, 1))+
+  ylim(0,1)+
+  theme_bw()+
+  labs(x = expression(gamma*": magnitude of outlyingness"))+
+  theme(text= element_text(size=20), 
+        #axis.text.x = element_blank(),
+        legend.position = "bottom")
+p2
+
+# names = paste("plot_fpr_rowwise_p",unique(result3$p), ".eps", sep = "")
+# ggsave(names, plot = p2, width = 10,height = 7)
+```
+
+
+```{r fig.width=10, fig.height=7, echo=FALSE}
+
+p2 = ggplot(data = summary, aes(x = gamma, y = F1, group = method))+
+  geom_point(aes(color = method))+
+  geom_line(aes(linetype = method, color = method))+ 
+  facet_grid(df~e, scales = "free", space = "free_x") +
+  #scale_y_continuous(limits = c(0, 1))+
+  ylim(0,1)+
+  theme_bw()+
+  labs(x = expression(gamma*": magnitude of outlyingness"), 
+       y = expression(F[1]))+
+  theme(text= element_text(size=20), 
+        #axis.text.x = element_blank(),
+        legend.position = "bottom")
+p2
+
+# names = paste("plot_f1_rowwise_p",unique(result3$p), ".eps", sep = "")
+# ggsave(names, plot = p2, width = 10,height = 7)
+```
+
+
+
+
+
+
+
 

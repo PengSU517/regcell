@@ -321,7 +321,8 @@ sregcell_std = function(y,x,
     xstd = stdrst$x
   }
 
-  { set.seed(2)
+  {
+    # set.seed(2)
     fit0 = regcell::Rlars(y,xstd)
     sigmahat = fit0$sigmahat # tend to overestimate
 

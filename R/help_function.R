@@ -49,7 +49,9 @@ Rlars = function(y, x){
 #' x = data$x
 #' fit = Rlars(y,x)
 SLTS = function(y, x){
-  frac <- seq(1, 0.025, by = -0.025)
+
+  lmin = 0.001
+  frac = c(exp(seq(log(1),log(lmin),length = 50)))
   if(dim(x)[1]>dim(x)[2]){frac = c(frac, 0)}
   fitslts = suppressWarnings(robustHD::sparseLTS(x, c(y), lambda = frac, mode = "fraction"))
   betahat = fitslts$coefficients[,fitslts$crit$best[1]]
