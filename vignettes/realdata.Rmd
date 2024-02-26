@@ -37,6 +37,7 @@ Direct links to the data files:
 
 ```{r, eval = FALSE}
 ## array expression data
+## array expression data
 expressiondat = readr::read_tsv("Normarrayexpressdata.txt.magetab") |> 
   t() |> 
   data.frame() |> 
@@ -53,7 +54,7 @@ featuredat = readr::read_tsv("E-MEXP-1618.sdrf.txt") |>
   janitor::clean_names() |> 
   dplyr::mutate(id = readr::parse_number(source_name)) |> 
   dplyr::select(id,
-                hip_t = characteristics_total_hip_t_score)
+                hip_t = characteristics_total_hip_t_score) |> arrange(id) ####sort obs by patient ID
 
 # merged data
 datall = dplyr::left_join(featuredat, expressiondat, 
@@ -70,15 +71,18 @@ The screened data comprise measurements of $p = 100$ genes from $n = 84$ Norwegi
 
 ```{r}
 datall = readr::read_rds("datall.rds")
-x = datall |> dplyr::select(-id, -hip_t) |> as.matrix()
+x = datall |> dplyr::select(-id, -hip_t) |> as.matrix() 
+
 y = datall |> dplyr::select(hip_t) |> pull()
 ## huber correlation
 corh = apply(x, 2,
              FUN = function(xvec){robustHD::corHuber(xvec, y)})
+
 orders = order(abs(corh), decreasing = TRUE)
 xscreen = (x[,orders])[,1:100]
 # pairs(cbind(y,xscreen[,1:5]))
 datascreen = cbind(y, xscreen)
+rownames(datascreen) = datall$id
 readr::write_rds(datascreen, file = "datascreen.rds")
 ```
 
@@ -89,15 +93,18 @@ Cells are flagged as outlying if the observed and predicted values differ too mu
 Most cells are blank, showing they are not detected as outliers. 
 A red cell means the observed value is significantly higher than the predicted value, and a blue cell means the observed value is significantly lower.
 
-```{r fig-outliervis}
+```{r fig-outliervis, fig.height=7, fig.width=10}
 datascreen = read_rds(file = "datascreen.rds")
+
+data(datascreen)
 x = datascreen[,-1]
+fit1 <- cellWise::DDC(x)
 cellWise::cellMap(
-  t(x),
-  columnlabels = c(1,rep(" ",dim(x)[1]-2),dim(x)[1]),
-  rowlabels = c(1,rep(" ",dim(x)[2]-2),dim(x)[2]),
+  fit1$stdResid,
+  columnlabels = c(1,rep(" ",dim(x)[2]-2),dim(x)[2]),
+  rowlabels = c(1,rep(" ",dim(x)[1]-2),dim(x)[1]),
   columnangle = 0,
-  rowtitle = "Genes", columntitle = "Observations",
+  rowtitle = "Observations", columntitle = "Genes",
   sizetitles = 2,
   adjustrowlabels = 0.5,
   adjustcolumnlabels = 0.5)+
@@ -106,12 +113,25 @@ cellWise::cellMap(
         axis.title.x = element_text(size = 14),
         axis.title.y = element_text(size = 14),
         legend.title = element_text(size=14), #change legend title font size
-        legend.text = element_text(size=12)) +
-  coord_flip()
+        legend.text = element_text(size=12)) 
+
+```
+
+```{r}
+###average contamination rate
+mean((x - fit1$Ximp)!=0)
+
+###col average
+max(colMeans((x - fit1$Ximp)!=0))
+which.max(colMeans((x - fit1$Ximp)!=0))
+
+### row average
+max(rowMeans((x - fit1$Ximp)!=0))
+which.max(rowMeans((x - fit1$Ximp)!=0))
 ```
 
 On average, the screened genes exhibit a contamination rate of $3.61\%$, with the probe $\textrm{236831\_at}$ having the highest contamination rate of $9.52\%$. 
-Among the observations, the thirteenth observation shows the highest contamination rate at $22\%$.
+Among the observations, the thirteenth observation with the patient ID 20 shows the highest contamination rate at $22\%$.
 
 ## All methods compared
 
