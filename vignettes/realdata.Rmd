@@ -1,8 +1,10 @@
 ---
-title: "realdata"
+title: "Bone mineral density data"
 output: rmarkdown::html_vignette
+bibliography: refs.bib
+csl: apa-old-doi-prefix.csl
 vignette: >
-  %\VignetteIndexEntry{realdata}
+  %\VignetteIndexEntry{Bone mineral density data}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -10,74 +12,110 @@ vignette: >
 ```{r, include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
-  comment = "#>", echo = TRUE, eval = FALSE, message = FALSE, warning = FALSE
+  comment = "#>", echo = TRUE, eval = TRUE, message = FALSE, warning = FALSE
 )
 ```
 
 ```{r setup}
 library(regcell)
 library(tidyverse)
+library(janitor)
 ```
 
-# Load raw datasets
+To illustrate the use of CR-Lasso, we consider the bone mineral density (BMD) data from @reppe2010eight. 
+The data are publicly available in the [European Bioinformatics Institute Array-Express repository](https://www.ebi.ac.uk/arrayexpress/experiments/E-MEXP-1618).
+The BMD data consists of gene expression measurements of 54,675 probes of 84 Norwegian women.
 
-Load the original datasets and retain the necessary variables.
+Microarray measurements are often contaminated (noisy), as @rocke2001model highlighted. This contamination can stem from multiple sources, thereby obscuring the gene expression in the data [@zakharkin2005sources].
 
-Raw datasets are from https://www.ebi.ac.uk/arrayexpress/experiments/E-MEXP-1618/.
+## Importing the data
 
-```{r}
-###load the micro-array dataset
-dat = as.data.frame(t(read.csv("Normarrayexpressdata.txt.magetab", sep = "\t")))
-datc = dat
-colnames(datc) = datc[1,]
-datcc = datc[-1,]
+Direct links to the data files:
 
-colnames(datcc)[1] = "id"
-datcc$id = extract_numeric(rownames(datcc))
+- [Normarrayexpressdata.txt.magetab](https://www.ebi.ac.uk/biostudies/files/E-MEXP-1618/Normarrayexpressdata.txt.magetab)
+- [E-MEXP-1618.sdrf.txt](https://www.ebi.ac.uk/biostudies/files/E-MEXP-1618/E-MEXP-1618.sdrf.txt)
 
-### load the feature dataset
-featuredat = read.csv("E-MEXP-1618.sdrf.txt", sep = "\t")
-featuredat$id = extract_numeric(featuredat$Source.Name)
+```{r, eval = FALSE}
+## array expression data
+expressiondat = readr::read_tsv("Normarrayexpressdata.txt.magetab") |> 
+  t() |> 
+  data.frame() |> 
+  janitor::row_to_names(row_number = 1) |> 
+  tibble::rownames_to_column(var = "id") |> 
+  dplyr::mutate(id = readr::parse_number(id)) |> 
+  janitor::clean_names() |> 
+  dplyr::select(-composite_element_ref) |>
+  mutate(across(.cols = -1, .fns = as.numeric)) |> 
+  mutate(across(.cols = -1, .fns = log))
 
-# merge them and keep necessary variables
-datall = merge(featuredat, datcc, by = "id")
-y = datall$Characteristics..Total.Hip.T.score.
-x = datall[,-(1:50)] %>% mutate(across(.fns = as.numeric))
-logx = log(x)
+### feature dataset
+featuredat = readr::read_tsv("E-MEXP-1618.sdrf.txt") |> 
+  janitor::clean_names() |> 
+  dplyr::mutate(id = readr::parse_number(source_name)) |> 
+  dplyr::select(id,
+                hip_t = characteristics_total_hip_t_score)
 
-data_bmd = cbind(y, logx)
-save(data_bmd, file = "data_bmd.RData")
+# merged data
+datall = dplyr::left_join(featuredat, expressiondat, 
+                          by = "id")
+write_rds(datall, file = "datall.rds", compress = "gz")
 ```
 
 
-# Screen variables
+## Feature screening
 
-Screen correlated variables according to a robust correlation estimate based on Winsorization.
-The screened dataset `datascreen` is included in this package.
+Given the large number of variables in the dataset, a pre-screening step was implemented to identify the subset of variables that are most correlated with the outcome of interest, the total hip T-score. 
+To accomplish this, we first log-transformed all the predictors and then utilized the robust correlation estimate based on winsorization as in @khan2007robust, instead of the Pearson correlation, since winsorization is more robust to outliers that may occur in the dataset.
+The screened data comprise measurements of $p = 100$ genes from $n = 84$ Norwegian women.
 
 ```{r}
-x = data_bmd[,-1]
-y = data_bmd[,1]
-
-xnormal = x
-
-## calculate robust correlation and screen variables
-corh = apply(xnormal,2, function(xvec){robustHD::corHuber(xvec,y)})   ## huber correlation
-orders = order(abs(corh), decreasing = T)
-xscreen = (xnormal[,orders])[,1:100]
-# corh_screened = apply(xscreen,2, function(xvec){robustHD::corHuber(xvec,y)})
+datall = readr::read_rds("datall.rds")
+x = datall |> dplyr::select(-id, -hip_t) |> as.matrix()
+y = datall |> dplyr::select(hip_t) |> pull()
+## huber correlation
+corh = apply(x, 2,
+             FUN = function(xvec){robustHD::corHuber(xvec, y)})
+orders = order(abs(corh), decreasing = TRUE)
+xscreen = (x[,orders])[,1:100]
 # pairs(cbind(y,xscreen[,1:5]))
-
-datascreen = cbind(y,xscreen)
-save(datascreen, file = "datascreen.RData")
-
-
+datascreen = cbind(y, xscreen)
+readr::write_rds(datascreen, file = "datascreen.rds")
 ```
 
+The screened data, `datascreen.rds`, is included in the `regcell` package.
 
-# All methods compared
+The plot below shows the outlier cell map for 100 screened variables on 84 Norwegian women using the DDC method @rousseeuw_detecting_2018. 
+Cells are flagged as outlying if the observed and predicted values differ too much. 
+Most cells are blank, showing they are not detected as outliers. 
+A red cell means the observed value is significantly higher than the predicted value, and a blue cell means the observed value is significantly lower.
 
-```{r}
+```{r fig-outliervis}
+datascreen = read_rds(file = "datascreen.rds")
+x = datascreen[,-1]
+cellWise::cellMap(
+  t(x),
+  columnlabels = c(1,rep(" ",dim(x)[1]-2),dim(x)[1]),
+  rowlabels = c(1,rep(" ",dim(x)[2]-2),dim(x)[2]),
+  columnangle = 0,
+  rowtitle = "Genes", columntitle = "Observations",
+  sizetitles = 2,
+  adjustrowlabels = 0.5,
+  adjustcolumnlabels = 0.5)+
+  theme(axis.text.x = element_text(size = 12),
+        axis.text.y = element_text(size = 12),
+        axis.title.x = element_text(size = 14),
+        axis.title.y = element_text(size = 14),
+        legend.title = element_text(size=14), #change legend title font size
+        legend.text = element_text(size=12)) +
+  coord_flip()
+```
+
+On average, the screened genes exhibit a contamination rate of $3.61\%$, with the probe $\textrm{236831\_at}$ having the highest contamination rate of $9.52\%$. 
+Among the observations, the thirteenth observation shows the highest contamination rate at $22\%$.
+
+## All methods compared
+
+```{r, eval = FALSE}
 ##### methods compared
 mtds = list(
   ## spase shooting S, codes arefrom https://github.com/ineswilms/sparse-shooting-S 
@@ -114,9 +152,9 @@ mtds = list(
 ```
 
 
-# Analysis with artifically generated response
+## Analysis with artifically generated response
 
-```{r}
+```{r, eval =FALSE}
 library(doParallel)
 registerDoParallel(cores=10)
 getDoParWorkers()
@@ -164,10 +202,10 @@ save(result, file = "result_realdata_artificial.RData")
 ```
 
 
-# Leave-one-out Cross-Validation
+## Leave-one-out Cross-Validation
 
 
-```{r}
+```{r, eval = FALSE}
 
 data(datascreen)
 
