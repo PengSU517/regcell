@@ -157,8 +157,7 @@ predicted value, and a blue cell means the observed value is
 significantly lower.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">datascreen</span> <span class="op">=</span> <span class="fu"><a href="https://readr.tidyverse.org/reference/read_rds.html" class="external-link">read_rds</a></span><span class="op">(</span>file <span class="op">=</span> <span class="st">"datascreen.rds"</span><span class="op">)</span></span>
-<span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">datascreen</span><span class="op">)</span></span>
+<span><span class="co"># data(datascreen)</span></span>
 <span><span class="va">x</span> <span class="op">=</span> <span class="va">datascreen</span><span class="op">[</span>,<span class="op">-</span><span class="fl">1</span><span class="op">]</span></span>
 <span><span class="va">fit1</span> <span class="op">&lt;-</span> <span class="fu">cellWise</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/cellWise/man/DDC.html" class="external-link">DDC</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span></span>
 <span><span class="co">#&gt;  </span></span>
@@ -188,14 +187,15 @@ significantly lower.</p>
 <span><span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">max</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/colSums.html" class="external-link">colMeans</a></span><span class="op">(</span><span class="op">(</span><span class="va">x</span> <span class="op">-</span> <span class="va">fit1</span><span class="op">$</span><span class="va">Ximp</span><span class="op">)</span><span class="op">!=</span><span class="fl">0</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] 0.0952381</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/which.min.html" class="external-link">which.max</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/colSums.html" class="external-link">colMeans</a></span><span class="op">(</span><span class="op">(</span><span class="va">x</span> <span class="op">-</span> <span class="va">fit1</span><span class="op">$</span><span class="va">Ximp</span><span class="op">)</span><span class="op">!=</span><span class="fl">0</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt; 236831_at </span></span>
-<span><span class="co">#&gt;        36</span></span>
+<span><span class="co">#&gt; x236831_at </span></span>
+<span><span class="co">#&gt;         36</span></span>
 <span></span>
 <span><span class="co">### row average</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">max</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/colSums.html" class="external-link">rowMeans</a></span><span class="op">(</span><span class="op">(</span><span class="va">x</span> <span class="op">-</span> <span class="va">fit1</span><span class="op">$</span><span class="va">Ximp</span><span class="op">)</span><span class="op">!=</span><span class="fl">0</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] 0.22</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/which.min.html" class="external-link">which.max</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/colSums.html" class="external-link">rowMeans</a></span><span class="op">(</span><span class="op">(</span><span class="va">x</span> <span class="op">-</span> <span class="va">fit1</span><span class="op">$</span><span class="va">Ximp</span><span class="op">)</span><span class="op">!=</span><span class="fl">0</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] 13</span></span></code></pre></div>
+<span><span class="co">#&gt; 20 </span></span>
+<span><span class="co">#&gt; 13</span></span></code></pre></div>
 <p>On average, the screened genes exhibit a contamination rate of <span class="math inline">\(3.61\%\)</span>, with the probe <span class="math inline">\(\textrm{236831\_at}\)</span> having the highest
 contamination rate of <span class="math inline">\(9.52\%\)</span>. Among
 the observations, the thirteenth observation with the patient ID 20
