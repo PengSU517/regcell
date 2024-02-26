@@ -69,7 +69,7 @@ Given the large number of variables in the dataset, a pre-screening step was imp
 To accomplish this, we first log-transformed all the predictors and then utilized the robust correlation estimate based on winsorization as in @khan2007robust, instead of the Pearson correlation, since winsorization is more robust to outliers that may occur in the dataset.
 The screened data comprise measurements of $p = 100$ genes from $n = 84$ Norwegian women.
 
-```{r}
+```{r eval = false}
 datall = readr::read_rds("datall.rds")
 x = datall |> dplyr::select(-id, -hip_t) |> as.matrix() 
 
