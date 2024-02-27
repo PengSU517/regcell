@@ -152,8 +152,14 @@ sregcell = function(y,x, betahat = NULL, intercept = NULL,
   icadj = ic
   icadj[colactivedelta>(length(y)*0.3)] = NA
 
+  if(all(is.na(icadj))){
+    label = which.min(ic)
+  }else{
+    label = which.min(icadj)
+  }
 
-  label = which.min(icadj)
+
+
   result_opt = allfits[[label]]
   betahat = result_opt$betahat
   intercept_hat = result_opt$intercept
