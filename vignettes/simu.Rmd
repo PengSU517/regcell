@@ -47,28 +47,31 @@ getDoParWorkers()
 
 ##### methods compared
 mtds = list(
-  ## spase shooting S, codes arefrom https://github.com/ineswilms/sparse-shooting-S 
+  ## spase shooting S, codes are from https://github.com/ineswilms/sparse-shooting-S 
   ## package is available from https://github.com/PengSU517/shootings
-  # sss = function(y, x){shootings::sparseshooting(x,y)$coef},
+  ## install this package directly using remotes::install_github("PengSU517/shootings")
+  sss = function(y, x){shootings::sparseshooting(x,y)$coef},
   
   ## Rlars, from package robustHD
   rlars = function(y, x){regcell::Rlars(y, x)$betahat}, 
   
-  ## MM-Lasso, from https://github.com/esmucler/mmlasso
-  # mmlasso = function(y,x){mmlasso::mmlasso(x,y)$coef.MMLasso.ad}, 
+  ## MM-Lasso, forked from https://github.com/esmucler/mmlasso
+  ## the updated package is available from https://github.com/PengSU517/mmlasso
+  ## install this package directly using remotes::install_github("PengSU517/mmlasso")
+  mmlasso = function(y,x){mmlasso::mmlasso(x,y)$coef.MMLasso.ad},
   
-  ## sparse LTS, from package robustHD, an alternative using BIC is regcell::SLTS
+  ## sparse LTS, from package robustHD
   slts = function(y,x){robustHD::sparseLTS(x,y)$coefficients},
   
-  ## cellwise regularized Lasso without post regression
-  cell_lasso = function(y,x){ 
-    fit = regcell::sregcell_std(y = y, x = x)
-    return(c(fit$intercept_hat, fit$betahat))
-  },
+  ## cellwise regularized Lasso without post regression, not used in simulations
+  # cell_lasso = function(y,x){ 
+  #   fit = regcell::sregcell_std(y = y, x = x, softbeta = TRUE, lambda_zeta = 1, penal = 1, penaldelta =0)
+  #   return(c(fit$intercept_hat, fit$betahat))
+  # },
 
   ## cellwise regularized Lasso with post regression
   cell_lasso_post = function(y,x){
-    fit = regcell::sregcell_std(y = y, x = x)
+    fit = regcell::sregcell_std(y = y, x = x, softbeta = TRUE, lambda_zeta = 1, penal = 1, penaldelta =0)
     return(c(fit$intercept_hat_post, fit$betahat_post))
   },
 
