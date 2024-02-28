@@ -1,6 +1,13 @@
 ---
 title: "Bone mineral density data"
-output: rmarkdown::html_vignette
+output: 
+  bookdown::html_document2:
+    base_format: rmarkdown::html_vignette
+    fig_caption: yes
+    toc: false
+    number_sections: false
+pkgdown:
+  as_is: true
 bibliography: refs.bib
 csl: apa-old-doi-prefix.csl
 vignette: >
@@ -37,7 +44,6 @@ Direct links to the data files:
 
 ```{r, eval = FALSE}
 ## array expression data
-## array expression data
 expressiondat = readr::read_tsv("Normarrayexpressdata.txt.magetab") |> 
   t() |> 
   data.frame() |> 
@@ -49,12 +55,13 @@ expressiondat = readr::read_tsv("Normarrayexpressdata.txt.magetab") |>
   mutate(across(.cols = -1, .fns = as.numeric)) |> 
   mutate(across(.cols = -1, .fns = log))
 
-### feature dataset
+# feature data
 featuredat = readr::read_tsv("E-MEXP-1618.sdrf.txt") |> 
   janitor::clean_names() |> 
   dplyr::mutate(id = readr::parse_number(source_name)) |> 
   dplyr::select(id,
-                hip_t = characteristics_total_hip_t_score) |> arrange(id) ####sort obs by patient ID
+                hip_t = characteristics_total_hip_t_score) |> 
+  arrange(id) # sort obs by patient ID
 
 # merged data
 datall = dplyr::left_join(featuredat, expressiondat, 
@@ -62,11 +69,10 @@ datall = dplyr::left_join(featuredat, expressiondat,
 write_rds(datall, file = "datall.rds", compress = "gz")
 ```
 
-
 ## Feature screening
 
 Given the large number of variables in the dataset, a pre-screening step was implemented to identify the subset of variables that are most correlated with the outcome of interest, the total hip T-score. 
-To accomplish this, we first log-transformed all the predictors and then utilized the robust correlation estimate based on winsorization as in @khan2007robust, instead of the Pearson correlation, since winsorization is more robust to outliers that may occur in the dataset.
+To accomplish this, we first log-transformed all the predictors and then utilized the robust correlation estimate based on Winsorization as in @khan2007robust, instead of the Pearson correlation, since Winsorization is more robust to outliers that may occur in the dataset.
 The screened data comprise measurements of $p = 100$ genes from $n = 84$ Norwegian women.
 
 ```{r eval = FALSE}
@@ -74,7 +80,7 @@ datall = readr::read_rds("datall.rds")
 x = datall |> dplyr::select(-id, -hip_t) |> as.matrix() 
 
 y = datall |> dplyr::select(hip_t) |> pull()
-## huber correlation
+# Huber correlation
 corh = apply(x, 2,
              FUN = function(xvec){robustHD::corHuber(xvec, y)})
 
@@ -93,7 +99,7 @@ Cells are flagged as outlying if the observed and predicted values differ too mu
 Most cells are blank, showing they are not detected as outliers. 
 A red cell means the observed value is significantly higher than the predicted value, and a blue cell means the observed value is significantly lower.
 
-```{r fig-outliervis, fig.height=7, fig.width=10}
+```{r fig-outliervis, fig.height=6, fig.width=10, fig.cap="Outlier cell map for 100 screened variables on 84 Norwegian women. Cells are flagged as outlying if the observed and predicted values differ too much. Most cells are blank, showing they are not detected as outliers. A red cell means the observed value is significantly higher than the predicted value, and a blue cell means the observed value is significantly lower."}
 datascreen = read_rds(file = "datascreen.rds")
 # data(datascreen)
 x = datascreen[,-1]
@@ -103,6 +109,7 @@ regcell::newcellmap(
   columnlabels = c(1,rep(" ",dim(x)[2]-2),dim(x)[2]),
   rowlabels = c(1,rep(" ",dim(x)[1]-2),dim(x)[1]),
   columnangle = 0,
+  colContrast = 1,
   rowtitle = "Observations", columntitle = "Genes",
   sizetitles = 2,
   adjustrowlabels = 0.5,
@@ -117,10 +124,10 @@ regcell::newcellmap(
 ```
 
 ```{r}
-###average contamination rate
+# Overall average contamination rate
 mean((x - fit1$Ximp)!=0)
 
-###col average
+# Column average
 max(colMeans((x - fit1$Ximp)!=0))
 which.max(colMeans((x - fit1$Ximp)!=0))
 
@@ -129,8 +136,8 @@ max(rowMeans((x - fit1$Ximp)!=0))
 which.max(rowMeans((x - fit1$Ximp)!=0))
 ```
 
-On average, the screened genes exhibit a contamination rate of $3.61\%$, with the probe $\textrm{236831\_at}$ having the highest contamination rate of $9.52\%$. 
-Among the observations, the thirteenth observation with the patient ID 20 shows the highest contamination rate at $22\%$.
+On average, the screened genes exhibit an overall contamination rate of `r round(mean((x - fit1$Ximp)!=0),3)*100`%, with probe `r stringr::str_sub(names(which.max(colMeans((x - fit1$Ximp)!=0))),start=2)` having the highest contamination rate of `r round(max(colMeans((x - fit1$Ximp)!=0)),3)*100`%. 
+Among the observations, row `r which.max(rowMeans((x - fit1$Ximp)!=0))` in Figure \@ref(fig:fig-outliervis), with patient ID `r names(which.max(rowMeans((x - fit1$Ximp)!=0)))`, shows the highest contamination rate at `r round(max(rowMeans((x - fit1$Ximp)!=0)),3)*100`%.
 
 ## All methods compared
 
@@ -173,7 +180,7 @@ mtds = list(
 
 ## Analysis with artifically generated response
 
-```{r, eval =FALSE}
+```{r, eval = FALSE}
 library(doParallel)
 registerDoParallel(cores=10)
 getDoParWorkers()
@@ -253,4 +260,3 @@ result <- foreach(mtd = 1:length(mtds),
 
 save(result, file = "result_realdata.RData")
 ```
-
