@@ -260,4 +260,3 @@ result <- foreach(mtd = 1:length(mtds),
 
 save(result, file = "result_realdata.RData")
 ```
-
