@@ -59,8 +59,6 @@
 </nav><div class="container template-article">
 
 
-
-
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
       <img src="" class="logo" alt=""><h1>Bone mineral density data</h1>
@@ -76,16 +74,10 @@
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://pengsu517.github.io/regcell/">regcell</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://tidyverse.tidyverse.org" class="external-link">tidyverse</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/sfirke/janitor" class="external-link">janitor</a></span><span class="op">)</span></span></code></pre></div>
-<p>To illustrate the use of CR-Lasso, we consider the bone mineral
-density (BMD) data from <span class="citation">Reppe et al.
-(2010)</span>. The data are publicly available in the <a href="https://www.ebi.ac.uk/arrayexpress/experiments/E-MEXP-1618" class="external-link">European
-Bioinformatics Institute Array-Express repository</a>. The BMD data
-consists of gene expression measurements of 54,675 probes of 84
-Norwegian women.</p>
-<p>Microarray measurements are often contaminated (noisy), as <span class="citation">Rocke &amp; Durbin (2001)</span> highlighted. This
-contamination can stem from multiple sources, thereby obscuring the gene
-expression in the data <span class="citation">(Zakharkin et al.,
-2005)</span>.</p>
+<p>To illustrate the use of CR-Lasso, we consider the bone mineral density (BMD) data from <span class="citation">Reppe et al. (2010)</span>.
+The data are publicly available in the <a href="https://www.ebi.ac.uk/arrayexpress/experiments/E-MEXP-1618" class="external-link">European Bioinformatics Institute Array-Express repository</a>.
+The BMD data consists of gene expression measurements of 54,675 probes of 84 Norwegian women.</p>
+<p>Microarray measurements are often contaminated (noisy), as <span class="citation">Rocke &amp; Durbin (2001)</span> highlighted. This contamination can stem from multiple sources, thereby obscuring the gene expression in the data <span class="citation">(Zakharkin et al., 2005)</span>.</p>
 <div class="section level2">
 <h2 id="importing-the-data">Importing the data<a class="anchor" aria-label="anchor" href="#importing-the-data"></a>
 </h2>
@@ -96,7 +88,6 @@ expression in the data <span class="citation">(Zakharkin et al.,
 </ul>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">## array expression data</span></span>
-<span><span class="co">## array expression data</span></span>
 <span><span class="va">expressiondat</span> <span class="op">=</span> <span class="fu">readr</span><span class="fu">::</span><span class="fu"><a href="https://readr.tidyverse.org/reference/read_delim.html" class="external-link">read_tsv</a></span><span class="op">(</span><span class="st">"Normarrayexpressdata.txt.magetab"</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/t.html" class="external-link">t</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
@@ -108,12 +99,13 @@ expression in the data <span class="citation">(Zakharkin et al.,
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/across.html" class="external-link">across</a></span><span class="op">(</span>.cols <span class="op">=</span> <span class="op">-</span><span class="fl">1</span>, .fns <span class="op">=</span> <span class="va">as.numeric</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/across.html" class="external-link">across</a></span><span class="op">(</span>.cols <span class="op">=</span> <span class="op">-</span><span class="fl">1</span>, .fns <span class="op">=</span> <span class="va">log</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co">### feature dataset</span></span>
+<span><span class="co"># feature data</span></span>
 <span><span class="va">featuredat</span> <span class="op">=</span> <span class="fu">readr</span><span class="fu">::</span><span class="fu"><a href="https://readr.tidyverse.org/reference/read_delim.html" class="external-link">read_tsv</a></span><span class="op">(</span><span class="st">"E-MEXP-1618.sdrf.txt"</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
 <span>  <span class="fu">janitor</span><span class="fu">::</span><span class="fu"><a href="https://sfirke.github.io/janitor/reference/clean_names.html" class="external-link">clean_names</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
 <span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>id <span class="op">=</span> <span class="fu">readr</span><span class="fu">::</span><span class="fu"><a href="https://readr.tidyverse.org/reference/parse_number.html" class="external-link">parse_number</a></span><span class="op">(</span><span class="va">source_name</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
 <span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">id</span>,</span>
-<span>                hip_t <span class="op">=</span> <span class="va">characteristics_total_hip_t_score</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/arrange.html" class="external-link">arrange</a></span><span class="op">(</span><span class="va">id</span><span class="op">)</span> <span class="co">####sort obs by patient ID</span></span>
+<span>                hip_t <span class="op">=</span> <span class="va">characteristics_total_hip_t_score</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/arrange.html" class="external-link">arrange</a></span><span class="op">(</span><span class="va">id</span><span class="op">)</span> <span class="co"># sort obs by patient ID</span></span>
 <span></span>
 <span><span class="co"># merged data</span></span>
 <span><span class="va">datall</span> <span class="op">=</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate-joins.html" class="external-link">left_join</a></span><span class="op">(</span><span class="va">featuredat</span>, <span class="va">expressiondat</span>, </span>
@@ -123,20 +115,15 @@ expression in the data <span class="citation">(Zakharkin et al.,
 <div class="section level2">
 <h2 id="feature-screening">Feature screening<a class="anchor" aria-label="anchor" href="#feature-screening"></a>
 </h2>
-<p>Given the large number of variables in the dataset, a pre-screening
-step was implemented to identify the subset of variables that are most
-correlated with the outcome of interest, the total hip T-score. To
-accomplish this, we first log-transformed all the predictors and then
-utilized the robust correlation estimate based on winsorization as in
-<span class="citation">Khan et al. (2007)</span>, instead of the Pearson
-correlation, since winsorization is more robust to outliers that may
-occur in the dataset. The screened data comprise measurements of <span class="math inline">\(p = 100\)</span> genes from <span class="math inline">\(n = 84\)</span> Norwegian women.</p>
+<p>Given the large number of variables in the dataset, a pre-screening step was implemented to identify the subset of variables that are most correlated with the outcome of interest, the total hip T-score.
+To accomplish this, we first log-transformed all the predictors and then utilized the robust correlation estimate based on Winsorization as in <span class="citation">Khan et al. (2007)</span>, instead of the Pearson correlation, since Winsorization is more robust to outliers that may occur in the dataset.
+The screened data comprise measurements of <span class="math inline">\(p = 100\)</span> genes from <span class="math inline">\(n = 84\)</span> Norwegian women.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">datall</span> <span class="op">=</span> <span class="fu">readr</span><span class="fu">::</span><span class="fu"><a href="https://readr.tidyverse.org/reference/read_rds.html" class="external-link">read_rds</a></span><span class="op">(</span><span class="st">"datall.rds"</span><span class="op">)</span></span>
 <span><span class="va">x</span> <span class="op">=</span> <span class="va">datall</span> <span class="op">|&gt;</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="op">-</span><span class="va">id</span>, <span class="op">-</span><span class="va">hip_t</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">as.matrix</a></span><span class="op">(</span><span class="op">)</span> </span>
 <span></span>
 <span><span class="va">y</span> <span class="op">=</span> <span class="va">datall</span> <span class="op">|&gt;</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">hip_t</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/pull.html" class="external-link">pull</a></span><span class="op">(</span><span class="op">)</span></span>
-<span><span class="co">## huber correlation</span></span>
+<span><span class="co"># Huber correlation</span></span>
 <span><span class="va">corh</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/apply.html" class="external-link">apply</a></span><span class="op">(</span><span class="va">x</span>, <span class="fl">2</span>,</span>
 <span>             FUN <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">xvec</span><span class="op">)</span><span class="op">{</span><span class="fu">robustHD</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/robustHD/man/corHuber.html" class="external-link">corHuber</a></span><span class="op">(</span><span class="va">xvec</span>, <span class="va">y</span><span class="op">)</span><span class="op">}</span><span class="op">)</span></span>
 <span></span>
@@ -146,15 +133,11 @@ occur in the dataset. The screened data comprise measurements of <span class="ma
 <span><span class="va">datascreen</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">cbind</a></span><span class="op">(</span><span class="va">y</span>, <span class="va">xscreen</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">rownames</a></span><span class="op">(</span><span class="va">datascreen</span><span class="op">)</span> <span class="op">=</span> <span class="va">datall</span><span class="op">$</span><span class="va">id</span></span>
 <span><span class="fu">readr</span><span class="fu">::</span><span class="fu"><a href="https://readr.tidyverse.org/reference/read_rds.html" class="external-link">write_rds</a></span><span class="op">(</span><span class="va">datascreen</span>, file <span class="op">=</span> <span class="st">"datascreen.rds"</span><span class="op">)</span></span></code></pre></div>
-<p>The screened data, <code>datascreen.rds</code>, is included in the
-<code>regcell</code> package.</p>
-<p>The plot below shows the outlier cell map for 100 screened variables
-on 84 Norwegian women using the DDC method <span class="citation">Rousseeuw &amp; Van Den Bossche (2018)</span>. Cells
-are flagged as outlying if the observed and predicted values differ too
-much. Most cells are blank, showing they are not detected as outliers. A
-red cell means the observed value is significantly higher than the
-predicted value, and a blue cell means the observed value is
-significantly lower.</p>
+<p>The screened data, <code>datascreen.rds</code>, is included in the <code>regcell</code> package.</p>
+<p>The plot below shows the outlier cell map for 100 screened variables on 84 Norwegian women using the DDC method <span class="citation">Rousseeuw &amp; Van Den Bossche (2018)</span>.
+Cells are flagged as outlying if the observed and predicted values differ too much.
+Most cells are blank, showing they are not detected as outliers.
+A red cell means the observed value is significantly higher than the predicted value, and a blue cell means the observed value is significantly lower.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">datascreen</span> <span class="op">=</span> <span class="fu"><a href="https://readr.tidyverse.org/reference/read_rds.html" class="external-link">read_rds</a></span><span class="op">(</span>file <span class="op">=</span> <span class="st">"datascreen.rds"</span><span class="op">)</span></span>
 <span><span class="co"># data(datascreen)</span></span>
@@ -167,6 +150,7 @@ significantly lower.</p>
 <span>  columnlabels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="st">" "</span>,<span class="fu"><a href="https://rdrr.io/r/base/dim.html" class="external-link">dim</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span><span class="op">-</span><span class="fl">2</span><span class="op">)</span>,<span class="fu"><a href="https://rdrr.io/r/base/dim.html" class="external-link">dim</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span><span class="op">)</span>,</span>
 <span>  rowlabels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="st">" "</span>,<span class="fu"><a href="https://rdrr.io/r/base/dim.html" class="external-link">dim</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span><span class="op">-</span><span class="fl">2</span><span class="op">)</span>,<span class="fu"><a href="https://rdrr.io/r/base/dim.html" class="external-link">dim</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span><span class="op">)</span>,</span>
 <span>  columnangle <span class="op">=</span> <span class="fl">0</span>,</span>
+<span>  colContrast <span class="op">=</span> <span class="fl">1</span>,</span>
 <span>  rowtitle <span class="op">=</span> <span class="st">"Observations"</span>, columntitle <span class="op">=</span> <span class="st">"Genes"</span>,</span>
 <span>  sizetitles <span class="op">=</span> <span class="fl">2</span>,</span>
 <span>  adjustrowlabels <span class="op">=</span> <span class="fl">0.5</span>,</span>
@@ -177,13 +161,18 @@ significantly lower.</p>
 <span>        axis.title.y <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html" class="external-link">element_text</a></span><span class="op">(</span>size <span class="op">=</span> <span class="fl">14</span><span class="op">)</span>,</span>
 <span>        legend.title <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html" class="external-link">element_text</a></span><span class="op">(</span>size<span class="op">=</span><span class="fl">14</span><span class="op">)</span>, <span class="co">#change legend title font size</span></span>
 <span>        legend.text <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html" class="external-link">element_text</a></span><span class="op">(</span>size<span class="op">=</span><span class="fl">12</span><span class="op">)</span><span class="op">)</span> </span></code></pre></div>
-<p><img src="realdata_files/figure-html/fig-outliervis-1.png" width="960"></p>
+<div class="figure">
+<span style="display:block;" id="fig:fig-outliervis"></span>
+<img src="realdata_files/figure-html/fig-outliervis-1.png" alt="Outlier cell map for 100 screened variables on 84 Norwegian women. Cells are flagged as outlying if the observed and predicted values differ too much. Most cells are blank, showing they are not detected as outliers. A red cell means the observed value is significantly higher than the predicted value, and a blue cell means the observed value is significantly lower."><p class="caption">
+Figure 1: Outlier cell map for 100 screened variables on 84 Norwegian women. Cells are flagged as outlying if the observed and predicted values differ too much. Most cells are blank, showing they are not detected as outliers. A red cell means the observed value is significantly higher than the predicted value, and a blue cell means the observed value is significantly lower.
+</p>
+</div>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co">###average contamination rate</span></span>
+<code class="sourceCode R"><span><span class="co"># Overall average contamination rate</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="op">(</span><span class="va">x</span> <span class="op">-</span> <span class="va">fit1</span><span class="op">$</span><span class="va">Ximp</span><span class="op">)</span><span class="op">!=</span><span class="fl">0</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] 0.03607143</span></span>
 <span></span>
-<span><span class="co">###col average</span></span>
+<span><span class="co"># Column average</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">max</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/colSums.html" class="external-link">colMeans</a></span><span class="op">(</span><span class="op">(</span><span class="va">x</span> <span class="op">-</span> <span class="va">fit1</span><span class="op">$</span><span class="va">Ximp</span><span class="op">)</span><span class="op">!=</span><span class="fl">0</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] 0.0952381</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/which.min.html" class="external-link">which.max</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/colSums.html" class="external-link">colMeans</a></span><span class="op">(</span><span class="op">(</span><span class="va">x</span> <span class="op">-</span> <span class="va">fit1</span><span class="op">$</span><span class="va">Ximp</span><span class="op">)</span><span class="op">!=</span><span class="fl">0</span><span class="op">)</span><span class="op">)</span></span>
@@ -196,10 +185,8 @@ significantly lower.</p>
 <span><span class="fu"><a href="https://rdrr.io/r/base/which.min.html" class="external-link">which.max</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/colSums.html" class="external-link">rowMeans</a></span><span class="op">(</span><span class="op">(</span><span class="va">x</span> <span class="op">-</span> <span class="va">fit1</span><span class="op">$</span><span class="va">Ximp</span><span class="op">)</span><span class="op">!=</span><span class="fl">0</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; 20 </span></span>
 <span><span class="co">#&gt; 13</span></span></code></pre></div>
-<p>On average, the screened genes exhibit a contamination rate of <span class="math inline">\(3.61\%\)</span>, with the probe <span class="math inline">\(\textrm{236831\_at}\)</span> having the highest
-contamination rate of <span class="math inline">\(9.52\%\)</span>. Among
-the observations, the thirteenth observation with the patient ID 20
-shows the highest contamination rate at <span class="math inline">\(22\%\)</span>.</p>
+<p>On average, the screened genes exhibit an overall contamination rate of 3.6%, with probe 236831_at having the highest contamination rate of 9.5%.
+Among the observations, row 13 in Figure <a href="#fig:fig-outliervis">1</a>, with patient ID 20, shows the highest contamination rate at 22%.</p>
 </div>
 <div class="section level2">
 <h2 id="all-methods-compared">All methods compared<a class="anchor" aria-label="anchor" href="#all-methods-compared"></a>
@@ -320,29 +307,19 @@ shows the highest contamination rate at <span class="math inline">\(22\%\)</span
 <span><span class="fu"><a href="https://rdrr.io/r/base/save.html" class="external-link">save</a></span><span class="op">(</span><span class="va">result</span>, file <span class="op">=</span> <span class="st">"result_realdata.RData"</span><span class="op">)</span></span></code></pre></div>
 <div id="refs" class="references csl-bib-body hanging-indent" line-spacing="2">
 <div id="ref-khan2007robust" class="csl-entry">
-Khan, J. A., Van Aelst, S., &amp; Zamar, R. H. (2007). Robust linear
-model selection based on least angle regression. <em>Journal of the
-American Statistical Association</em>, 102, 1289–1299.
+Khan, J. A., Van Aelst, S., &amp; Zamar, R. H. (2007). Robust linear model selection based on least angle regression. <em>Journal of the American Statistical Association</em>, 102, 1289–1299.
 </div>
 <div id="ref-reppe2010eight" class="csl-entry">
-Reppe, S., Refvem, H., Gautvik, V. T., Olstad, O. K., Høvring, P. I.,
-Reinholt, F. P., … Gautvik, K. M. (2010). Eight genes are highly
-associated with BMD variation in postmenopausal caucasian women.
-<em>Bone</em>, 46, 604–612.
+Reppe, S., Refvem, H., Gautvik, V. T., Olstad, O. K., Høvring, P. I., Reinholt, F. P., … Gautvik, K. M. (2010). Eight genes are highly associated with BMD variation in postmenopausal caucasian women. <em>Bone</em>, 46, 604–612.
 </div>
 <div id="ref-rocke2001model" class="csl-entry">
-Rocke, D. M., &amp; Durbin, B. (2001). A model for measurement error for
-gene expression arrays. <em>Journal of Computational Biology</em>, 8,
-557–569.
+Rocke, D. M., &amp; Durbin, B. (2001). A model for measurement error for gene expression arrays. <em>Journal of Computational Biology</em>, 8, 557–569.
 </div>
 <div id="ref-rousseeuw_detecting_2018" class="csl-entry">
-Rousseeuw, P. J., &amp; Van Den Bossche, W. (2018). Detecting deviating
-data cells. <em>Technometrics</em>, 60, 135–145.
+Rousseeuw, P. J., &amp; Van Den Bossche, W. (2018). Detecting deviating data cells. <em>Technometrics</em>, 60, 135–145.
 </div>
 <div id="ref-zakharkin2005sources" class="csl-entry">
-Zakharkin, S. O., Kim, K., Mehta, T., Chen, L., Barnes, S., Scheirer, K.
-E., … Page, G. P. (2005). Sources of variation in affymetrix microarray
-experiments. <em>BMC Bioinformatics</em>, 6, 1–11.
+Zakharkin, S. O., Kim, K., Mehta, T., Chen, L., Barnes, S., Scheirer, K. E., … Page, G. P. (2005). Sources of variation in affymetrix microarray experiments. <em>BMC Bioinformatics</em>, 6, 1–11.
 </div>
 </div>
 </div>

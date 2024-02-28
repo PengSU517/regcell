@@ -109,8 +109,8 @@ mtds = list(
   # mmlasso = function(y,x){mmlasso::mmlasso(x,y)$coef.MMLasso.ad}, 
   
   ## sparse LTS, from package robustHD
-  slts = function(y,x){regcell::SLTS(y,x)$betahat},
-  
+  slts = function(y,x){robustHD::sparseLTS(x,y)$coefficients},
+
   ## cellwise regularized Lasso without post regression
   cell_lasso = function(y,x){ 
     fit = regcell::sregcell_std(y = y, x = x)
@@ -169,6 +169,7 @@ result <- foreach(mtd = 1:length(mtds),
 save(result, file = "result_bodyfat.RData")
 
 ```
+
 
 
 
