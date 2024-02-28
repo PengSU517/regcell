@@ -45,7 +45,7 @@ genevar(
 
 \item{gamma}{magnitudes of outliers}
 
-\item{outtype}{type of outliers: cellwise, rowwise or mixed}
+\item{outtype}{type of outliers: cellwise, rowwise}
 }
 \value{
 x: design matrix

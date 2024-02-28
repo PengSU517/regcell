@@ -107,7 +107,7 @@ A red cell means the observed value is significantly higher than the predicted v
 data(datascreen, package = "regcell")
 x = datascreen[,-1]
 fit1 <- cellWise::DDC(x)
-cellWise::cellMap(
+regcell::newcellmap(
   fit1$stdResid,
   columnlabels = c(1,rep(" ",dim(x)[2]-2),dim(x)[2]),
   rowlabels = c(1,rep(" ",dim(x)[1]-2),dim(x)[1]),
@@ -161,7 +161,7 @@ mtds = list(
   # effectively replaced by the pense package on CRAN
   
   ## sparse LTS, from package robustHD
-  slts = function(y,x){regcell::sparseLTS(y,x)$betahat},
+  slts = function(y,x){robustHD::sparseLTS(x,y)$coefficients},
   
   ## cellwise regularized Lasso without post regression
   cell_lasso = function(y,x){ 
