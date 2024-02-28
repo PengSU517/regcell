@@ -12,7 +12,7 @@
 #' @param mux averages of predictors
 #' @param scalex scales of predictors
 #' @param gamma magnitudes of outliers
-#' @param outtype type of outliers: cellwise, rowwise or mixed
+#' @param outtype type of outliers: cellwise, rowwise
 #'
 #' @return
 #' x: design matrix

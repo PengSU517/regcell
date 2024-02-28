@@ -63,7 +63,7 @@
 <span>  mux <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">0</span>, <span class="va">p</span><span class="op">)</span>,</span>
 <span>  scalex <span class="op">=</span> <span class="fl">1</span>,</span>
 <span>  gamma <span class="op">=</span> <span class="fl">6</span>,</span>
-<span>  outtype <span class="op">=</span> <span class="st">"mixed"</span></span>
+<span>  outtype <span class="op">=</span> <span class="st">"cellwise"</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -118,17 +118,23 @@
 
 
 <dt>outtype</dt>
-<dd><p>type of outliers: cellwise, rowwise or mixed</p></dd>
+<dd><p>type of outliers: cellwise, rowwise</p></dd>
 
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     
 
-<p>x: design matrix
-xc: clean design matrix
-y: response
-ynew: another response (as an independent test set)</p>
+<p>x: design matrix</p>
+
+
+<p>xc: clean design matrix</p>
+
+
+<p>y: response</p>
+
+
+<p>ynew: another response (as an independent test set)</p>
     </div>
 
     <div class="section level2">

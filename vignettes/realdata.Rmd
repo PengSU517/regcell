@@ -98,7 +98,7 @@ datascreen = read_rds(file = "datascreen.rds")
 # data(datascreen)
 x = datascreen[,-1]
 fit1 <- cellWise::DDC(x)
-cellWise::cellMap(
+regcell::newcellmap(
   fit1$stdResid,
   columnlabels = c(1,rep(" ",dim(x)[2]-2),dim(x)[2]),
   rowlabels = c(1,rep(" ",dim(x)[1]-2),dim(x)[1]),

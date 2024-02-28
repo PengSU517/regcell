@@ -2,7 +2,7 @@
 % Please edit documentation in R/sparse_regression.R
 \name{sregcell}
 \alias{sregcell}
-\title{robust sparse regression under cellwise contaminaton (with a grid of lambdas)}
+\title{robust sparse regression under cellwise contamination (with a grid of lambdas)}
 \usage{
 sregcell(
   y,
@@ -17,6 +17,7 @@ sregcell(
   alpha = 0.5,
   penal = 1,
   penaldelta = 1,
+  tol = 0.001,
   maxiter = 100
 )
 }
@@ -45,7 +46,9 @@ sregcell(
 
 \item{penaldelta}{the penalty of number of detected outliers (for debug, by default is 0)}
 
-\item{maxiter}{number of interations}
+\item{tol}{the tolerance of convergence}
+
+\item{maxiter}{number of iterations}
 }
 \value{
 betahat: the estimated beta
@@ -57,7 +60,7 @@ betahat_opt: the estimated beta with post-cellwise-robust regression
 intercept_opt: the estimated intercept with post-cellwise-robust regression
 }
 \description{
-robust sparse regression under cellwise contaminaton (with a grid of lambdas)
+robust sparse regression under cellwise contamination (with a grid of lambdas)
 }
 \examples{
 

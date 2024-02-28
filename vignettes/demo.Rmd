@@ -33,10 +33,10 @@ x = dat$x
 
 Detect outliers using DDC (Rousseeuw and Van Den Bossche, 2018).
 
-```{r fig.height=3, fig.width=7}
+```{r fig.height=3.5, fig.width=10}
 
 fit1 <- cellWise::DDC(x)
-p1 = cellWise::cellMap(fit1$stdResid, columnlabels = c(1,rep(" ",dim(x)[2]-2),dim(x)[2]), rowlabels = c(1,rep(" ",dim(x)[1]-2),dim(x)[1]), columnangle = 0,
+p1 = regcell::newcellmap(fit1$stdResid, columnlabels = c(dim(x)[2],rep(" ",dim(x)[2]-2),1), rowlabels = c(dim(x)[1],rep(" ",dim(x)[1]-2),1), columnangle = 0,
         rowtitle = "Observations", columntitle = "Variables", sizetitles = 2,adjustrowlabels = 0.5, adjustcolumnlabels = 0.5)+
    theme(axis.text.x = element_text(size = 12),
         axis.text.y = element_text(size = 12),

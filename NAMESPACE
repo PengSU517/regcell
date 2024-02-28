@@ -5,6 +5,9 @@ importFrom("robustbase","Qn")
 importFrom("robustHD","rlars", "sparseLTS", "robStandardize")
 importFrom("glmnet", "cv.glmnet")
 importFrom("mvtnorm","rmvt")
+import("ggplot2")
+importFrom("reshape2","melt")
+importFrom("scales","rescale")
 
 
 
@@ -14,6 +17,7 @@ export(sregcell)
 export(sregcell_std)
 export(sregcell_lambda)
 export(genevar)
+export(newcellmap)
 export(Rlars)
 export(SLTS)
 export(lassocv)

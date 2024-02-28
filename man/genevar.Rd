@@ -17,7 +17,7 @@ genevar(
   mux = rep(0, p),
   scalex = 1,
   gamma = 6,
-  outtype = "mixed"
+  outtype = "cellwise"
 )
 }
 \arguments{
@@ -45,12 +45,15 @@ genevar(
 
 \item{gamma}{magnitudes of outliers}
 
-\item{outtype}{type of outliers: cellwise, rowwise or mixed}
+\item{outtype}{type of outliers: cellwise, rowwise}
 }
 \value{
 x: design matrix
+
 xc: clean design matrix
+
 y: response
+
 ynew: another response (as an independent test set)
 }
 \description{
