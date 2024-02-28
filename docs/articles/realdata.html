@@ -73,7 +73,11 @@
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://pengsu517.github.io/regcell/">regcell</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://tidyverse.tidyverse.org" class="external-link">tidyverse</a></span><span class="op">)</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/sfirke/janitor" class="external-link">janitor</a></span><span class="op">)</span></span></code></pre></div>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/sfirke/janitor" class="external-link">janitor</a></span><span class="op">)</span></span>
+<span><span class="co"># remotes::install_github("esmucler/mmlasso")</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">mmlasso</span><span class="op">)</span></span>
+<span><span class="co"># remotes::install_github("PengSU517/shootings")</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">shootings</span><span class="op">)</span></span></code></pre></div>
 <p>To illustrate the use of CR-Lasso, we consider the bone mineral density (BMD) data from <span class="citation">Reppe et al. (2010)</span>.
 The data are publicly available in the <a href="https://www.ebi.ac.uk/arrayexpress/experiments/E-MEXP-1618" class="external-link">European Bioinformatics Institute Array-Express repository</a>.
 The BMD data consists of gene expression measurements of 54,675 probes of 84 Norwegian women.</p>
@@ -133,14 +137,13 @@ The screened data comprise measurements of <span class="math inline">\(p = 100\)
 <span><span class="va">datascreen</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">cbind</a></span><span class="op">(</span><span class="va">y</span>, <span class="va">xscreen</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">rownames</a></span><span class="op">(</span><span class="va">datascreen</span><span class="op">)</span> <span class="op">=</span> <span class="va">datall</span><span class="op">$</span><span class="va">id</span></span>
 <span><span class="fu">readr</span><span class="fu">::</span><span class="fu"><a href="https://readr.tidyverse.org/reference/read_rds.html" class="external-link">write_rds</a></span><span class="op">(</span><span class="va">datascreen</span>, file <span class="op">=</span> <span class="st">"datascreen.rds"</span><span class="op">)</span></span></code></pre></div>
-<p>The screened data, <code>datascreen.rds</code>, is included in the <code>regcell</code> package.</p>
+<p>The screened data, <code>datascreen</code>, is included in the <code>regcell</code> package.</p>
 <p>The plot below shows the outlier cell map for 100 screened variables on 84 Norwegian women using the DDC method <span class="citation">Rousseeuw &amp; Van Den Bossche (2018)</span>.
 Cells are flagged as outlying if the observed and predicted values differ too much.
 Most cells are blank, showing they are not detected as outliers.
 A red cell means the observed value is significantly higher than the predicted value, and a blue cell means the observed value is significantly lower.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">datascreen</span> <span class="op">=</span> <span class="fu"><a href="https://readr.tidyverse.org/reference/read_rds.html" class="external-link">read_rds</a></span><span class="op">(</span>file <span class="op">=</span> <span class="st">"datascreen.rds"</span><span class="op">)</span></span>
-<span><span class="co"># data(datascreen)</span></span>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">datascreen</span>, package <span class="op">=</span> <span class="st">"regcell"</span><span class="op">)</span></span>
 <span><span class="va">x</span> <span class="op">=</span> <span class="va">datascreen</span><span class="op">[</span>,<span class="op">-</span><span class="fl">1</span><span class="op">]</span></span>
 <span><span class="va">fit1</span> <span class="op">&lt;-</span> <span class="fu">cellWise</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/cellWise/man/DDC.html" class="external-link">DDC</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span></span>
 <span><span class="co">#&gt;  </span></span>
@@ -176,42 +179,51 @@ Figure 1: Outlier cell map for 100 screened variables on 84 Norwegian women. Cel
 <span><span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">max</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/colSums.html" class="external-link">colMeans</a></span><span class="op">(</span><span class="op">(</span><span class="va">x</span> <span class="op">-</span> <span class="va">fit1</span><span class="op">$</span><span class="va">Ximp</span><span class="op">)</span><span class="op">!=</span><span class="fl">0</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] 0.0952381</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/which.min.html" class="external-link">which.max</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/colSums.html" class="external-link">colMeans</a></span><span class="op">(</span><span class="op">(</span><span class="va">x</span> <span class="op">-</span> <span class="va">fit1</span><span class="op">$</span><span class="va">Ximp</span><span class="op">)</span><span class="op">!=</span><span class="fl">0</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt; x236831_at </span></span>
-<span><span class="co">#&gt;         36</span></span>
+<span><span class="co">#&gt; 236831_at </span></span>
+<span><span class="co">#&gt;        36</span></span>
 <span></span>
-<span><span class="co">### row average</span></span>
+<span><span class="co"># Row average</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">max</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/colSums.html" class="external-link">rowMeans</a></span><span class="op">(</span><span class="op">(</span><span class="va">x</span> <span class="op">-</span> <span class="va">fit1</span><span class="op">$</span><span class="va">Ximp</span><span class="op">)</span><span class="op">!=</span><span class="fl">0</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] 0.22</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/which.min.html" class="external-link">which.max</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/colSums.html" class="external-link">rowMeans</a></span><span class="op">(</span><span class="op">(</span><span class="va">x</span> <span class="op">-</span> <span class="va">fit1</span><span class="op">$</span><span class="va">Ximp</span><span class="op">)</span><span class="op">!=</span><span class="fl">0</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt; 20 </span></span>
-<span><span class="co">#&gt; 13</span></span></code></pre></div>
-<p>On average, the screened genes exhibit an overall contamination rate of 3.6%, with probe 236831_at having the highest contamination rate of 9.5%.
-Among the observations, row 13 in Figure <a href="#fig:fig-outliervis">1</a>, with patient ID 20, shows the highest contamination rate at 22%.</p>
+<span><span class="co">#&gt; [1] 13</span></span></code></pre></div>
+<p>On average, the screened genes exhibit an overall contamination rate of 3.6%, with probe 36831_at having the highest contamination rate of 9.5%.
+Among the observations, row 13 in Figure <a href="#fig:fig-outliervis">1</a>, with patient ID , shows the highest contamination rate at 22%.</p>
+<p>Given the cellwise contamination, we first standardized all variables with the median and <span class="math inline">\(Q_n\)</span>. We then conducted a simple simulation study to validate the effectiveness of CR-Lasso, Lasso, MM-Lasso, RLars, SLTS and SSS on the bone mineral density data.</p>
 </div>
 <div class="section level2">
-<h2 id="all-methods-compared">All methods compared<a class="anchor" aria-label="anchor" href="#all-methods-compared"></a>
+<h2 id="method-comparison">Method comparison<a class="anchor" aria-label="anchor" href="#method-comparison"></a>
 </h2>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">##### methods compared</span></span>
 <span><span class="va">mtds</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
-<span>  <span class="co">## spase shooting S, codes arefrom https://github.com/ineswilms/sparse-shooting-S </span></span>
+<span></span>
+<span>  <span class="co">## spase shooting S, codes are from https://github.com/ineswilms/sparse-shooting-S </span></span>
 <span>  <span class="co">## package is available from https://github.com/PengSU517/shootings</span></span>
-<span>  <span class="co"># sss = function(y, x){shootings::sparseshooting(x,y)$coef},</span></span>
+<span>  <span class="co">## install this package directly using remotes::install_github("PengSU517/shootings")</span></span>
+<span></span>
+<span>  sss <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">y</span>, <span class="va">x</span><span class="op">)</span><span class="op">{</span><span class="fu">shootings</span><span class="fu">::</span><span class="fu">sparseshooting</span><span class="op">(</span><span class="va">x</span>,<span class="va">y</span><span class="op">)</span><span class="op">$</span><span class="va">coef</span><span class="op">}</span>,</span>
 <span>  </span>
 <span>  <span class="co">## Rlars, from package robustHD</span></span>
 <span>  rlars <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">y</span>, <span class="va">x</span><span class="op">)</span><span class="op">{</span><span class="fu">regcell</span><span class="fu">::</span><span class="fu"><a href="../reference/Rlars.html">Rlars</a></span><span class="op">(</span><span class="va">y</span>, <span class="va">x</span><span class="op">)</span><span class="op">$</span><span class="va">betahat</span><span class="op">}</span>, </span>
 <span>  </span>
-<span>  <span class="co">## MM-Lasso, from https://github.com/esmucler/mmlasso</span></span>
-<span>  <span class="co"># mmlasso = function(y,x){mmlasso::mmlasso(x,y)$coef.MMLasso.ad}, </span></span>
+<span></span>
+<span>  <span class="co">## MM-Lasso, forked from https://github.com/esmucler/mmlasso</span></span>
+<span>  <span class="co">## the updated package is available from https://github.com/PengSU517/mmlasso</span></span>
+<span>  <span class="co">## install this package directly using remotes::install_github("PengSU517/mmlasso")</span></span>
+<span>  <span class="co">## this function can be effectively replaced by the pense package on CRAN</span></span>
+<span>  mmlasso <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">y</span>,<span class="va">x</span><span class="op">)</span><span class="op">{</span><span class="fu">mmlasso</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/mmlasso/man/mmlasso.html" class="external-link">mmlasso</a></span><span class="op">(</span><span class="va">x</span>,<span class="va">y</span><span class="op">)</span><span class="op">$</span><span class="va">coef.MMLasso.ad</span><span class="op">}</span>,</span>
+<span>  </span>
+<span></span>
 <span>  </span>
 <span>  <span class="co">## sparse LTS, from package robustHD</span></span>
 <span>  slts <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">y</span>,<span class="va">x</span><span class="op">)</span><span class="op">{</span><span class="fu">robustHD</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/robustHD/man/sparseLTS.html" class="external-link">sparseLTS</a></span><span class="op">(</span><span class="va">x</span>,<span class="va">y</span><span class="op">)</span><span class="op">$</span><span class="va">coefficients</span><span class="op">}</span>,</span>
 <span>  </span>
-<span>  <span class="co">## cellwise regularized Lasso without post regression</span></span>
-<span>  cell_lasso <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">y</span>,<span class="va">x</span><span class="op">)</span><span class="op">{</span> </span>
-<span>    <span class="va">fit</span> <span class="op">=</span> <span class="fu">regcell</span><span class="fu">::</span><span class="fu"><a href="../reference/sregcell_std.html">sregcell_std</a></span><span class="op">(</span>y <span class="op">=</span> <span class="va">y</span>, x <span class="op">=</span> <span class="va">x</span>, softbeta <span class="op">=</span> <span class="cn">TRUE</span>, lambda_zeta <span class="op">=</span> <span class="fl">1</span>, penal <span class="op">=</span> <span class="fl">1</span>, penaldelta <span class="op">=</span><span class="fl">0</span><span class="op">)</span></span>
-<span>    <span class="kw"><a href="https://rdrr.io/r/base/function.html" class="external-link">return</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">fit</span><span class="op">$</span><span class="va">intercept_hat</span>, <span class="va">fit</span><span class="op">$</span><span class="va">betahat</span><span class="op">)</span><span class="op">)</span></span>
-<span>  <span class="op">}</span>,</span>
+<span>  <span class="co">## cellwise regularized Lasso without post regression, not used in simulations</span></span>
+<span>  <span class="co"># cell_lasso = function(y,x){ </span></span>
+<span>  <span class="co">#   fit = regcell::sregcell_std(y = y, x = x, softbeta = TRUE, lambda_zeta = 1, penal = 1, penaldelta =0)</span></span>
+<span>  <span class="co">#   return(c(fit$intercept_hat, fit$betahat))</span></span>
+<span>  <span class="co"># },</span></span>
 <span></span>
 <span>  <span class="co">## cellwise regularized Lasso with post regression</span></span>
 <span>  cell_lasso_post <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">y</span>,<span class="va">x</span><span class="op">)</span><span class="op">{</span></span>
@@ -227,22 +239,23 @@ Among the observations, row 13 in Figure <a href="#fig:fig-outliervis">1</a>, wi
 <span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
-<h2 id="analysis-with-artifically-generated-response">Analysis with artifically generated response<a class="anchor" aria-label="anchor" href="#analysis-with-artifically-generated-response"></a>
+<h2 id="artifically-generated-response">Artifically generated response<a class="anchor" aria-label="anchor" href="#artifically-generated-response"></a>
 </h2>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/RevolutionAnalytics/doparallel" class="external-link">doParallel</a></span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/pkg/doParallel/man/registerDoParallel.html" class="external-link">registerDoParallel</a></span><span class="op">(</span>cores<span class="op">=</span><span class="fl">10</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/pkg/foreach/man/getDoParWorkers.html" class="external-link">getDoParWorkers</a></span><span class="op">(</span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">datascreen</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">datascreen</span>, package <span class="op">=</span> <span class="st">"regcell"</span><span class="op">)</span></span>
 <span><span class="va">x</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">as.matrix</a></span><span class="op">(</span><span class="fu">robustHD</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/robustHD/man/standardize.html" class="external-link">robStandardize</a></span><span class="op">(</span><span class="va">datascreen</span><span class="op">[</span>,<span class="op">-</span><span class="fl">1</span><span class="op">]</span><span class="op">)</span><span class="op">[</span>,<span class="fl">1</span><span class="op">:</span><span class="fl">100</span><span class="op">]</span><span class="op">)</span></span>
 <span><span class="va">ximp</span> <span class="op">=</span> <span class="fu">cellWise</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/cellWise/man/DDC.html" class="external-link">DDC</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span><span class="op">$</span><span class="va">Ximp</span></span>
 <span></span>
 <span><span class="va">result</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/foreach/man/foreach.html" class="external-link">foreach</a></span><span class="op">(</span>mtd <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">mtds</span><span class="op">)</span>,</span>
-<span>                  .packages <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"robustHD"</span>, <span class="st">"robustbase"</span> , <span class="st">"mmlasso"</span>, <span class="st">"shootings"</span>, <span class="st">"cellWise"</span>, <span class="st">"regcell"</span><span class="op">)</span><span class="op">)</span><span class="op"><a href="https://rdrr.io/pkg/foreach/man/foreach.html" class="external-link">%:%</a></span></span>
+<span>                  .packages <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"robustHD"</span>, <span class="st">"robustbase"</span> , <span class="st">"mmlasso"</span>, </span>
+<span>                                <span class="st">"shootings"</span>, <span class="st">"cellWise"</span>, <span class="st">"regcell"</span><span class="op">)</span><span class="op">)</span><span class="op"><a href="https://rdrr.io/pkg/foreach/man/foreach.html" class="external-link">%:%</a></span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/pkg/foreach/man/foreach.html" class="external-link">foreach</a></span><span class="op">(</span>pr <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">5</span>,<span class="fl">10</span><span class="op">)</span><span class="op">)</span><span class="op"><a href="https://rdrr.io/pkg/foreach/man/foreach.html" class="external-link">%:%</a></span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/pkg/foreach/man/foreach.html" class="external-link">foreach</a></span><span class="op">(</span>sigma <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.5</span>, <span class="fl">1</span><span class="op">)</span><span class="op">)</span><span class="op"><a href="https://rdrr.io/pkg/foreach/man/foreach.html" class="external-link">%:%</a></span></span>
-<span>  <span class="fu"><a href="https://rdrr.io/pkg/foreach/man/foreach.html" class="external-link">foreach</a></span><span class="op">(</span>m <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">200</span><span class="op">)</span><span class="op"><a href="https://rdrr.io/pkg/foreach/man/foreach.html" class="external-link">%dopar%</a></span><span class="op">{</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/pkg/foreach/man/foreach.html" class="external-link">foreach</a></span><span class="op">(</span>m <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">5</span><span class="op">)</span> <span class="op"><a href="https://rdrr.io/pkg/foreach/man/foreach.html" class="external-link">%dopar%</a></span> <span class="op">{</span> <span class="co"># was 200</span></span>
 <span>    <span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="va">m</span><span class="op">)</span></span>
 <span>    <span class="va">error</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="fl">84</span>, sd <span class="op">=</span> <span class="va">sigma</span><span class="op">)</span></span>
 <span>    <span class="va">beta</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/sample.html" class="external-link">sample</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Uniform.html" class="external-link">runif</a></span><span class="op">(</span><span class="va">pr</span>, <span class="fl">1</span>, <span class="fl">1.5</span><span class="op">)</span>,<span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">0</span>,<span class="fl">100</span><span class="op">-</span><span class="va">pr</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
@@ -265,7 +278,7 @@ Among the observations, row 13 in Figure <a href="#fig:fig-outliervis">1</a>, wi
 <span>    <span class="va">res</span> <span class="op">=</span> <span class="va">ytest</span> <span class="op">-</span> <span class="va">betahat</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span> <span class="op">-</span> <span class="va">xtest</span><span class="op"><a href="https://rdrr.io/r/base/matmult.html" class="external-link">%*%</a></span><span class="va">betahat</span><span class="op">[</span><span class="op">-</span><span class="fl">1</span><span class="op">]</span></span>
 <span>    <span class="va">mape</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/MathFun.html" class="external-link">abs</a></span><span class="op">(</span><span class="va">res</span><span class="op">)</span><span class="op">)</span></span>
 <span>    <span class="va">rmspe</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/MathFun.html" class="external-link">sqrt</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">res</span><span class="op">^</span><span class="fl">2</span><span class="op">)</span><span class="op">)</span></span>
-<span>    <span class="va">rst</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>m <span class="op">=</span> <span class="va">m</span>, mtd <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">mtds</span><span class="op">)</span><span class="op">[</span><span class="va">mtd</span><span class="op">]</span>, pr <span class="op">=</span> <span class="va">pr</span>, sigma <span class="op">=</span> <span class="va">sigma</span>,</span>
+<span>    <span class="va">rst</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>m <span class="op">=</span> <span class="va">m</span>, mtd <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">mtds</span><span class="op">)</span><span class="op">[</span><span class="va">mtd</span><span class="op">]</span>, pr <span class="op">=</span> <span class="va">pr</span>, sigma <span class="op">=</span> <span class="va">sigma</span>,</span>
 <span>            tp <span class="op">=</span> <span class="va">tp</span>, tn <span class="op">=</span> <span class="va">tn</span>, rmspe <span class="op">=</span> <span class="va">rmspe</span>, mape <span class="op">=</span> <span class="va">mape</span><span class="op">)</span></span>
 <span></span>
 <span>    <span class="va">rst</span></span>
@@ -273,10 +286,9 @@ Among the observations, row 13 in Figure <a href="#fig:fig-outliervis">1</a>, wi
 <span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/save.html" class="external-link">save</a></span><span class="op">(</span><span class="va">result</span>, file <span class="op">=</span> <span class="st">"result_realdata_artificial.RData"</span><span class="op">)</span></span></code></pre></div>
-</div>
-<div class="section level2">
-<h2 id="leave-one-out-cross-validation">Leave-one-out Cross-Validation<a class="anchor" aria-label="anchor" href="#leave-one-out-cross-validation"></a>
-</h2>
+<div class="section level3">
+<h3 id="leave-one-out-cross-validation">Leave-one-out Cross-Validation<a class="anchor" aria-label="anchor" href="#leave-one-out-cross-validation"></a>
+</h3>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">datascreen</span><span class="op">)</span></span>
@@ -284,7 +296,8 @@ Among the observations, row 13 in Figure <a href="#fig:fig-outliervis">1</a>, wi
 <span><span class="va">y</span> <span class="op">=</span> <span class="va">datascreen</span><span class="op">[</span>,<span class="fl">1</span><span class="op">]</span></span>
 <span><span class="va">x</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">as.matrix</a></span><span class="op">(</span><span class="fu">robustHD</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/robustHD/man/standardize.html" class="external-link">robStandardize</a></span><span class="op">(</span><span class="va">datascreen</span><span class="op">[</span>,<span class="op">-</span><span class="fl">1</span><span class="op">]</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">result</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/foreach/man/foreach.html" class="external-link">foreach</a></span><span class="op">(</span>mtd <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">mtds</span><span class="op">)</span>,</span>
-<span>                  .packages <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"robustHD"</span>, <span class="st">"robustbase"</span> , <span class="st">"mmlasso"</span>,<span class="st">"shootings"</span>, <span class="st">"cellWise"</span>, <span class="st">"regcell"</span><span class="op">)</span><span class="op">)</span><span class="op"><a href="https://rdrr.io/pkg/foreach/man/foreach.html" class="external-link">%:%</a></span></span>
+<span>                  .packages <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"robustHD"</span>, <span class="st">"robustbase"</span> , <span class="st">"mmlasso"</span>,</span>
+<span>                                <span class="st">"shootings"</span>, <span class="st">"cellWise"</span>, <span class="st">"regcell"</span><span class="op">)</span><span class="op">)</span><span class="op"><a href="https://rdrr.io/pkg/foreach/man/foreach.html" class="external-link">%:%</a></span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/pkg/foreach/man/foreach.html" class="external-link">foreach</a></span><span class="op">(</span>p <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">100</span><span class="op">)</span><span class="op">)</span><span class="op"><a href="https://rdrr.io/pkg/foreach/man/foreach.html" class="external-link">%:%</a></span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/pkg/foreach/man/foreach.html" class="external-link">foreach</a></span><span class="op">(</span>obs <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">84</span><span class="op">)</span><span class="op"><a href="https://rdrr.io/pkg/foreach/man/foreach.html" class="external-link">%dopar%</a></span><span class="op">{</span></span>
 <span></span>
@@ -320,6 +333,7 @@ Rousseeuw, P. J., &amp; Van Den Bossche, W. (2018). Detecting deviating data cel
 </div>
 <div id="ref-zakharkin2005sources" class="csl-entry">
 Zakharkin, S. O., Kim, K., Mehta, T., Chen, L., Barnes, S., Scheirer, K. E., … Page, G. P. (2005). Sources of variation in affymetrix microarray experiments. <em>BMC Bioinformatics</em>, 6, 1–11.
+</div>
 </div>
 </div>
 </div>

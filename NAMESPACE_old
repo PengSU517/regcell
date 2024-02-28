@@ -1,0 +1,19 @@
+useDynLib(regcell, .registration=TRUE)
+
+importFrom(Rcpp, evalCpp)
+importFrom("robustbase","Qn")
+importFrom("robustHD","rlars", "sparseLTS", "robStandardize")
+importFrom("glmnet", "cv.glmnet")
+importFrom("mvtnorm","rmvt")
+
+
+
+#exportPattern("^[[:alpha:]]+")
+
+export(sregcell)
+export(sregcell_std)
+export(sregcell_lambda)
+export(genevar)
+export(Rlars)
+export(SLTS)
+export(lassocv)

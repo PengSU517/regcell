@@ -104,28 +104,37 @@ parallel).</p>
 <span></span>
 <span><span class="co">##### methods compared</span></span>
 <span><span class="va">mtds</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
-<span>  <span class="co">## spase shooting S, codes arefrom https://github.com/ineswilms/sparse-shooting-S </span></span>
+<span></span>
+<span>  <span class="co">## spase shooting S, codes are from https://github.com/ineswilms/sparse-shooting-S </span></span>
 <span>  <span class="co">## package is available from https://github.com/PengSU517/shootings</span></span>
-<span>  <span class="co"># sss = function(y, x){shootings::sparseshooting(x,y)$coef},</span></span>
+<span>  <span class="co">## install this package directly using remotes::install_github("PengSU517/shootings")</span></span>
+<span></span>
+<span>  sss <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">y</span>, <span class="va">x</span><span class="op">)</span><span class="op">{</span><span class="fu">shootings</span><span class="fu">::</span><span class="fu">sparseshooting</span><span class="op">(</span><span class="va">x</span>,<span class="va">y</span><span class="op">)</span><span class="op">$</span><span class="va">coef</span><span class="op">}</span>,</span>
 <span>  </span>
 <span>  <span class="co">## Rlars, from package robustHD</span></span>
 <span>  rlars <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">y</span>, <span class="va">x</span><span class="op">)</span><span class="op">{</span><span class="fu">regcell</span><span class="fu">::</span><span class="fu"><a href="../reference/Rlars.html">Rlars</a></span><span class="op">(</span><span class="va">y</span>, <span class="va">x</span><span class="op">)</span><span class="op">$</span><span class="va">betahat</span><span class="op">}</span>, </span>
 <span>  </span>
-<span>  <span class="co">## MM-Lasso, from https://github.com/esmucler/mmlasso</span></span>
-<span>  <span class="co"># mmlasso = function(y,x){mmlasso::mmlasso(x,y)$coef.MMLasso.ad}, </span></span>
+<span></span>
+<span>  <span class="co">## MM-Lasso, forked from https://github.com/esmucler/mmlasso</span></span>
+<span>  <span class="co">## the updated package is available from https://github.com/PengSU517/mmlasso</span></span>
+<span>  <span class="co">## install this package directly using remotes::install_github("PengSU517/mmlasso")</span></span>
+<span>  <span class="co">## this function can be effectively replaced by the pense package on CRAN</span></span>
+<span>  mmlasso <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">y</span>,<span class="va">x</span><span class="op">)</span><span class="op">{</span><span class="fu">mmlasso</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/mmlasso/man/mmlasso.html" class="external-link">mmlasso</a></span><span class="op">(</span><span class="va">x</span>,<span class="va">y</span><span class="op">)</span><span class="op">$</span><span class="va">coef.MMLasso.ad</span><span class="op">}</span>,</span>
 <span>  </span>
-<span>  <span class="co">## sparse LTS, from package robustHD, an alternative using BIC is regcell::SLTS</span></span>
+<span></span>
+<span>  </span>
+<span>  <span class="co">## sparse LTS, from package robustHD</span></span>
 <span>  slts <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">y</span>,<span class="va">x</span><span class="op">)</span><span class="op">{</span><span class="fu">robustHD</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/robustHD/man/sparseLTS.html" class="external-link">sparseLTS</a></span><span class="op">(</span><span class="va">x</span>,<span class="va">y</span><span class="op">)</span><span class="op">$</span><span class="va">coefficients</span><span class="op">}</span>,</span>
 <span>  </span>
-<span>  <span class="co">## cellwise regularized Lasso without post regression</span></span>
-<span>  cell_lasso <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">y</span>,<span class="va">x</span><span class="op">)</span><span class="op">{</span> </span>
-<span>    <span class="va">fit</span> <span class="op">=</span> <span class="fu">regcell</span><span class="fu">::</span><span class="fu"><a href="../reference/sregcell_std.html">sregcell_std</a></span><span class="op">(</span>y <span class="op">=</span> <span class="va">y</span>, x <span class="op">=</span> <span class="va">x</span><span class="op">)</span></span>
-<span>    <span class="kw"><a href="https://rdrr.io/r/base/function.html" class="external-link">return</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">fit</span><span class="op">$</span><span class="va">intercept_hat</span>, <span class="va">fit</span><span class="op">$</span><span class="va">betahat</span><span class="op">)</span><span class="op">)</span></span>
-<span>  <span class="op">}</span>,</span>
+<span>  <span class="co">## cellwise regularized Lasso without post regression, not used in simulations</span></span>
+<span>  <span class="co"># cell_lasso = function(y,x){ </span></span>
+<span>  <span class="co">#   fit = regcell::sregcell_std(y = y, x = x, softbeta = TRUE, lambda_zeta = 1, penal = 1, penaldelta =0)</span></span>
+<span>  <span class="co">#   return(c(fit$intercept_hat, fit$betahat))</span></span>
+<span>  <span class="co"># },</span></span>
 <span></span>
 <span>  <span class="co">## cellwise regularized Lasso with post regression</span></span>
 <span>  cell_lasso_post <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">y</span>,<span class="va">x</span><span class="op">)</span><span class="op">{</span></span>
-<span>    <span class="va">fit</span> <span class="op">=</span> <span class="fu">regcell</span><span class="fu">::</span><span class="fu"><a href="../reference/sregcell_std.html">sregcell_std</a></span><span class="op">(</span>y <span class="op">=</span> <span class="va">y</span>, x <span class="op">=</span> <span class="va">x</span><span class="op">)</span></span>
+<span>    <span class="va">fit</span> <span class="op">=</span> <span class="fu">regcell</span><span class="fu">::</span><span class="fu"><a href="../reference/sregcell_std.html">sregcell_std</a></span><span class="op">(</span>y <span class="op">=</span> <span class="va">y</span>, x <span class="op">=</span> <span class="va">x</span>, softbeta <span class="op">=</span> <span class="cn">TRUE</span>, lambda_zeta <span class="op">=</span> <span class="fl">1</span>, penal <span class="op">=</span> <span class="fl">1</span>, penaldelta <span class="op">=</span><span class="fl">0</span><span class="op">)</span></span>
 <span>    <span class="kw"><a href="https://rdrr.io/r/base/function.html" class="external-link">return</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">fit</span><span class="op">$</span><span class="va">intercept_hat_post</span>, <span class="va">fit</span><span class="op">$</span><span class="va">betahat_post</span><span class="op">)</span><span class="op">)</span></span>
 <span>  <span class="op">}</span>,</span>
 <span></span>

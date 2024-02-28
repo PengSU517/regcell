@@ -36,6 +36,9 @@ newcellmap(
   drawCircles = FALSE
 )
 }
+\arguments{
+\item{R}{Matrix of standardized residuals of the cells (required input argument).}
+}
 \description{
 from cellWise::cellMap, only changed the background colour
 }

@@ -47,18 +47,24 @@ getDoParWorkers()
 
 ##### methods compared
 mtds = list(
+
   ## spase shooting S, codes are from https://github.com/ineswilms/sparse-shooting-S 
   ## package is available from https://github.com/PengSU517/shootings
   ## install this package directly using remotes::install_github("PengSU517/shootings")
+
   sss = function(y, x){shootings::sparseshooting(x,y)$coef},
   
   ## Rlars, from package robustHD
   rlars = function(y, x){regcell::Rlars(y, x)$betahat}, 
   
+
   ## MM-Lasso, forked from https://github.com/esmucler/mmlasso
   ## the updated package is available from https://github.com/PengSU517/mmlasso
   ## install this package directly using remotes::install_github("PengSU517/mmlasso")
+  ## this function can be effectively replaced by the pense package on CRAN
   mmlasso = function(y,x){mmlasso::mmlasso(x,y)$coef.MMLasso.ad},
+  
+
   
   ## sparse LTS, from package robustHD
   slts = function(y,x){robustHD::sparseLTS(x,y)$coefficients},

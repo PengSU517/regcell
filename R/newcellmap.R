@@ -1,7 +1,12 @@
+require(reshape2)
+require(scales)
+require(ggplot2)
+
 #' cellmap
 #'
 #' from cellWise::cellMap, only changed the background colour
-
+#'
+#' @param R Matrix of standardized residuals of the cells (required input argument).
 
 
 newcellmap = function (R, indcells = NULL, indrows = NULL, standOD = NULL,
