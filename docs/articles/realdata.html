@@ -205,7 +205,7 @@ Among the observations, row 13 in Figure <a href="#fig:fig-outliervis">1</a>, wi
 <span>  <span class="co"># mmlasso = function(y,x){mmlasso::mmlasso(x,y)$coef.MMLasso.ad}, </span></span>
 <span>  </span>
 <span>  <span class="co">## sparse LTS, from package robustHD</span></span>
-<span>  slts <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">y</span>,<span class="va">x</span><span class="op">)</span><span class="op">{</span><span class="fu">regcell</span><span class="fu">::</span><span class="fu"><a href="../reference/SLTS.html">SLTS</a></span><span class="op">(</span><span class="va">y</span>,<span class="va">x</span><span class="op">)</span><span class="op">$</span><span class="va">betahat</span><span class="op">}</span>,</span>
+<span>  slts <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">y</span>,<span class="va">x</span><span class="op">)</span><span class="op">{</span><span class="fu">robustHD</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/robustHD/man/sparseLTS.html" class="external-link">sparseLTS</a></span><span class="op">(</span><span class="va">x</span>,<span class="va">y</span><span class="op">)</span><span class="op">$</span><span class="va">coefficients</span><span class="op">}</span>,</span>
 <span>  </span>
 <span>  <span class="co">## cellwise regularized Lasso without post regression</span></span>
 <span>  cell_lasso <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">y</span>,<span class="va">x</span><span class="op">)</span><span class="op">{</span> </span>
