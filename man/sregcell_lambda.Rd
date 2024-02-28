@@ -14,6 +14,7 @@ sregcell_lambda(
   lambda_zeta = 2.56,
   lambda = 0,
   alpha = 0.5,
+  tol = 0.001,
   maxiter = 100
 )
 }
@@ -36,7 +37,9 @@ sregcell_lambda(
 
 \item{alpha}{the importance factor of the regression loss (between 0-1, by default is 0.5)}
 
-\item{maxiter}{number of interations}
+\item{tol}{the tolerence of convergence}
+
+\item{maxiter}{the number of interations}
 }
 \value{
 fit

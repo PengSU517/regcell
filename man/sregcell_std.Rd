@@ -18,7 +18,8 @@ sregcell_std(
   alpha = 0.5,
   penal = 1,
   penaldelta = 0,
-  maxiter = 100
+  tol = 0.001,
+  maxiter = 30
 )
 }
 \arguments{
@@ -46,7 +47,9 @@ sregcell_std(
 
 \item{penaldelta}{the penalty of number of detected outliers (for debug, by default is 0)}
 
-\item{maxiter}{number of interations}
+\item{tol}{tolerence of convergence}
+
+\item{maxiter}{the number of interations}
 
 \item{the}{importance factor of the regression loss (between 0-1, by default is 0.5)}
 }
