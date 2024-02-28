@@ -27,7 +27,7 @@ knitr::opts_chunk$set(
 library(regcell)
 library(tidyverse)
 library(janitor)
-# remotes::install_github("esmucler/mmlasso")
+# remotes::install_github("PengSU517/mmlasso")
 library(mmlasso)
 # remotes::install_github("PengSU517/shootings")
 library(shootings)
