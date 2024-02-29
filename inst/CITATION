@@ -1,0 +1,22 @@
+bibentry(
+  bibtype  = "Article",
+  title    = "CR-Lasso: Robust cellwise regularized sparse regression",
+  author   = c(person(given = "Peng",
+                       family = "Su",
+                          email = "peng.su@sydney.edu.au"),
+                   person(given = "Garth",
+                          family = "Tarr",
+                          email = "garth.tarr@gmail.com"),
+                   person(given = "Samuel",
+                          family = "Muller",
+                          email = "samuel.muller@mq.edu.au"),
+                  person(given = "Suojin",
+                          family = "Wang",
+                          email = "sjwang@stat.tamu.edu")),
+  journal  = "arXiv:2307.05234",
+  year     = 2023
+  #volume   = ,
+  #number   = ,
+  #pages    = ,
+  #doi      =
+)
