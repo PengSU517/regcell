@@ -280,7 +280,7 @@ summ = result %>% group_by(method) %>% summarise(
   F1 = round(mean(F1),2))
 
 # xtable::xtable(t(summ)) ## this is the table we showed in the manuscript
-summ %>% kable("html")%>% kable_paper(full_width = T)   
+knitr::kable(summ)%>% kable_paper(full_width = T)    
 
 
 ```
@@ -342,11 +342,12 @@ result = readr::read_rds("result_realdata.rds") |>
   mutate(method = factor(method, levels = c("CR-Lasso", "SSS", "RLars", "MM-Lasso", "SLTS", "Lasso")))
 
 summ = result %>% group_by(method) %>% summarise(
-  RMSPE = round(mean(res^2),2), 
+  MSPE = round(mean(res^2),2),
+  RMSPE = round(sqrt(mean(res^2)),2), ##  should update the manuscript...
   MAPE = round(mean(abs(res)),2))
 
 # xtable::xtable(t(summ)) ## this is the table we showed in the manuscript
-summ %>% kable("html")%>% kable_paper(full_width = T)    
+summ %>% kable("html")%>% kable_paper(full_width = T)
 ```
 
 ```{r, fig.height=6, fig.width=10, fig.cap= "Leave-one-out prediction residuals of the Bone mineral density data"}

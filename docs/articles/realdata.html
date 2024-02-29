@@ -322,7 +322,7 @@ Among the observations, row 13 in Figure <a href="#fig:fig-outliervis">1</a>, wi
 <span>  F1 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">F1</span><span class="op">)</span>,<span class="fl">2</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># xtable::xtable(t(summ)) ## this is the table we showed in the manuscript</span></span>
-<span><span class="va">summ</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span><span class="st">"html"</span><span class="op">)</span><span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu"><a href="https://rdrr.io/pkg/kableExtra/man/kable_classic.html" class="external-link">kable_paper</a></span><span class="op">(</span>full_width <span class="op">=</span> <span class="cn">T</span><span class="op">)</span>   </span></code></pre></div>
+<span><span class="fu">knitr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span><span class="va">summ</span><span class="op">)</span><span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu"><a href="https://rdrr.io/pkg/kableExtra/man/kable_classic.html" class="external-link">kable_paper</a></span><span class="op">(</span>full_width <span class="op">=</span> <span class="cn">T</span><span class="op">)</span>    </span></code></pre></div>
 <table class="table  lightable-paper" style='font-family: "Arial Narrow", arial, helvetica, sans-serif; margin-left: auto; margin-right: auto;'>
 <thead><tr>
 <th style="text-align:left;">
@@ -518,15 +518,19 @@ Lasso
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span><span class="va">method</span>, levels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"CR-Lasso"</span>, <span class="st">"SSS"</span>, <span class="st">"RLars"</span>, <span class="st">"MM-Lasso"</span>, <span class="st">"SLTS"</span>, <span class="st">"Lasso"</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">summ</span> <span class="op">=</span> <span class="va">result</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html" class="external-link">group_by</a></span><span class="op">(</span><span class="va">method</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/summarise.html" class="external-link">summarise</a></span><span class="op">(</span></span>
-<span>  RMSPE <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">res</span><span class="op">^</span><span class="fl">2</span><span class="op">)</span>,<span class="fl">2</span><span class="op">)</span>, </span>
+<span>  MSPE <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">res</span><span class="op">^</span><span class="fl">2</span><span class="op">)</span>,<span class="fl">2</span><span class="op">)</span>,</span>
+<span>  RMSPE <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/MathFun.html" class="external-link">sqrt</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">res</span><span class="op">^</span><span class="fl">2</span><span class="op">)</span><span class="op">)</span>,<span class="fl">2</span><span class="op">)</span>, <span class="co">##  should update the manuscript...</span></span>
 <span>  MAPE <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/MathFun.html" class="external-link">abs</a></span><span class="op">(</span><span class="va">res</span><span class="op">)</span><span class="op">)</span>,<span class="fl">2</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># xtable::xtable(t(summ)) ## this is the table we showed in the manuscript</span></span>
-<span><span class="va">summ</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span><span class="st">"html"</span><span class="op">)</span><span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu"><a href="https://rdrr.io/pkg/kableExtra/man/kable_classic.html" class="external-link">kable_paper</a></span><span class="op">(</span>full_width <span class="op">=</span> <span class="cn">T</span><span class="op">)</span>    </span></code></pre></div>
+<span><span class="va">summ</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span><span class="st">"html"</span><span class="op">)</span><span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu"><a href="https://rdrr.io/pkg/kableExtra/man/kable_classic.html" class="external-link">kable_paper</a></span><span class="op">(</span>full_width <span class="op">=</span> <span class="cn">T</span><span class="op">)</span></span></code></pre></div>
 <table class="table  lightable-paper" style='font-family: "Arial Narrow", arial, helvetica, sans-serif; margin-left: auto; margin-right: auto;'>
 <thead><tr>
 <th style="text-align:left;">
 method
+</th>
+<th style="text-align:right;">
+MSPE
 </th>
 <th style="text-align:right;">
 RMSPE
@@ -544,6 +548,9 @@ CR-Lasso
 1.51
 </td>
 <td style="text-align:right;">
+1.23
+</td>
+<td style="text-align:right;">
 0.98
 </td>
 </tr>
@@ -553,6 +560,9 @@ SSS
 </td>
 <td style="text-align:right;">
 2.41
+</td>
+<td style="text-align:right;">
+1.55
 </td>
 <td style="text-align:right;">
 1.25
@@ -566,6 +576,9 @@ RLars
 2.20
 </td>
 <td style="text-align:right;">
+1.48
+</td>
+<td style="text-align:right;">
 1.20
 </td>
 </tr>
@@ -575,6 +588,9 @@ MM-Lasso
 </td>
 <td style="text-align:right;">
 1.31
+</td>
+<td style="text-align:right;">
+1.15
 </td>
 <td style="text-align:right;">
 0.95
@@ -588,6 +604,9 @@ SLTS
 1.55
 </td>
 <td style="text-align:right;">
+1.25
+</td>
+<td style="text-align:right;">
 1.06
 </td>
 </tr>
@@ -597,6 +616,9 @@ Lasso
 </td>
 <td style="text-align:right;">
 0.92
+</td>
+<td style="text-align:right;">
+0.96
 </td>
 <td style="text-align:right;">
 0.79
