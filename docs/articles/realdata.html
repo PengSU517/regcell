@@ -8,8 +8,8 @@
 <meta name="description" content="regcell">
 <title>Bone mineral density data • regcell</title>
 <script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<link href="../deps/bootstrap-5.2.2/bootstrap.min.css" rel="stylesheet">
-<script src="../deps/bootstrap-5.2.2/bootstrap.bundle.min.js"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous">
+<link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
+<script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/v4-shims.min.css" integrity="sha256-wZjR52fzng1pJHwx4aV2AO3yyTOXrcDW7jBpJtTwVxw=" crossorigin="anonymous">
 <!-- bootstrap-toc --><script src="https://cdn.jsdelivr.net/gh/afeld/bootstrap-toc@v1.0.1/dist/bootstrap-toc.min.js" integrity="sha256-4veVQbu7//Lk5TSmc7YV48MxtMy98e26cf5MrgZYnwo=" crossorigin="anonymous"></script><!-- headroom.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/headroom.min.js" integrity="sha256-AsUX4SJE1+yuDu5+mAVzJbuYNPHj/WroHuZ8Ir/CkE0=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script><!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><!-- search --><script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/6.4.6/fuse.js" integrity="sha512-zv6Ywkjyktsohkbp9bb45V6tEMoWhzFzXis+LrMehmJZZSys19Yxf1dopHx7WzIKxr5tK2dVcYmaCk2uqdjF4A==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/autocomplete.js/0.38.0/autocomplete.jquery.min.js" integrity="sha512-GU9ayf+66Xx2TmpxqJpliWbT5PiGYxpaG8rfnBEk1LL8l1KGkRShhngwdXK1UgqhAzWpZHSiYPc09/NwDQIGyg==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mark.js/8.11.1/mark.min.js" integrity="sha512-5CYOlHXGh6QpOFA/TeTylKLWfB3ftPsde7AnmhuitiTX4K5SqCLBeKro6sPS8ilsz1Q4NRx3v8Ko2IBiszzdww==" crossorigin="anonymous"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Bone mineral density data">
 <meta property="og:description" content="regcell">
@@ -41,9 +41,9 @@
 <li class="active nav-item dropdown">
   <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-articles">Articles</a>
   <div class="dropdown-menu" aria-labelledby="dropdown-articles">
-    <a class="dropdown-item" href="../articles/demo.html">demo</a>
+    <a class="dropdown-item" href="../articles/demo.html">Quick demo</a>
     <a class="dropdown-item" href="../articles/realdata.html">Bone mineral density data</a>
-    <a class="dropdown-item" href="../articles/simu.html">simu</a>
+    <a class="dropdown-item" href="../articles/simu.html">Simulations</a>
   </div>
 </li>
       </ul>
@@ -71,15 +71,10 @@
     
     
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://pengsu517.github.io/regcell/">regcell</a></span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="co"># remotes::install_github("PengSU517/regcell")</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://pengsu517.github.io/regcell/">regcell</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://tidyverse.tidyverse.org" class="external-link">tidyverse</a></span><span class="op">)</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/sfirke/janitor" class="external-link">janitor</a></span><span class="op">)</span></span>
-<span><span class="co"># remotes::install_github("PengSU517/mmlasso")</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">mmlasso</span><span class="op">)</span></span>
-<span><span class="co"># remotes::install_github("PengSU517/shootings")</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">shootings</span><span class="op">)</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://yihui.org/knitr/" class="external-link">knitr</a></span><span class="op">)</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="http://haozhu233.github.io/kableExtra/" class="external-link">kableExtra</a></span><span class="op">)</span></span></code></pre></div>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/sfirke/janitor" class="external-link">janitor</a></span><span class="op">)</span></span></code></pre></div>
 <p>To illustrate the use of CR-Lasso, we consider the bone mineral density (BMD) data from <span class="citation">Reppe et al. (2010)</span>.
 The data are publicly available in the <a href="https://www.ebi.ac.uk/arrayexpress/experiments/E-MEXP-1618" class="external-link">European Bioinformatics Institute Array-Express repository</a>.
 The BMD data consists of gene expression measurements of 54,675 probes of 84 Norwegian women.</p>
@@ -196,27 +191,36 @@ Among the observations, row 13 in Figure <a href="#fig:fig-outliervis">1</a>, wi
 <div class="section level2">
 <h2 id="method-comparison">Method comparison<a class="anchor" aria-label="anchor" href="#method-comparison"></a>
 </h2>
+<p>To perform the method comparison considered in the paper, you will need some additional packages. For ease of replication we have created a <code>shootings</code> package. The functions in this package were taken from <a href="https://github.com/ineswilms/sparse-shooting-S" class="external-link uri">https://github.com/ineswilms/sparse-shooting-S</a> and compiled into a basic package to make them more convenient to use:</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu">remotes</span><span class="fu">::</span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"PengSU517/shootings"</span><span class="op">)</span></span></code></pre></div>
+<p>Another package you may want to use is the <code>mmlasso</code> package. The original code was from <a href="https://github.com/esmucler/mmlasso" class="external-link uri">https://github.com/esmucler/mmlasso</a>.<br>
+An adapted version of this package is available from <a href="https://github.com/PengSU517/mmlasso" class="external-link uri">https://github.com/PengSU517/mmlasso</a>, as we found some components no longer functioning as intended.</p>
+<p>You can install this package conveniently using :</p>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu">remotes</span><span class="fu">::</span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"PengSU517/mmlasso"</span><span class="op">)</span></span></code></pre></div>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># remotes::install_github("PengSU517/mmlasso")</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">mmlasso</span><span class="op">)</span></span>
+<span><span class="co"># remotes::install_github("PengSU517/shootings")</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">shootings</span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://gt.rstudio.com" class="external-link">gt</a></span><span class="op">)</span></span></code></pre></div>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">##### methods compared</span></span>
 <span><span class="va">mtds</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
-<span></span>
 <span>  <span class="co">## spase shooting S, codes are from https://github.com/ineswilms/sparse-shooting-S </span></span>
 <span>  <span class="co">## package is available from https://github.com/PengSU517/shootings</span></span>
 <span>  <span class="co">## install this package directly using remotes::install_github("PengSU517/shootings")</span></span>
-<span></span>
 <span>  sss <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">y</span>, <span class="va">x</span><span class="op">)</span><span class="op">{</span><span class="fu">shootings</span><span class="fu">::</span><span class="fu">sparseshooting</span><span class="op">(</span><span class="va">x</span>,<span class="va">y</span><span class="op">)</span><span class="op">$</span><span class="va">coef</span><span class="op">}</span>,</span>
 <span>  </span>
 <span>  <span class="co">## Rlars, from package robustHD</span></span>
 <span>  rlars <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">y</span>, <span class="va">x</span><span class="op">)</span><span class="op">{</span><span class="fu">regcell</span><span class="fu">::</span><span class="fu"><a href="../reference/Rlars.html">Rlars</a></span><span class="op">(</span><span class="va">y</span>, <span class="va">x</span><span class="op">)</span><span class="op">$</span><span class="va">betahat</span><span class="op">}</span>, </span>
-<span>  </span>
 <span></span>
 <span>  <span class="co">## MM-Lasso, forked from https://github.com/esmucler/mmlasso</span></span>
 <span>  <span class="co">## the updated package is available from https://github.com/PengSU517/mmlasso</span></span>
 <span>  <span class="co">## install this package directly using remotes::install_github("PengSU517/mmlasso")</span></span>
-<span>  <span class="co">## this function can be effectively replaced by the pense package on CRAN</span></span>
+<span>  <span class="co">## the pense package on CRAN would be an alternative here</span></span>
 <span>  mmlasso <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">y</span>,<span class="va">x</span><span class="op">)</span><span class="op">{</span><span class="fu">mmlasso</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/mmlasso/man/mmlasso.html" class="external-link">mmlasso</a></span><span class="op">(</span><span class="va">x</span>,<span class="va">y</span><span class="op">)</span><span class="op">$</span><span class="va">coef.MMLasso.ad</span><span class="op">}</span>,</span>
-<span>  </span>
-<span></span>
 <span>  </span>
 <span>  <span class="co">## sparse LTS, from package robustHD</span></span>
 <span>  slts <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">y</span>,<span class="va">x</span><span class="op">)</span><span class="op">{</span><span class="fu">robustHD</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/robustHD/man/sparseLTS.html" class="external-link">sparseLTS</a></span><span class="op">(</span><span class="va">x</span>,<span class="va">y</span><span class="op">)</span><span class="op">$</span><span class="va">coefficients</span><span class="op">}</span>,</span>
@@ -243,8 +247,8 @@ Among the observations, row 13 in Figure <a href="#fig:fig-outliervis">1</a>, wi
 <div class="section level2">
 <h2 id="artifically-generated-response">Artifically generated response<a class="anchor" aria-label="anchor" href="#artifically-generated-response"></a>
 </h2>
-<p>We first obtained a clean (imputed) dataset <span class="math inline">\(\mathbf{\check X}\)</span> using DDC (<span class="citation">Rousseeuw &amp; Van Den Bossche (2018)</span>). We then generated an artificial response <span class="math inline">\(\mathbf{y} = \mathbf{\check X}\mathbf{\beta} + \mathbf{\varepsilon}\)</span> using screened clean predictors and <span class="math inline">\(\mathbf{\varepsilon} \sim N(\mathbf{0},0.5^2\mathbf{I})\)</span>. We randomly picked ten active predictors in each simulation run and set <span class="math inline">\(\beta_j \sim U(1, 1.5)\)</span> for each of them. We then randomly collected 80% observations from the original (contaminated) dataset for model training, while the remaining 20% of the imputed (clean) dataset was used to assess the prediction accuracy. We repeated the simulation procedure 200 times.</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<p>We first obtained a clean (imputed) dataset <span class="math inline">\(\mathbf{\check X}\)</span> using DDC <span class="citation">(Rousseeuw &amp; Van Den Bossche, 2018)</span>. We then generated an artificial response <span class="math inline">\(\mathbf{y} = \mathbf{\check X}\mathbf{\beta} + \mathbf{\varepsilon}\)</span> using screened clean predictors and <span class="math inline">\(\mathbf{\varepsilon} \sim N(\mathbf{0},0.5^2\mathbf{I})\)</span>. We randomly picked ten active predictors in each simulation run and set <span class="math inline">\(\beta_j \sim U(1, 1.5)\)</span> for each of them. We then randomly collected 80% observations from the original (contaminated) dataset for model training, while the remaining 20% of the imputed (clean) dataset was used to assess the prediction accuracy. We repeated the simulation procedure 200 times.</p>
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/RevolutionAnalytics/doparallel" class="external-link">doParallel</a></span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/pkg/doParallel/man/registerDoParallel.html" class="external-link">registerDoParallel</a></span><span class="op">(</span>cores<span class="op">=</span><span class="fl">10</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/pkg/foreach/man/getDoParWorkers.html" class="external-link">getDoParWorkers</a></span><span class="op">(</span><span class="op">)</span></span>
@@ -290,7 +294,7 @@ Among the observations, row 13 in Figure <a href="#fig:fig-outliervis">1</a>, wi
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/save.html" class="external-link">save</a></span><span class="op">(</span><span class="va">result</span>, file <span class="op">=</span> <span class="st">"result_realdata_artificial.rds"</span><span class="op">)</span></span></code></pre></div>
 <p>For each method, we show MAPE (mean absolute prediction error) and RMSPE values, as well as their True positive numbers (TP), true negative numbers (TN) and F<span class="math inline">\(_1\)</span> scores.</p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">result</span> <span class="op">=</span> <span class="fu">readr</span><span class="fu">::</span><span class="fu"><a href="https://readr.tidyverse.org/reference/read_rds.html" class="external-link">read_rds</a></span><span class="op">(</span><span class="st">"result_realdata_fakey.rds"</span><span class="op">)</span><span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span><span class="op">)</span><span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/t.html" class="external-link">t</a></span><span class="op">(</span><span class="op">)</span><span class="op">|&gt;</span></span>
@@ -322,157 +326,514 @@ Among the observations, row 13 in Figure <a href="#fig:fig-outliervis">1</a>, wi
 <span>  F1 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">F1</span><span class="op">)</span>,<span class="fl">2</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># xtable::xtable(t(summ)) ## this is the table we showed in the manuscript</span></span>
-<span><span class="fu">knitr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span><span class="va">summ</span><span class="op">)</span><span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu"><a href="https://rdrr.io/pkg/kableExtra/man/kable_classic.html" class="external-link">kable_paper</a></span><span class="op">(</span>full_width <span class="op">=</span> <span class="cn">T</span><span class="op">)</span>    </span></code></pre></div>
-<table class="table  lightable-paper" style='font-family: "Arial Narrow", arial, helvetica, sans-serif; margin-left: auto; margin-right: auto;'>
-<thead><tr>
-<th style="text-align:left;">
-method
-</th>
-<th style="text-align:right;">
-RMSPE
-</th>
-<th style="text-align:right;">
-MAPE
-</th>
-<th style="text-align:right;">
-TP
-</th>
-<th style="text-align:right;">
-TN
-</th>
-<th style="text-align:right;">
-F1
-</th>
-</tr></thead>
-<tbody>
+<span><span class="fu">gt</span><span class="fu">::</span><span class="fu"><a href="https://gt.rstudio.com/reference/gt.html" class="external-link">gt</a></span><span class="op">(</span><span class="va">summ</span><span class="op">)</span></span></code></pre></div>
+<div id="vvrrnhjzfr" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#vvrrnhjzfr table {
+  font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#vvrrnhjzfr thead, #vvrrnhjzfr tbody, #vvrrnhjzfr tfoot, #vvrrnhjzfr tr, #vvrrnhjzfr td, #vvrrnhjzfr th {
+  border-style: none;
+}
+
+#vvrrnhjzfr p {
+  margin: 0;
+  padding: 0;
+}
+
+#vvrrnhjzfr .gt_table {
+  display: table;
+  border-collapse: collapse;
+  line-height: normal;
+  margin-left: auto;
+  margin-right: auto;
+  color: #333333;
+  font-size: 16px;
+  font-weight: normal;
+  font-style: normal;
+  background-color: #FFFFFF;
+  width: auto;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #A8A8A8;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #A8A8A8;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+}
+
+#vvrrnhjzfr .gt_caption {
+  padding-top: 4px;
+  padding-bottom: 4px;
+}
+
+#vvrrnhjzfr .gt_title {
+  color: #333333;
+  font-size: 125%;
+  font-weight: initial;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-color: #FFFFFF;
+  border-bottom-width: 0;
+}
+
+#vvrrnhjzfr .gt_subtitle {
+  color: #333333;
+  font-size: 85%;
+  font-weight: initial;
+  padding-top: 3px;
+  padding-bottom: 5px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-color: #FFFFFF;
+  border-top-width: 0;
+}
+
+#vvrrnhjzfr .gt_heading {
+  background-color: #FFFFFF;
+  text-align: center;
+  border-bottom-color: #FFFFFF;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#vvrrnhjzfr .gt_bottom_border {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#vvrrnhjzfr .gt_col_headings {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#vvrrnhjzfr .gt_col_heading {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 6px;
+  padding-left: 5px;
+  padding-right: 5px;
+  overflow-x: hidden;
+}
+
+#vvrrnhjzfr .gt_column_spanner_outer {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  padding-top: 0;
+  padding-bottom: 0;
+  padding-left: 4px;
+  padding-right: 4px;
+}
+
+#vvrrnhjzfr .gt_column_spanner_outer:first-child {
+  padding-left: 0;
+}
+
+#vvrrnhjzfr .gt_column_spanner_outer:last-child {
+  padding-right: 0;
+}
+
+#vvrrnhjzfr .gt_column_spanner {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  overflow-x: hidden;
+  display: inline-block;
+  width: 100%;
+}
+
+#vvrrnhjzfr .gt_spanner_row {
+  border-bottom-style: hidden;
+}
+
+#vvrrnhjzfr .gt_group_heading {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  text-align: left;
+}
+
+#vvrrnhjzfr .gt_empty_group_heading {
+  padding: 0.5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: middle;
+}
+
+#vvrrnhjzfr .gt_from_md > :first-child {
+  margin-top: 0;
+}
+
+#vvrrnhjzfr .gt_from_md > :last-child {
+  margin-bottom: 0;
+}
+
+#vvrrnhjzfr .gt_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  margin: 10px;
+  border-top-style: solid;
+  border-top-width: 1px;
+  border-top-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  overflow-x: hidden;
+}
+
+#vvrrnhjzfr .gt_stub {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#vvrrnhjzfr .gt_stub_row_group {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+  vertical-align: top;
+}
+
+#vvrrnhjzfr .gt_row_group_first td {
+  border-top-width: 2px;
+}
+
+#vvrrnhjzfr .gt_row_group_first th {
+  border-top-width: 2px;
+}
+
+#vvrrnhjzfr .gt_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#vvrrnhjzfr .gt_first_summary_row {
+  border-top-style: solid;
+  border-top-color: #D3D3D3;
+}
+
+#vvrrnhjzfr .gt_first_summary_row.thick {
+  border-top-width: 2px;
+}
+
+#vvrrnhjzfr .gt_last_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#vvrrnhjzfr .gt_grand_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#vvrrnhjzfr .gt_first_grand_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-style: double;
+  border-top-width: 6px;
+  border-top-color: #D3D3D3;
+}
+
+#vvrrnhjzfr .gt_last_grand_summary_row_top {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-style: double;
+  border-bottom-width: 6px;
+  border-bottom-color: #D3D3D3;
+}
+
+#vvrrnhjzfr .gt_striped {
+  background-color: rgba(128, 128, 128, 0.05);
+}
+
+#vvrrnhjzfr .gt_table_body {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#vvrrnhjzfr .gt_footnotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#vvrrnhjzfr .gt_footnote {
+  margin: 0px;
+  font-size: 90%;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#vvrrnhjzfr .gt_sourcenotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#vvrrnhjzfr .gt_sourcenote {
+  font-size: 90%;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#vvrrnhjzfr .gt_left {
+  text-align: left;
+}
+
+#vvrrnhjzfr .gt_center {
+  text-align: center;
+}
+
+#vvrrnhjzfr .gt_right {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+#vvrrnhjzfr .gt_font_normal {
+  font-weight: normal;
+}
+
+#vvrrnhjzfr .gt_font_bold {
+  font-weight: bold;
+}
+
+#vvrrnhjzfr .gt_font_italic {
+  font-style: italic;
+}
+
+#vvrrnhjzfr .gt_super {
+  font-size: 65%;
+}
+
+#vvrrnhjzfr .gt_footnote_marks {
+  font-size: 75%;
+  vertical-align: 0.4em;
+  position: initial;
+}
+
+#vvrrnhjzfr .gt_asterisk {
+  font-size: 100%;
+  vertical-align: 0;
+}
+
+#vvrrnhjzfr .gt_indent_1 {
+  text-indent: 5px;
+}
+
+#vvrrnhjzfr .gt_indent_2 {
+  text-indent: 10px;
+}
+
+#vvrrnhjzfr .gt_indent_3 {
+  text-indent: 15px;
+}
+
+#vvrrnhjzfr .gt_indent_4 {
+  text-indent: 20px;
+}
+
+#vvrrnhjzfr .gt_indent_5 {
+  text-indent: 25px;
+}
+</style>
+<table class="table gt_table" data-quarto-disable-processing="false" data-quarto-bootstrap="false">
+<thead><tr class="gt_col_headings">
+<th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" scope="col" id="method">method</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" scope="col" id="RMSPE">RMSPE</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" scope="col" id="MAPE">MAPE</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" scope="col" id="TP">TP</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" scope="col" id="TN">TN</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" scope="col" id="F1">F1</th>
+    </tr></thead>
+<tbody class="gt_table_body">
 <tr>
-<td style="text-align:left;">
-CR-Lasso
-</td>
-<td style="text-align:right;">
-1.43
-</td>
-<td style="text-align:right;">
-1.16
-</td>
-<td style="text-align:right;">
-8.66
-</td>
-<td style="text-align:right;">
-76.26
-</td>
-<td style="text-align:right;">
-0.55
-</td>
+<td headers="method" class="gt_row gt_center">CR-Lasso</td>
+<td headers="RMSPE" class="gt_row gt_right">1.43</td>
+<td headers="MAPE" class="gt_row gt_right">1.16</td>
+<td headers="TP" class="gt_row gt_right">8.66</td>
+<td headers="TN" class="gt_row gt_right">76.26</td>
+<td headers="F1" class="gt_row gt_right">0.55</td>
 </tr>
 <tr>
-<td style="text-align:left;">
-SSS
-</td>
-<td style="text-align:right;">
-2.40
-</td>
-<td style="text-align:right;">
-1.94
-</td>
-<td style="text-align:right;">
-6.55
-</td>
-<td style="text-align:right;">
-75.88
-</td>
-<td style="text-align:right;">
-0.45
-</td>
+<td headers="method" class="gt_row gt_center">SSS</td>
+<td headers="RMSPE" class="gt_row gt_right">2.40</td>
+<td headers="MAPE" class="gt_row gt_right">1.94</td>
+<td headers="TP" class="gt_row gt_right">6.55</td>
+<td headers="TN" class="gt_row gt_right">75.88</td>
+<td headers="F1" class="gt_row gt_right">0.45</td>
 </tr>
 <tr>
-<td style="text-align:left;">
-RLars
-</td>
-<td style="text-align:right;">
-1.73
-</td>
-<td style="text-align:right;">
-1.40
-</td>
-<td style="text-align:right;">
-7.92
-</td>
-<td style="text-align:right;">
-77.05
-</td>
-<td style="text-align:right;">
-0.52
-</td>
+<td headers="method" class="gt_row gt_center">RLars</td>
+<td headers="RMSPE" class="gt_row gt_right">1.73</td>
+<td headers="MAPE" class="gt_row gt_right">1.40</td>
+<td headers="TP" class="gt_row gt_right">7.92</td>
+<td headers="TN" class="gt_row gt_right">77.05</td>
+<td headers="F1" class="gt_row gt_right">0.52</td>
 </tr>
 <tr>
-<td style="text-align:left;">
-MM-Lasso
-</td>
-<td style="text-align:right;">
-1.91
-</td>
-<td style="text-align:right;">
-1.55
-</td>
-<td style="text-align:right;">
-7.84
-</td>
-<td style="text-align:right;">
-73.49
-</td>
-<td style="text-align:right;">
-0.48
-</td>
+<td headers="method" class="gt_row gt_center">MM-Lasso</td>
+<td headers="RMSPE" class="gt_row gt_right">1.91</td>
+<td headers="MAPE" class="gt_row gt_right">1.55</td>
+<td headers="TP" class="gt_row gt_right">7.84</td>
+<td headers="TN" class="gt_row gt_right">73.49</td>
+<td headers="F1" class="gt_row gt_right">0.48</td>
 </tr>
 <tr>
-<td style="text-align:left;">
-SLTS
-</td>
-<td style="text-align:right;">
-2.75
-</td>
-<td style="text-align:right;">
-2.22
-</td>
-<td style="text-align:right;">
-6.13
-</td>
-<td style="text-align:right;">
-75.74
-</td>
-<td style="text-align:right;">
-0.41
-</td>
+<td headers="method" class="gt_row gt_center">SLTS</td>
+<td headers="RMSPE" class="gt_row gt_right">2.75</td>
+<td headers="MAPE" class="gt_row gt_right">2.22</td>
+<td headers="TP" class="gt_row gt_right">6.13</td>
+<td headers="TN" class="gt_row gt_right">75.74</td>
+<td headers="F1" class="gt_row gt_right">0.41</td>
 </tr>
 <tr>
-<td style="text-align:left;">
-Lasso
-</td>
-<td style="text-align:right;">
-1.64
-</td>
-<td style="text-align:right;">
-1.33
-</td>
-<td style="text-align:right;">
-9.31
-</td>
-<td style="text-align:right;">
-67.83
-</td>
-<td style="text-align:right;">
-0.46
-</td>
+<td headers="method" class="gt_row gt_center">Lasso</td>
+<td headers="RMSPE" class="gt_row gt_right">1.64</td>
+<td headers="MAPE" class="gt_row gt_right">1.33</td>
+<td headers="TP" class="gt_row gt_right">9.31</td>
+<td headers="TN" class="gt_row gt_right">67.83</td>
+<td headers="F1" class="gt_row gt_right">0.46</td>
 </tr>
 </tbody>
 </table>
+</div>
 </div>
 <div class="section level2">
 <h2 id="leave-one-out-cross-validation">Leave-one-out Cross-Validation<a class="anchor" aria-label="anchor" href="#leave-one-out-cross-validation"></a>
 </h2>
 <p>To demonstrate the performance on the real data, a sparse regression model was fitted separately with the original response (the total hip T-score) via the aforementioned methods. Out of the 100 pre-screened genes, nine genes were commonly chosen by CR-Lasso, Lasso, MM-Lasso, RLars, and SLTS. We ran the Leave-One-Out Cross-Validation to assess the performance of the selected models.</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">datascreen</span><span class="op">)</span></span>
 <span></span>
@@ -502,7 +863,7 @@ Lasso
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/save.html" class="external-link">save</a></span><span class="op">(</span><span class="va">result</span>, file <span class="op">=</span> <span class="st">"result_realdata.rds"</span><span class="op">)</span></span></code></pre></div>
 <p>The RMSPE and MAPE from Leave-one-out prediction residuals are also shown in table.</p>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">result</span> <span class="op">=</span> <span class="fu">readr</span><span class="fu">::</span><span class="fu"><a href="https://readr.tidyverse.org/reference/read_rds.html" class="external-link">read_rds</a></span><span class="op">(</span><span class="st">"result_realdata.rds"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/t.html" class="external-link">t</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span>
@@ -523,110 +884,495 @@ Lasso
 <span>  MAPE <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/MathFun.html" class="external-link">abs</a></span><span class="op">(</span><span class="va">res</span><span class="op">)</span><span class="op">)</span>,<span class="fl">2</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># xtable::xtable(t(summ)) ## this is the table we showed in the manuscript</span></span>
-<span><span class="va">summ</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span><span class="st">"html"</span><span class="op">)</span><span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu"><a href="https://rdrr.io/pkg/kableExtra/man/kable_classic.html" class="external-link">kable_paper</a></span><span class="op">(</span>full_width <span class="op">=</span> <span class="cn">T</span><span class="op">)</span></span></code></pre></div>
-<table class="table  lightable-paper" style='font-family: "Arial Narrow", arial, helvetica, sans-serif; margin-left: auto; margin-right: auto;'>
-<thead><tr>
-<th style="text-align:left;">
-method
-</th>
-<th style="text-align:right;">
-MSPE
-</th>
-<th style="text-align:right;">
-RMSPE
-</th>
-<th style="text-align:right;">
-MAPE
-</th>
-</tr></thead>
-<tbody>
+<span><span class="fu"><a href="https://gt.rstudio.com/reference/gt.html" class="external-link">gt</a></span><span class="op">(</span><span class="va">summ</span><span class="op">)</span></span></code></pre></div>
+<div id="kxgqdiujyl" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#kxgqdiujyl table {
+  font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#kxgqdiujyl thead, #kxgqdiujyl tbody, #kxgqdiujyl tfoot, #kxgqdiujyl tr, #kxgqdiujyl td, #kxgqdiujyl th {
+  border-style: none;
+}
+
+#kxgqdiujyl p {
+  margin: 0;
+  padding: 0;
+}
+
+#kxgqdiujyl .gt_table {
+  display: table;
+  border-collapse: collapse;
+  line-height: normal;
+  margin-left: auto;
+  margin-right: auto;
+  color: #333333;
+  font-size: 16px;
+  font-weight: normal;
+  font-style: normal;
+  background-color: #FFFFFF;
+  width: auto;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #A8A8A8;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #A8A8A8;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+}
+
+#kxgqdiujyl .gt_caption {
+  padding-top: 4px;
+  padding-bottom: 4px;
+}
+
+#kxgqdiujyl .gt_title {
+  color: #333333;
+  font-size: 125%;
+  font-weight: initial;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-color: #FFFFFF;
+  border-bottom-width: 0;
+}
+
+#kxgqdiujyl .gt_subtitle {
+  color: #333333;
+  font-size: 85%;
+  font-weight: initial;
+  padding-top: 3px;
+  padding-bottom: 5px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-color: #FFFFFF;
+  border-top-width: 0;
+}
+
+#kxgqdiujyl .gt_heading {
+  background-color: #FFFFFF;
+  text-align: center;
+  border-bottom-color: #FFFFFF;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#kxgqdiujyl .gt_bottom_border {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#kxgqdiujyl .gt_col_headings {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#kxgqdiujyl .gt_col_heading {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 6px;
+  padding-left: 5px;
+  padding-right: 5px;
+  overflow-x: hidden;
+}
+
+#kxgqdiujyl .gt_column_spanner_outer {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  padding-top: 0;
+  padding-bottom: 0;
+  padding-left: 4px;
+  padding-right: 4px;
+}
+
+#kxgqdiujyl .gt_column_spanner_outer:first-child {
+  padding-left: 0;
+}
+
+#kxgqdiujyl .gt_column_spanner_outer:last-child {
+  padding-right: 0;
+}
+
+#kxgqdiujyl .gt_column_spanner {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  overflow-x: hidden;
+  display: inline-block;
+  width: 100%;
+}
+
+#kxgqdiujyl .gt_spanner_row {
+  border-bottom-style: hidden;
+}
+
+#kxgqdiujyl .gt_group_heading {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  text-align: left;
+}
+
+#kxgqdiujyl .gt_empty_group_heading {
+  padding: 0.5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: middle;
+}
+
+#kxgqdiujyl .gt_from_md > :first-child {
+  margin-top: 0;
+}
+
+#kxgqdiujyl .gt_from_md > :last-child {
+  margin-bottom: 0;
+}
+
+#kxgqdiujyl .gt_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  margin: 10px;
+  border-top-style: solid;
+  border-top-width: 1px;
+  border-top-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  overflow-x: hidden;
+}
+
+#kxgqdiujyl .gt_stub {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#kxgqdiujyl .gt_stub_row_group {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+  vertical-align: top;
+}
+
+#kxgqdiujyl .gt_row_group_first td {
+  border-top-width: 2px;
+}
+
+#kxgqdiujyl .gt_row_group_first th {
+  border-top-width: 2px;
+}
+
+#kxgqdiujyl .gt_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#kxgqdiujyl .gt_first_summary_row {
+  border-top-style: solid;
+  border-top-color: #D3D3D3;
+}
+
+#kxgqdiujyl .gt_first_summary_row.thick {
+  border-top-width: 2px;
+}
+
+#kxgqdiujyl .gt_last_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#kxgqdiujyl .gt_grand_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#kxgqdiujyl .gt_first_grand_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-style: double;
+  border-top-width: 6px;
+  border-top-color: #D3D3D3;
+}
+
+#kxgqdiujyl .gt_last_grand_summary_row_top {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-style: double;
+  border-bottom-width: 6px;
+  border-bottom-color: #D3D3D3;
+}
+
+#kxgqdiujyl .gt_striped {
+  background-color: rgba(128, 128, 128, 0.05);
+}
+
+#kxgqdiujyl .gt_table_body {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#kxgqdiujyl .gt_footnotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#kxgqdiujyl .gt_footnote {
+  margin: 0px;
+  font-size: 90%;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#kxgqdiujyl .gt_sourcenotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#kxgqdiujyl .gt_sourcenote {
+  font-size: 90%;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#kxgqdiujyl .gt_left {
+  text-align: left;
+}
+
+#kxgqdiujyl .gt_center {
+  text-align: center;
+}
+
+#kxgqdiujyl .gt_right {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+#kxgqdiujyl .gt_font_normal {
+  font-weight: normal;
+}
+
+#kxgqdiujyl .gt_font_bold {
+  font-weight: bold;
+}
+
+#kxgqdiujyl .gt_font_italic {
+  font-style: italic;
+}
+
+#kxgqdiujyl .gt_super {
+  font-size: 65%;
+}
+
+#kxgqdiujyl .gt_footnote_marks {
+  font-size: 75%;
+  vertical-align: 0.4em;
+  position: initial;
+}
+
+#kxgqdiujyl .gt_asterisk {
+  font-size: 100%;
+  vertical-align: 0;
+}
+
+#kxgqdiujyl .gt_indent_1 {
+  text-indent: 5px;
+}
+
+#kxgqdiujyl .gt_indent_2 {
+  text-indent: 10px;
+}
+
+#kxgqdiujyl .gt_indent_3 {
+  text-indent: 15px;
+}
+
+#kxgqdiujyl .gt_indent_4 {
+  text-indent: 20px;
+}
+
+#kxgqdiujyl .gt_indent_5 {
+  text-indent: 25px;
+}
+</style>
+<table class="table gt_table" data-quarto-disable-processing="false" data-quarto-bootstrap="false">
+<thead><tr class="gt_col_headings">
+<th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" scope="col" id="method">method</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" scope="col" id="MSPE">MSPE</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" scope="col" id="RMSPE">RMSPE</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" scope="col" id="MAPE">MAPE</th>
+    </tr></thead>
+<tbody class="gt_table_body">
 <tr>
-<td style="text-align:left;">
-CR-Lasso
-</td>
-<td style="text-align:right;">
-1.51
-</td>
-<td style="text-align:right;">
-1.23
-</td>
-<td style="text-align:right;">
-0.98
-</td>
+<td headers="method" class="gt_row gt_center">CR-Lasso</td>
+<td headers="MSPE" class="gt_row gt_right">1.51</td>
+<td headers="RMSPE" class="gt_row gt_right">1.23</td>
+<td headers="MAPE" class="gt_row gt_right">0.98</td>
 </tr>
 <tr>
-<td style="text-align:left;">
-SSS
-</td>
-<td style="text-align:right;">
-2.41
-</td>
-<td style="text-align:right;">
-1.55
-</td>
-<td style="text-align:right;">
-1.25
-</td>
+<td headers="method" class="gt_row gt_center">SSS</td>
+<td headers="MSPE" class="gt_row gt_right">2.41</td>
+<td headers="RMSPE" class="gt_row gt_right">1.55</td>
+<td headers="MAPE" class="gt_row gt_right">1.25</td>
 </tr>
 <tr>
-<td style="text-align:left;">
-RLars
-</td>
-<td style="text-align:right;">
-2.20
-</td>
-<td style="text-align:right;">
-1.48
-</td>
-<td style="text-align:right;">
-1.20
-</td>
+<td headers="method" class="gt_row gt_center">RLars</td>
+<td headers="MSPE" class="gt_row gt_right">2.20</td>
+<td headers="RMSPE" class="gt_row gt_right">1.48</td>
+<td headers="MAPE" class="gt_row gt_right">1.20</td>
 </tr>
 <tr>
-<td style="text-align:left;">
-MM-Lasso
-</td>
-<td style="text-align:right;">
-1.31
-</td>
-<td style="text-align:right;">
-1.15
-</td>
-<td style="text-align:right;">
-0.95
-</td>
+<td headers="method" class="gt_row gt_center">MM-Lasso</td>
+<td headers="MSPE" class="gt_row gt_right">1.31</td>
+<td headers="RMSPE" class="gt_row gt_right">1.15</td>
+<td headers="MAPE" class="gt_row gt_right">0.95</td>
 </tr>
 <tr>
-<td style="text-align:left;">
-SLTS
-</td>
-<td style="text-align:right;">
-1.55
-</td>
-<td style="text-align:right;">
-1.25
-</td>
-<td style="text-align:right;">
-1.06
-</td>
+<td headers="method" class="gt_row gt_center">SLTS</td>
+<td headers="MSPE" class="gt_row gt_right">1.55</td>
+<td headers="RMSPE" class="gt_row gt_right">1.25</td>
+<td headers="MAPE" class="gt_row gt_right">1.06</td>
 </tr>
 <tr>
-<td style="text-align:left;">
-Lasso
-</td>
-<td style="text-align:right;">
-0.92
-</td>
-<td style="text-align:right;">
-0.96
-</td>
-<td style="text-align:right;">
-0.79
-</td>
+<td headers="method" class="gt_row gt_center">Lasso</td>
+<td headers="MSPE" class="gt_row gt_right">0.92</td>
+<td headers="RMSPE" class="gt_row gt_right">0.96</td>
+<td headers="MAPE" class="gt_row gt_right">0.79</td>
 </tr>
 </tbody>
 </table>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+</div>
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/boxplot.html" class="external-link">boxplot</a></span><span class="op">(</span><span class="va">res</span><span class="op">~</span><span class="va">method</span>, data <span class="op">=</span> <span class="va">result</span>,  ylab<span class="op">=</span><span class="st">""</span>, xlab <span class="op">=</span> <span class="st">""</span><span class="op">)</span></span></code></pre></div>
 <div class="figure">
 <span style="display:block;" id="fig:unnamed-chunk-10"></span>

@@ -1,8 +1,6 @@
-#' regcell
-#'
-#' Cellwise regularized robust sparse regression
-#'
-#' @docType package
+#' @keywords internal
+"_PACKAGE"
+
 #' @author c(person("Peng", "Su", role = c("aut", "cre"), email = "peng.su@sydney.edu.au", comment = c(ORCID = "0000-0002-1031-8675")), person("Garth", "Tarr", role = "aut", email = "garth.tarr@gmail.com", comment = c(ORCID = "0000-0002-6605-7478")), person("Samuel", "Muller", role = "aut", email = "samuel.muller@mq.edu.au", comment = c(ORCID = "0000-0002-3087-8127")),person("Suojin", "Wang", role = "aut", email = "sjwang@stat.tamu.edu", comment = c(ORCID = "0000-0001-6061-0052")))
 #' @import Rcpp
 #' @importFrom Rcpp evalCpp
@@ -10,11 +8,15 @@
 #' @importFrom robustHD rlars sparseLTS robStandardize
 #' @importFrom glmnet cv.glmnet
 #' @importFrom mvtnorm rmvt
+#' @importFrom stats coef median qchisq qt quantile rnorm
+#' @importFrom utils data
 #' @useDynLib regcell, .registration=TRUE
 #' @name regcell
+#' @references Su P, Tarr G, Muller S and Wang S (2023). CR-Lasso: Robust cellwise regularized sparse regression. arXiv:2307.05234
+
+## usethis namespace: start
+## usethis namespace: end
 NULL
-
-
 
 
 #' Bone mineral density data
@@ -38,3 +40,4 @@ NULL
 #'
 #' @source [Normarrayexpressdata.txt.magetab](https://www.ebi.ac.uk/biostudies/files/E-MEXP-1618/Normarrayexpressdata.txt.magetab)
 #'  [E-MEXP-1618.sdrf.txt](https://www.ebi.ac.uk/biostudies/files/E-MEXP-1618/E-MEXP-1618.sdrf.txt)
+

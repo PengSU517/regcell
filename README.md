@@ -32,20 +32,4 @@ remotes::install_github("PengSU517/regcell", build = TRUE)
 ```
 
 
-You may also consider installing the `shootings` package. The functions in this package were taken from https://github.com/ineswilms/sparse-shooting-S and compiled into a basic package to make them more convenient to use:
-
-```r
-remotes::install_github("PengSU517/shootings")
-```
-
-Another package you may want to use is the `mmlasso` package. The original package were from https://github.com/esmucler/mmlasso.  
-An updated version is available from https://github.com/PengSU517/mmlasso, as some R functions may not work correctly after such a long time. 
-
-You can install this package conveniently using 
-
-```
-remotes::install_github("PengSU517/mmlasso")
-```
-
-As an alternative, the functions in `mmlasso` can be effectively replaced by the `pense` package on CRAN.
 

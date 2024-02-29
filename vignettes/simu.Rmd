@@ -1,8 +1,17 @@
 ---
-title: "simu"
-output: rmarkdown::html_vignette
+title: "Simulations"
+output: 
+  bookdown::html_document2:
+    base_format: rmarkdown::html_vignette
+    fig_caption: yes
+    toc: false
+    number_sections: false
+pkgdown:
+  as_is: true
+bibliography: refs.bib
+csl: apa-old-doi-prefix.csl
 vignette: >
-  %\VignetteIndexEntry{simu}
+  %\VignetteIndexEntry{Simulations}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---

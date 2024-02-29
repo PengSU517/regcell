@@ -24,15 +24,10 @@ knitr::opts_chunk$set(
 ```
 
 ```{r setup}
+# remotes::install_github("PengSU517/regcell")
 library(regcell)
 library(tidyverse)
 library(janitor)
-# remotes::install_github("PengSU517/mmlasso")
-library(mmlasso)
-# remotes::install_github("PengSU517/shootings")
-library(shootings)
-library(knitr)
-library(kableExtra)
 ```
 
 To illustrate the use of CR-Lasso, we consider the bone mineral density (BMD) data from @reppe2010eight. 
@@ -148,27 +143,46 @@ Given the cellwise contamination, we first standardized all variables with the m
 
 ## Method comparison
 
+To perform the method comparison considered in the paper, you will need some additional packages. For ease of replication we have created a `shootings` package. The functions in this package were taken from https://github.com/ineswilms/sparse-shooting-S and compiled into a basic package to make them more convenient to use:
+
+```r
+remotes::install_github("PengSU517/shootings")
+```
+
+Another package you may want to use is the `mmlasso` package. The original code was from https://github.com/esmucler/mmlasso.  
+An adapted version of this package is available from https://github.com/PengSU517/mmlasso, as we found some components no longer functioning as intended.
+
+You can install this package conveniently using :
+
+```r
+remotes::install_github("PengSU517/mmlasso")
+```
+
+```{r setup2}
+# remotes::install_github("PengSU517/mmlasso")
+library(mmlasso)
+# remotes::install_github("PengSU517/shootings")
+library(shootings)
+library(gt)
+```
+
+
 ```{r, eval = FALSE}
 ##### methods compared
 mtds = list(
-
   ## spase shooting S, codes are from https://github.com/ineswilms/sparse-shooting-S 
   ## package is available from https://github.com/PengSU517/shootings
   ## install this package directly using remotes::install_github("PengSU517/shootings")
-
   sss = function(y, x){shootings::sparseshooting(x,y)$coef},
   
   ## Rlars, from package robustHD
   rlars = function(y, x){regcell::Rlars(y, x)$betahat}, 
-  
 
   ## MM-Lasso, forked from https://github.com/esmucler/mmlasso
   ## the updated package is available from https://github.com/PengSU517/mmlasso
   ## install this package directly using remotes::install_github("PengSU517/mmlasso")
-  ## this function can be effectively replaced by the pense package on CRAN
+  ## the pense package on CRAN would be an alternative here
   mmlasso = function(y,x){mmlasso::mmlasso(x,y)$coef.MMLasso.ad},
-  
-
   
   ## sparse LTS, from package robustHD
   slts = function(y,x){robustHD::sparseLTS(x,y)$coefficients},
@@ -196,7 +210,7 @@ mtds = list(
 
 ## Artifically generated response
 
-We first obtained a clean (imputed) dataset $\mathbf{\check X}$ using DDC (@rousseeuw_detecting_2018). We then generated an artificial response $\mathbf{y} = \mathbf{\check X}\mathbf{\beta} + \mathbf{\varepsilon}$ using screened clean predictors and $\mathbf{\varepsilon} \sim N(\mathbf{0},0.5^2\mathbf{I})$. We randomly picked ten active predictors in each simulation run and set $\beta_j \sim U(1, 1.5)$ for each of them. We then randomly collected 80% observations from the original (contaminated) dataset for model training, while the remaining 20% of the imputed (clean) dataset was used to assess the prediction accuracy. We repeated the simulation procedure 200 times.
+We first obtained a clean (imputed) dataset $\mathbf{\check X}$ using DDC [@rousseeuw_detecting_2018]. We then generated an artificial response $\mathbf{y} = \mathbf{\check X}\mathbf{\beta} + \mathbf{\varepsilon}$ using screened clean predictors and $\mathbf{\varepsilon} \sim N(\mathbf{0},0.5^2\mathbf{I})$. We randomly picked ten active predictors in each simulation run and set $\beta_j \sim U(1, 1.5)$ for each of them. We then randomly collected 80% observations from the original (contaminated) dataset for model training, while the remaining 20% of the imputed (clean) dataset was used to assess the prediction accuracy. We repeated the simulation procedure 200 times.
 
 ```{r, eval = FALSE}
 library(doParallel)
@@ -280,7 +294,7 @@ summ = result %>% group_by(method) %>% summarise(
   F1 = round(mean(F1),2))
 
 # xtable::xtable(t(summ)) ## this is the table we showed in the manuscript
-knitr::kable(summ)%>% kable_paper(full_width = T)    
+gt::gt(summ)
 
 
 ```
@@ -347,7 +361,7 @@ summ = result %>% group_by(method) %>% summarise(
   MAPE = round(mean(abs(res)),2))
 
 # xtable::xtable(t(summ)) ## this is the table we showed in the manuscript
-summ %>% kable("html")%>% kable_paper(full_width = T)
+gt(summ)
 ```
 
 ```{r, fig.height=6, fig.width=10, fig.cap= "Leave-one-out prediction residuals of the Bone mineral density data"}

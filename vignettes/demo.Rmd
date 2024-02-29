@@ -1,8 +1,17 @@
 ---
-title: "demo"
-output: rmarkdown::html_vignette
+title: "Quick demo"
+output: 
+  bookdown::html_document2:
+    base_format: rmarkdown::html_vignette
+    fig_caption: yes
+    toc: false
+    number_sections: false
+pkgdown:
+  as_is: true
+bibliography: refs.bib
+csl: apa-old-doi-prefix.csl
 vignette: >
-  %\VignetteIndexEntry{demo}
+  %\VignetteIndexEntry{Quick demo}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -15,6 +24,7 @@ knitr::opts_chunk$set(
 ```
 
 ```{r setup}
+# remotes::install_github("PengSU517/regcell")
 library(regcell)
 library(tidyverse)
 ```
