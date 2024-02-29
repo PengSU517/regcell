@@ -31,6 +31,8 @@ library(janitor)
 library(mmlasso)
 # remotes::install_github("PengSU517/shootings")
 library(shootings)
+library(knitr)
+library(kableExtra)
 ```
 
 To illustrate the use of CR-Lasso, we consider the bone mineral density (BMD) data from @reppe2010eight. 
@@ -194,6 +196,8 @@ mtds = list(
 
 ## Artifically generated response
 
+We first obtained a clean (imputed) dataset $\mathbf{\check X}$ using DDC (@rousseeuw_detecting_2018). We then generated an artificial response $\mathbf{y} = \mathbf{\check X}\mathbf{\beta} + \mathbf{\varepsilon}$ using screened clean predictors and $\mathbf{\varepsilon} \sim N(\mathbf{0},0.5^2\mathbf{I})$. We randomly picked ten active predictors in each simulation run and set $\beta_j \sim U(1, 1.5)$ for each of them. We then randomly collected 80% observations from the original (contaminated) dataset for model training, while the remaining 20% of the imputed (clean) dataset was used to assess the prediction accuracy. We repeated the simulation procedure 200 times.
+
 ```{r, eval = FALSE}
 library(doParallel)
 registerDoParallel(cores=10)
@@ -238,13 +242,55 @@ result <- foreach(mtd = 1:length(mtds),
   }
 
 
-save(result, file = "result_realdata_artificial.RData")
+save(result, file = "result_realdata_artificial.rds")
+
+```
+
+For each method, we show MAPE (mean absolute prediction error) and RMSPE values, as well as their True positive numbers (TP), true negative numbers (TN) and F$_1$ scores.
+
+```{r}
+result = readr::read_rds("result_realdata_fakey.rds")|>
+  data.frame()|>
+  t()|>
+  data.frame()|>
+  mutate(method = recode(mtd, 
+                         cell_lasso_post = "CR-Lasso",
+                         sss = "SSS",
+                         rlars = "RLars",
+                         mmlasso = "MM-Lasso",
+                         slts = "SLTS",
+                         lasso = "Lasso")) |>
+  mutate(method = factor(method, levels = c("CR-Lasso", "SSS", "RLars", "MM-Lasso", "SLTS", "Lasso")))|>
+  mutate(across(c(3:8), as.numeric), 
+         TP = tp,
+         TN = tn,
+         FP = 100-pr-TN,
+         FN = pr - TP,
+         BACC = (TP/pr + TN/(100-pr))/2,
+         F1 = 2*TP/(2*TP + FP + FN),
+         RMSPE = rmspe,
+         MAPE = mape)|>
+  select(method, RMSPE, MAPE, TP, TN, F1)
+
+summ = result %>% group_by(method) %>% summarise(
+  RMSPE = round(mean(RMSPE, na.rm = T),2),
+  MAPE = round(mean(MAPE, na.rm = T),2),
+  TP = round(mean(TP, na.rm = T),2),
+  TN = round(mean(TN, na.rm = T),2),
+  F1 = round(mean(F1),2))
+
+# xtable::xtable(t(summ)) ## this is the table we showed in the manuscript
+summ %>% kable("html")%>% kable_paper(full_width = T)   
+
 
 ```
 
 
-### Leave-one-out Cross-Validation
 
+
+## Leave-one-out Cross-Validation
+
+To demonstrate the performance on the real data, a sparse regression model was fitted separately with the original response (the total hip T-score) via the aforementioned methods. Out of the 100 pre-screened genes, nine genes were commonly chosen by CR-Lasso, Lasso, MM-Lasso, RLars, and SLTS. We ran the Leave-One-Out Cross-Validation to assess the performance of the selected models. 
 
 ```{r, eval = FALSE}
 
@@ -274,5 +320,39 @@ result <- foreach(mtd = 1:length(mtds),
   }
 
 
-save(result, file = "result_realdata.RData")
+save(result, file = "result_realdata.rds")
 ```
+
+
+The RMSPE and MAPE from Leave-one-out prediction residuals are also shown in table.
+
+```{r}
+result = readr::read_rds("result_realdata.rds") |>
+  data.frame() |>
+  t() |>
+  data.frame() |>
+  mutate(across(.cols = -1, .fns = as.numeric)) |>
+  mutate(method = recode(mtd, 
+                         cell_lasso_post = "CR-Lasso",
+                         sss = "SSS",
+                         rlars = "RLars",
+                         mmlasso = "MM-Lasso",
+                         slts = "SLTS",
+                         lasso = "Lasso")) |>
+  mutate(method = factor(method, levels = c("CR-Lasso", "SSS", "RLars", "MM-Lasso", "SLTS", "Lasso")))
+
+summ = result %>% group_by(method) %>% summarise(
+  RMSPE = round(mean(res^2),2), 
+  MAPE = round(mean(abs(res)),2))
+
+# xtable::xtable(t(summ)) ## this is the table we showed in the manuscript
+summ %>% kable("html")%>% kable_paper(full_width = T)    
+```
+
+```{r, fig.height=6, fig.width=10, fig.cap= "Leave-one-out prediction residuals of the Bone mineral density data"}
+boxplot(res~method, data = result,  ylab="", xlab = "")
+```
+
+
+
+
