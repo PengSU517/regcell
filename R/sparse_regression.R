@@ -2,7 +2,8 @@ require("cellWise")
 require("robustbase")
 
 
-
+#' function to calculate the max lambda
+#'
 lambdamax_beta = function(y, x, betahat, intercept,
                           deltahat, zetahat,
                           softbeta,
@@ -43,20 +44,20 @@ lambdamax_beta = function(y, x, betahat, intercept,
 
 #' robust sparse regression under cellwise contamination (with a grid of lambdas)
 #'
-#' @param y response
-#' @param x design matrix
-#' @param betahat initial estimate of beta
+#' @param y n-dimensional response vector
+#' @param x nxp design matrix
+#' @param betahat p-dimensional initial estimate of beta
 #' @param intercept initial estimate of intercept
 #' @param softbeta whether to use soft/hard threshold for beta
-#' @param softdelta whether to use soft/hard threshold for delta(outliers in x)
-#' @param softzeta whether to use soft/hard threshold for zeta(outliers in y)
+#' @param softdelta whether to use soft/hard threshold for delta (outliers in x)
+#' @param softzeta whether to use soft/hard threshold for zeta (outliers in y)
 #' @param lambda_delta tuning parameter of delta
 #' @param lambda_zeta tuning parameter of zeta
 #' @param alpha the importance factor of the regression loss (between 0-1, by default is 0.5)
 #' @param penal the penalty parameter for model selection (by default is 1, equivalent to BIC )
 #' @param penaldelta the penalty of number of detected outliers (for debug, by default is 0)
-#' @param tol the tolerance of convergence
-#' @param maxiter number of iterations
+#' @param tol the tolerance of convergence, by default is 1e-3
+#' @param maxiter number of iterations, by default is 100
 #'
 #' @return
 #' betahat: the estimated beta
@@ -66,8 +67,12 @@ lambdamax_beta = function(y, x, betahat, intercept,
 #' betahat_opt: the estimated beta with post-cellwise-robust regression
 #'
 #' intercept_opt: the estimated intercept with post-cellwise-robust regression
-
-#' @export
+#'
+#' allfits: a list of results including all outputs from all candidate tuning parameters
+#'
+#'...
+#'
+#'
 #'
 #' @examples
 #'
@@ -212,8 +217,15 @@ sregcell = function(y,x, betahat = NULL, intercept = NULL,
 #' @param maxiter the number of interations
 #'
 #' @return
-#' fit
-#' @export
+#'intercept: the estimated intercept
+#'
+#'betahat: the estimated vector of regression coefficients
+#'
+#'deltahat: the estimated outlying parts in the design matrix
+#'
+#'zetahat: the estimated outlying parts in the response
+#'
+#'...
 #'
 #' @examples
 #'
@@ -296,6 +308,9 @@ robstd = function(x, centerf = median, scalef = qnscale, df = df){
 #' betahat_opt: the estimated beta with post-cellwise-robust regression
 #'
 #' intercept_opt: the estimated intercept with post-cellwise-robust regression
+#'
+#' ...
+#'
 #' @export
 #'
 #' @examples

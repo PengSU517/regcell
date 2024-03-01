@@ -30,10 +30,14 @@ library(tidyverse)
 ```
 
 
-# A simulated dataset
+## A simulated dataset
+
+We generate a dataset that incorporates a design matrix with 200 observations and 50 variables. The contamination rate is set to 5%, and the scale of residuals is fixed at 3, while retaining the default values for other settings.
+
 ```{r}
+
 set.seed(1234)
-dat = regcell::genevar(n = 200, p = 50, e = 0.05, sigma = 3)
+dat = regcell::genevar(n = 200, p = 50, e = 0.05, sigma = 3) 
 
 y = dat$y
 x = dat$x
@@ -41,7 +45,7 @@ x = dat$x
 
 ## Outlier detection
 
-Detect outliers using DDC (Rousseeuw and Van Den Bossche, 2018).
+Detect outliers using DDC [@rousseeuw_detecting_2018].
 
 ```{r fig.height=3.5, fig.width=10}
 
@@ -60,7 +64,8 @@ p1
 
 ## Model training
 
-Create a training set and a testing set.
+We establish a training set and a testing set. Subsequently, we employ the training set to fit models and assess prediction errors by evaluating their performance on the testing set.
+
 ```{r}
 set.seed(1234)
 inTrain <- caret::createDataPartition(y, p = 0.7)[[1]]
@@ -73,9 +78,6 @@ ytest = y[-inTrain]
 xtest = x[-inTrain,]
 ```
 
-
-Fit models using the training set and calculate prediction errors on the testing set.
-
 ```{r}
 set.seed(1234)
 #fit a model using CR-Lasso
@@ -87,13 +89,12 @@ fit1 = Rlars(ytrain,xtrain)
 res2 = ytest - fit1$betahat[1] - xtest%*%fit1$betahat[-1]
 ```
 
-Show the distribution of prediction errors.
+The figure below illustrates the distribution of prediction errors derived from the test set.
 
 ```{r fig.height=7, fig.width=7}
 df = data.frame(res = c(res, res2), 
                 method = c(rep("CR-Lasso", length(res)),rep("RLars", length(res)) ))
 boxplot(res~method, outline = FALSE, data = df)
-
 ```
 
 

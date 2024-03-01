@@ -61,6 +61,8 @@ intercept_hat: the estiamted intercept
 betahat_opt: the estimated beta with post-cellwise-robust regression
 
 intercept_opt: the estimated intercept with post-cellwise-robust regression
+
+...
 }
 \description{
 robust sparse regression under cellwise contamination with a grid of lambdas (standardize predictors first)

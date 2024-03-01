@@ -21,17 +21,17 @@ genevar(
 )
 }
 \arguments{
-\item{n}{number of obs}
+\item{n}{number of observations}
 
-\item{p}{number of predictors}
+\item{p}{number of candidate predictors}
 
 \item{pr}{number of active predictors}
 
 \item{e}{contamination rate}
 
-\item{r}{correlation of predictors}
+\item{r}{correlation among predictors}
 
-\item{df}{degrees of freedom of predictors}
+\item{df}{degrees of freedom used to generate predictors}
 
 \item{beta}{regression coefficients}
 
@@ -48,13 +48,17 @@ genevar(
 \item{outtype}{type of outliers: cellwise, rowwise}
 }
 \value{
-x: design matrix
+x: the generated design matrix
 
-xc: clean design matrix
+xc: the generated design matrix without contamination
 
-y: response
+y: the generated response
 
-ynew: another response (as an independent test set)
+ynew: another generated response (as an independent test set)
+
+outlier: the generated outlier in the design matrix
+
+erroroutlier: the generated outlier in response
 }
 \description{
 generate simulated datasets

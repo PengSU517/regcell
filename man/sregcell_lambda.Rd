@@ -42,7 +42,15 @@ sregcell_lambda(
 \item{maxiter}{the number of interations}
 }
 \value{
-fit
+intercept: the estimated intercept
+
+betahat: the estimated vector of regression coefficients
+
+deltahat: the estimated outlying parts in the design matrix
+
+zetahat: the estimated outlying parts in the response
+
+...
 }
 \description{
 Cellwise regularized robust sparse regression (with a specific lambda)

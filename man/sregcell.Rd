@@ -22,19 +22,19 @@ sregcell(
 )
 }
 \arguments{
-\item{y}{response}
+\item{y}{n-dimensional response vector}
 
-\item{x}{design matrix}
+\item{x}{nxp design matrix}
 
-\item{betahat}{initial estimate of beta}
+\item{betahat}{p-dimensional initial estimate of beta}
 
 \item{intercept}{initial estimate of intercept}
 
 \item{softbeta}{whether to use soft/hard threshold for beta}
 
-\item{softdelta}{whether to use soft/hard threshold for delta(outliers in x)}
+\item{softdelta}{whether to use soft/hard threshold for delta (outliers in x)}
 
-\item{softzeta}{whether to use soft/hard threshold for zeta(outliers in y)}
+\item{softzeta}{whether to use soft/hard threshold for zeta (outliers in y)}
 
 \item{lambda_delta}{tuning parameter of delta}
 
@@ -46,9 +46,9 @@ sregcell(
 
 \item{penaldelta}{the penalty of number of detected outliers (for debug, by default is 0)}
 
-\item{tol}{the tolerance of convergence}
+\item{tol}{the tolerance of convergence, by default is 1e-3}
 
-\item{maxiter}{number of iterations}
+\item{maxiter}{number of iterations, by default is 100}
 }
 \value{
 betahat: the estimated beta
@@ -58,6 +58,10 @@ intercept_hat: the estiamted intercept
 betahat_opt: the estimated beta with post-cellwise-robust regression
 
 intercept_opt: the estimated intercept with post-cellwise-robust regression
+
+allfits: a list of results including all outputs from all candidate tuning parameters
+
+...
 }
 \description{
 robust sparse regression under cellwise contamination (with a grid of lambdas)

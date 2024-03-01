@@ -28,32 +28,15 @@ library(regcell)
 library(tidyverse)
 ```
 
+## Method comparison
 
-# Simulation 
-The following code is utilized for running simulations (in parallel).
+To demonstrate the effectiveness of the proposed method, we ran simulation studies and compared the performance of six methods for a moderate-dimensional and a high-dimensional setting: CR-Lasso, sparse shooting S [SSS, @Bottmer_Croux_Wilms_2022], robust Lars [RLars, @khan2007robust], MM-Lasso [@Smucler_Yohai_2017], sparse LTS [SLTS, @alfons_sparse_2013] and Lasso [@Tibshirani_1996].
+For the implementation of SSS, we utilized the R function `sparseshooting` [@Wilms_2020]. RLars and SLTS were implemented using the R functions `rlars` and `sparseLTS` in the R package `robustHD` [@alfons_2021]. The R function `mmlasso` [@Smucler_2017] was employed for MM-Lasso. Lasso was implemented through the R function `glmnet` in the R package `glmnet` [@Friedman_Hastie_Tibshirani_2010].
+By default in the utilized functions, Lasso and MM-Lasso employ cross-validation (CV) to select optimal tuning parameters. In contrast, SSS, RLars, and CR-Lasso utilize the Bayesian information criterion (BIC) for tuning parameter selection. SLTS uses a default tuning parameter without optimization.
+
+**For additional information regarding the packages utilized, kindly refer to the "Bone mineral density data" page for a more comprehensive overview**
 
 ```{r echo=TRUE, eval=FALSE}
-library(doParallel) ####parallel computation
-registerDoParallel(cores=10)
-getDoParWorkers()
-
-###### data generation settings
-
-{
-  ms = 1:200   # the number of simulations
-  ns = c(200) # sample size
-  ps = c(50) # num of candidate predictors
-  prs = c(10) # number of informative candidata predictors
-  es = c(0, 0.02, 0.05) # contamination rates
-  rs = c(0.5) # correlation among predictors
-  gammas = c(0, 2, 4, 6, 8) # magnitude of outlyingness
-  # sigmas = c(2) # variance of residuals, not used
-  dfs = c(4, Inf) # degrees of freedom generating predictors
-  outtypes = c("cellwise") # types of contamination
-}
-
-
-
 ##### methods compared
 mtds = list(
 
@@ -96,6 +79,39 @@ mtds = list(
   }
 
 )
+```
+
+## Simulation settings
+
+In our simulations, we set $n = 200$, $p = 50$ and $\mathbf\beta = (\mathbf 1_{10} ^\top, \mathbf 0_{p-10}^\top )^\top$ with an intercept term $\beta_0 = 1$. Clean observation vectors $\mathbf{\check x}_\mathrm{i}$ were sampled from $N(\mathbf 0,\mathbf\Sigma)$, and errors $\varepsilon_i$ were sampled from $N(0,3^2)$, indicating a relatively high level of noise in the data. The correlation structure among predictors was given by $\Sigma _{ij} = \rho^{|i-j|}$ and we set $\rho = 0.5$. We also generated $\mathbf{\check x}_i$ from the multivariate $t_4$ distribution to simulate distributions with heavier tails.
+
+To introduce cellwise outliers, we set the contamination proportion $e$ to $ 0\%$, $ 2\%$ and $5\%$ for all predictors and generate outliers independently. Outlying cells $\Delta_{ij}$ and $\zeta_{i}$ were randomly generated from $N(\gamma, 1)$ and $N(-\gamma, 1)$ with equal probability, where $\gamma$ varies to simulate outliers with different magnitudes. %Then we obtain the observed cells via ${x}_{ij} = {\check x}_{ij} + \Delta_{ij}$.
+
+The following code is utilized for running simulations (in parallel).
+
+```{r echo=TRUE, eval=FALSE}
+library(doParallel) ####parallel computation
+registerDoParallel(cores=10)
+getDoParWorkers()
+
+###### data generation settings
+
+{
+  ms = 1:200   # the number of simulations
+  ns = c(200) # sample size
+  ps = c(50) # num of candidate predictors
+  prs = c(10) # number of informative candidata predictors
+  es = c(0, 0.02, 0.05) # contamination rates
+  rs = c(0.5) # correlation among predictors
+  gammas = c(0, 2, 4, 6, 8) # magnitude of outlyingness
+  # sigmas = c(2) # variance of residuals, not used
+  dfs = c(4, Inf) # degrees of freedom generating predictors
+  outtypes = c("cellwise") # types of contamination
+}
+
+
+
+
 
 {
   result <- foreach(m = ms,
@@ -160,7 +176,19 @@ mtds = list(
 ```
 
 
-# Analysis
+## Analysis
+
+We ran $200$ simulations for each scenario and used the root of the mean squared prediction error (RMSPE) to assess the prediction accuracy of the considered methods.
+
+In addition, to assess the accuracy of variable selection, we employed
+$$
+ \mathrm{F}_1 = \frac{2\mathrm{TP}}{2\mathrm{TP} + \mathrm{FP} + \mathrm{FN}},
+$$
+where TP, FP, and FN indicate true positives, false positives, and false negatives, respectively. 
+While the $\mathrm{F}_1$ score is commonly used for classification problems, it is also used to evaluate the performance of variable selection techniques, as in @bleichvariable2014.
+
+The advantage of using the $\mathrm{F}_1$ score to measure variable selection is that it takes into account both the precision and recall of the selected variables. Precision measures the proportion of selected variables that are relevant, while recall measures the proportion of relevant variables that are selected. By combining precision and recall, the $\mathrm{F}_1$ score provides a balanced evaluation of variable selection performance.
+This allows us to measure the effectiveness of each method in selection and prediction.
 
 The following code is employed to analyze the generated results.
 

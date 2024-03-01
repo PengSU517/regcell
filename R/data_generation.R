@@ -1,11 +1,11 @@
 #' generate simulated datasets
 #'
-#' @param n number of obs
-#' @param p number of predictors
+#' @param n number of observations
+#' @param p number of candidate predictors
 #' @param pr number of active predictors
 #' @param e contamination rate
-#' @param r correlation of predictors
-#' @param df degrees of freedom of predictors
+#' @param r correlation among predictors
+#' @param df degrees of freedom used to generate predictors
 #' @param beta regression coefficients
 #' @param intercept intercept of the regression model
 #' @param sigma scale of the error item
@@ -15,13 +15,18 @@
 #' @param outtype type of outliers: cellwise, rowwise
 #'
 #' @return
-#' x: design matrix
+#' x: the generated design matrix
 #'
-#' xc: clean design matrix
+#' xc: the generated design matrix without contamination
 #'
-#' y: response
+#' y: the generated response
 #'
-#' ynew: another response (as an independent test set)
+#' ynew: another generated response (as an independent test set)
+#'
+#' outlier: the generated outlier in the design matrix
+#'
+#' erroroutlier: the generated outlier in response
+#'
 #' @export
 #'
 #' @examples

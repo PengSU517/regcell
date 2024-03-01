@@ -8,8 +8,8 @@
 <meta name="description" content="regcell">
 <title>Simulations • regcell</title>
 <script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
-<script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous">
+<link href="../deps/bootstrap-5.2.2/bootstrap.min.css" rel="stylesheet">
+<script src="../deps/bootstrap-5.2.2/bootstrap.bundle.min.js"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/v4-shims.min.css" integrity="sha256-wZjR52fzng1pJHwx4aV2AO3yyTOXrcDW7jBpJtTwVxw=" crossorigin="anonymous">
 <!-- bootstrap-toc --><script src="https://cdn.jsdelivr.net/gh/afeld/bootstrap-toc@v1.0.1/dist/bootstrap-toc.min.js" integrity="sha256-4veVQbu7//Lk5TSmc7YV48MxtMy98e26cf5MrgZYnwo=" crossorigin="anonymous"></script><!-- headroom.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/headroom.min.js" integrity="sha256-AsUX4SJE1+yuDu5+mAVzJbuYNPHj/WroHuZ8Ir/CkE0=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script><!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><!-- search --><script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/6.4.6/fuse.js" integrity="sha512-zv6Ywkjyktsohkbp9bb45V6tEMoWhzFzXis+LrMehmJZZSys19Yxf1dopHx7WzIKxr5tK2dVcYmaCk2uqdjF4A==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/autocomplete.js/0.38.0/autocomplete.jquery.min.js" integrity="sha512-GU9ayf+66Xx2TmpxqJpliWbT5PiGYxpaG8rfnBEk1LL8l1KGkRShhngwdXK1UgqhAzWpZHSiYPc09/NwDQIGyg==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mark.js/8.11.1/mark.min.js" integrity="sha512-5CYOlHXGh6QpOFA/TeTylKLWfB3ftPsde7AnmhuitiTX4K5SqCLBeKro6sPS8ilsz1Q4NRx3v8Ko2IBiszzdww==" crossorigin="anonymous"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Simulations">
 <meta property="og:description" content="regcell">
@@ -74,32 +74,14 @@
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://pengsu517.github.io/regcell/">regcell</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://tidyverse.tidyverse.org" class="external-link">tidyverse</a></span><span class="op">)</span></span></code></pre></div>
 <div class="section level2">
-<h2 id="simulation">Simulation<a class="anchor" aria-label="anchor" href="#simulation"></a>
+<h2 id="method-comparison">Method comparison<a class="anchor" aria-label="anchor" href="#method-comparison"></a>
 </h2>
-<p>The following code is utilized for running simulations (in parallel).</p>
+<p>To demonstrate the effectiveness of the proposed method, we ran simulation studies and compared the performance of six methods for a moderate-dimensional and a high-dimensional setting: CR-Lasso, sparse shooting S <span class="citation">(SSS, Bottmer et al., 2022)</span>, robust Lars <span class="citation">(RLars, Khan et al., 2007)</span>, MM-Lasso <span class="citation">(Smucler &amp; Yohai, 2017)</span>, sparse LTS <span class="citation">(SLTS, Alfons et al., 2013)</span> and Lasso <span class="citation">(Tibshirani, 1996)</span>.
+For the implementation of SSS, we utilized the R function <code>sparseshooting</code> <span class="citation">(Wilms, 2020)</span>. RLars and SLTS were implemented using the R functions <code>rlars</code> and <code>sparseLTS</code> in the R package <code>robustHD</code> <span class="citation">(Alfons, 2021)</span>. The R function <code>mmlasso</code> <span class="citation">(Smucler, 2017)</span> was employed for MM-Lasso. Lasso was implemented through the R function <code>glmnet</code> in the R package <code>glmnet</code> <span class="citation">(Friedman et al., 2010)</span>.
+By default in the utilized functions, Lasso and MM-Lasso employ cross-validation (CV) to select optimal tuning parameters. In contrast, SSS, RLars, and CR-Lasso utilize the Bayesian information criterion (BIC) for tuning parameter selection. SLTS uses a default tuning parameter without optimization.</p>
+<p><strong>For additional information regarding the packages utilized, kindly refer to the “Bone mineral density data” page for a more comprehensive overview</strong></p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/RevolutionAnalytics/doparallel" class="external-link">doParallel</a></span><span class="op">)</span> <span class="co">####parallel computation</span></span>
-<span><span class="fu"><a href="https://rdrr.io/pkg/doParallel/man/registerDoParallel.html" class="external-link">registerDoParallel</a></span><span class="op">(</span>cores<span class="op">=</span><span class="fl">10</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/pkg/foreach/man/getDoParWorkers.html" class="external-link">getDoParWorkers</a></span><span class="op">(</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co">###### data generation settings</span></span>
-<span></span>
-<span><span class="op">{</span></span>
-<span>  <span class="va">ms</span> <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">200</span>   <span class="co"># the number of simulations</span></span>
-<span>  <span class="va">ns</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">200</span><span class="op">)</span> <span class="co"># sample size</span></span>
-<span>  <span class="va">ps</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">50</span><span class="op">)</span> <span class="co"># num of candidate predictors</span></span>
-<span>  <span class="va">prs</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">10</span><span class="op">)</span> <span class="co"># number of informative candidata predictors</span></span>
-<span>  <span class="va">es</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">0.02</span>, <span class="fl">0.05</span><span class="op">)</span> <span class="co"># contamination rates</span></span>
-<span>  <span class="va">rs</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.5</span><span class="op">)</span> <span class="co"># correlation among predictors</span></span>
-<span>  <span class="va">gammas</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">2</span>, <span class="fl">4</span>, <span class="fl">6</span>, <span class="fl">8</span><span class="op">)</span> <span class="co"># magnitude of outlyingness</span></span>
-<span>  <span class="co"># sigmas = c(2) # variance of residuals, not used</span></span>
-<span>  <span class="va">dfs</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">4</span>, <span class="cn">Inf</span><span class="op">)</span> <span class="co"># degrees of freedom generating predictors</span></span>
-<span>  <span class="va">outtypes</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"cellwise"</span><span class="op">)</span> <span class="co"># types of contamination</span></span>
-<span><span class="op">}</span></span>
-<span></span>
-<span></span>
-<span></span>
-<span><span class="co">##### methods compared</span></span>
+<code class="sourceCode R"><span><span class="co">##### methods compared</span></span>
 <span><span class="va">mtds</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
 <span></span>
 <span>  <span class="co">## spase shooting S, codes are from https://github.com/ineswilms/sparse-shooting-S </span></span>
@@ -140,7 +122,37 @@
 <span>    <span class="kw"><a href="https://rdrr.io/r/base/function.html" class="external-link">return</a></span><span class="op">(</span><span class="fu">regcell</span><span class="fu">::</span><span class="fu"><a href="../reference/lassocv.html">lassocv</a></span><span class="op">(</span><span class="va">y</span>,<span class="va">x</span><span class="op">)</span><span class="op">$</span><span class="va">betahat</span><span class="op">)</span></span>
 <span>  <span class="op">}</span></span>
 <span></span>
-<span><span class="op">)</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level2">
+<h2 id="simulation-settings">Simulation settings<a class="anchor" aria-label="anchor" href="#simulation-settings"></a>
+</h2>
+<p>In our simulations, we set <span class="math inline">\(n = 200\)</span>, <span class="math inline">\(p = 50\)</span> and <span class="math inline">\(\mathbf\beta = (\mathbf 1_{10} ^\top, \mathbf 0_{p-10}^\top )^\top\)</span> with an intercept term <span class="math inline">\(\beta_0 = 1\)</span>. Clean observation vectors <span class="math inline">\(\mathbf{\check x}_\mathrm{i}\)</span> were sampled from <span class="math inline">\(N(\mathbf 0,\mathbf\Sigma)\)</span>, and errors <span class="math inline">\(\varepsilon_i\)</span> were sampled from <span class="math inline">\(N(0,3^2)\)</span>, indicating a relatively high level of noise in the data. The correlation structure among predictors was given by <span class="math inline">\(\Sigma _{ij} = \rho^{|i-j|}\)</span> and we set <span class="math inline">\(\rho = 0.5\)</span>. We also generated <span class="math inline">\(\mathbf{\check x}_i\)</span> from the multivariate <span class="math inline">\(t_4\)</span> distribution to simulate distributions with heavier tails.</p>
+<p>To introduce cellwise outliers, we set the contamination proportion <span class="math inline">\(e\)</span> to $ 0%$, $ 2%$ and <span class="math inline">\(5\%\)</span> for all predictors and generate outliers independently. Outlying cells <span class="math inline">\(\Delta_{ij}\)</span> and <span class="math inline">\(\zeta_{i}\)</span> were randomly generated from <span class="math inline">\(N(\gamma, 1)\)</span> and <span class="math inline">\(N(-\gamma, 1)\)</span> with equal probability, where <span class="math inline">\(\gamma\)</span> varies to simulate outliers with different magnitudes. %Then we obtain the observed cells via <span class="math inline">\({x}_{ij} = {\check x}_{ij} + \Delta_{ij}\)</span>.</p>
+<p>The following code is utilized for running simulations (in parallel).</p>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/RevolutionAnalytics/doparallel" class="external-link">doParallel</a></span><span class="op">)</span> <span class="co">####parallel computation</span></span>
+<span><span class="fu"><a href="https://rdrr.io/pkg/doParallel/man/registerDoParallel.html" class="external-link">registerDoParallel</a></span><span class="op">(</span>cores<span class="op">=</span><span class="fl">10</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/pkg/foreach/man/getDoParWorkers.html" class="external-link">getDoParWorkers</a></span><span class="op">(</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co">###### data generation settings</span></span>
+<span></span>
+<span><span class="op">{</span></span>
+<span>  <span class="va">ms</span> <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">200</span>   <span class="co"># the number of simulations</span></span>
+<span>  <span class="va">ns</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">200</span><span class="op">)</span> <span class="co"># sample size</span></span>
+<span>  <span class="va">ps</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">50</span><span class="op">)</span> <span class="co"># num of candidate predictors</span></span>
+<span>  <span class="va">prs</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">10</span><span class="op">)</span> <span class="co"># number of informative candidata predictors</span></span>
+<span>  <span class="va">es</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">0.02</span>, <span class="fl">0.05</span><span class="op">)</span> <span class="co"># contamination rates</span></span>
+<span>  <span class="va">rs</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.5</span><span class="op">)</span> <span class="co"># correlation among predictors</span></span>
+<span>  <span class="va">gammas</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">2</span>, <span class="fl">4</span>, <span class="fl">6</span>, <span class="fl">8</span><span class="op">)</span> <span class="co"># magnitude of outlyingness</span></span>
+<span>  <span class="co"># sigmas = c(2) # variance of residuals, not used</span></span>
+<span>  <span class="va">dfs</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">4</span>, <span class="cn">Inf</span><span class="op">)</span> <span class="co"># degrees of freedom generating predictors</span></span>
+<span>  <span class="va">outtypes</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"cellwise"</span><span class="op">)</span> <span class="co"># types of contamination</span></span>
+<span><span class="op">}</span></span>
+<span></span>
+<span></span>
+<span></span>
+<span></span>
 <span></span>
 <span><span class="op">{</span></span>
 <span>  <span class="va">result</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/foreach/man/foreach.html" class="external-link">foreach</a></span><span class="op">(</span>m <span class="op">=</span> <span class="va">ms</span>,</span>
@@ -204,8 +216,17 @@
 <div class="section level2">
 <h2 id="analysis">Analysis<a class="anchor" aria-label="anchor" href="#analysis"></a>
 </h2>
+<p>We ran <span class="math inline">\(200\)</span> simulations for each scenario and used the root of the mean squared prediction error (RMSPE) to assess the prediction accuracy of the considered methods.</p>
+<p>In addition, to assess the accuracy of variable selection, we employed
+<span class="math display">\[
+\mathrm{F}_1 = \frac{2\mathrm{TP}}{2\mathrm{TP} + \mathrm{FP} + \mathrm{FN}},
+\]</span>
+where TP, FP, and FN indicate true positives, false positives, and false negatives, respectively.
+While the <span class="math inline">\(\mathrm{F}_1\)</span> score is commonly used for classification problems, it is also used to evaluate the performance of variable selection techniques, as in <span class="citation">Bleich et al. (2014)</span>.</p>
+<p>The advantage of using the <span class="math inline">\(\mathrm{F}_1\)</span> score to measure variable selection is that it takes into account both the precision and recall of the selected variables. Precision measures the proportion of selected variables that are relevant, while recall measures the proportion of relevant variables that are selected. By combining precision and recall, the <span class="math inline">\(\mathrm{F}_1\)</span> score provides a balanced evaluation of variable selection performance.
+This allows us to measure the effectiveness of each method in selection and prediction.</p>
 <p>The following code is employed to analyze the generated results.</p>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">result1</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/t.html" class="external-link">t</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="va">result</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">result1</span><span class="op">)</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"m"</span>, <span class="st">"n"</span>, <span class="st">"p"</span>, <span class="st">"pr"</span>, <span class="st">"e"</span>, <span class="st">"r"</span>, <span class="st">"gamma"</span>, <span class="st">"outtype"</span>, <span class="st">"df"</span>, <span class="st">"method"</span>, <span class="st">"seed"</span>,</span>
 <span>                        <span class="st">"MSPE"</span>, <span class="st">"MAPE"</span>, <span class="st">"RTMSPE"</span>, <span class="st">"TP"</span>, <span class="st">"FP"</span>, <span class="st">"Time"</span>, <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="st">"betahat"</span>, <span class="fl">1</span><span class="op">:</span><span class="fl">10</span><span class="op">)</span><span class="op">)</span></span>
@@ -228,7 +249,7 @@
 <span><span class="va">result2</span><span class="op">$</span><span class="va">method</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span><span class="va">result2</span><span class="op">$</span><span class="va">method</span>, levels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"CR-Lasso"</span>, <span class="st">"SSS"</span>, <span class="st">"RLars"</span>, <span class="st">"MM-Lasso"</span>, <span class="st">"SLTS"</span>, <span class="st">"Lasso"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">result2</span> <span class="op">=</span> <span class="va">result2</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/stats/complete.cases.html" class="external-link">complete.cases</a></span><span class="op">(</span><span class="va">result2</span><span class="op">)</span>,<span class="op">]</span></span>
 <span><span class="va">result3</span> <span class="op">=</span> <span class="va">result2</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="op">(</span><span class="va">p</span><span class="op">==</span><span class="fl">50</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">colorset</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"CR-Lasso"</span> <span class="op">=</span><span class="st">"#F8766D"</span>,</span>
 <span>             <span class="st">"SSS"</span> <span class="op">=</span> <span class="st">"#C49A00"</span>,</span>
 <span>             <span class="st">"RLars"</span> <span class="op">=</span> <span class="st">"#53B400"</span>,</span>
@@ -247,7 +268,7 @@
 <span>        <span class="co">#axis.text.x = element_blank(),</span></span>
 <span>        legend.position <span class="op">=</span> <span class="st">"bottom"</span><span class="op">)</span></span>
 <span><span class="va">p1</span></span></code></pre></div>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span></span>
 <span><span class="va">summary</span> <span class="op">=</span> <span class="va">result3</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html" class="external-link">group_by</a></span><span class="op">(</span><span class="va">n</span>,<span class="va">p</span>, <span class="va">pr</span>,<span class="va">e</span>,<span class="va">r</span>,<span class="va">gamma</span>, <span class="va">df</span>, <span class="va">method</span>,<span class="va">outtype</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/summarise.html" class="external-link">summarise</a></span><span class="op">(</span></span>
 <span>  TP <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">TP</span>, na.rm <span class="op">=</span> <span class="cn">T</span><span class="op">)</span>,</span>
@@ -257,7 +278,7 @@
 <span>  TNR <span class="op">=</span> <span class="fl">1</span><span class="op">-</span><span class="va">FPR</span>,</span>
 <span>  BACC <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">BACC</span><span class="op">)</span>,</span>
 <span>  F1 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">F1</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span></span>
 <span><span class="va">p2</span> <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span>data <span class="op">=</span> <span class="va">summary</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">gamma</span>, y <span class="op">=</span> <span class="va">F1</span>, group <span class="op">=</span> <span class="va">method</span><span class="op">)</span><span class="op">)</span><span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_point.html" class="external-link">geom_point</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>color <span class="op">=</span> <span class="va">method</span><span class="op">)</span><span class="op">)</span><span class="op">+</span></span>
@@ -270,6 +291,38 @@
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/theme.html" class="external-link">theme</a></span><span class="op">(</span>text<span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html" class="external-link">element_text</a></span><span class="op">(</span>size<span class="op">=</span><span class="fl">20</span><span class="op">)</span>, </span>
 <span>        legend.position <span class="op">=</span> <span class="st">"bottom"</span><span class="op">)</span></span>
 <span><span class="va">p2</span></span></code></pre></div>
+<div id="refs" class="references csl-bib-body hanging-indent" line-spacing="2">
+<div id="ref-alfons_2021" class="csl-entry">
+Alfons, A. (2021). <span class="nocase">robustHD</span>: An <span>R</span> package for robust regression with high-dimensional data. <em>Journal of Open Source Software</em>, 6, 3786.
+</div>
+<div id="ref-alfons_sparse_2013" class="csl-entry">
+Alfons, A., Croux, C., &amp; Gelper, S. (2013). Sparse least trimmed squares regression for analyzing high-dimensional large data sets. <em>The Annals of Applied Statistics</em>, 7, 226–248.
+</div>
+<div id="ref-bleichvariable2014" class="csl-entry">
+Bleich, J., Kapelner, A., George, E. I., &amp; Jensen, S. T. (2014). Variable selection for BART: An application to gene regulation. <em>The Annals of Applied Statistics</em>, 8, 1750–1781.
+</div>
+<div id="ref-Bottmer_Croux_Wilms_2022" class="csl-entry">
+Bottmer, L., Croux, C., &amp; Wilms, I. (2022). Sparse regression for large data sets with outliers. <em>European Journal of Operational Research</em>, 297, 782–794.
+</div>
+<div id="ref-Friedman_Hastie_Tibshirani_2010" class="csl-entry">
+Friedman, J., Hastie, T., &amp; Tibshirani, R. (2010). Regularization paths for generalized linear models via coordinate descent. <em>Journal of Statistical Software</em>, 33.
+</div>
+<div id="ref-khan2007robust" class="csl-entry">
+Khan, J. A., Van Aelst, S., &amp; Zamar, R. H. (2007). Robust linear model selection based on least angle regression. <em>Journal of the American Statistical Association</em>, 102, 1289–1299.
+</div>
+<div id="ref-Smucler_2017" class="csl-entry">
+Smucler, E. (2017). Mmlasso. <a href="https://github.com/esmucler/mmlasso" class="external-link">https://github.com/esmucler/mmlasso</a>
+</div>
+<div id="ref-Smucler_Yohai_2017" class="csl-entry">
+Smucler, E., &amp; Yohai, V. J. (2017). Robust and sparse estimators for linear regression models. <em>Computational Statistics &amp; Data Analysis</em>, 111, 116–130.
+</div>
+<div id="ref-Tibshirani_1996" class="csl-entry">
+Tibshirani, R. (1996). Regression shrinkage and selection via the lasso. <em>Journal of the Royal Statistical Society: Series B (Methodological)</em>, 58, 267–288.
+</div>
+<div id="ref-Wilms_2020" class="csl-entry">
+Wilms, I. (2020). Ineswilms/sparse-shooting-s. R. <a href="https://github.com/ineswilms/sparse-shooting-S" class="external-link">https://github.com/ineswilms/sparse-shooting-S</a>
+</div>
+</div>
 </div>
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>
     </nav></aside>
