@@ -2,8 +2,6 @@ require("cellWise")
 require("robustbase")
 
 
-#' function to calculate the max lambda
-#'
 lambdamax_beta = function(y, x, betahat, intercept,
                           deltahat, zetahat,
                           softbeta,
@@ -55,7 +53,7 @@ lambdamax_beta = function(y, x, betahat, intercept,
 #' @param lambda_zeta tuning parameter of zeta
 #' @param alpha the importance factor of the regression loss (between 0-1, by default is 0.5)
 #' @param penal the penalty parameter for model selection (by default is 1, equivalent to BIC )
-#' @param penaldelta the penalty of number of detected outliers (for debug, by default is 0)
+#' @param penaldelta the penalty of number of detected outliers (for further development, by default is 0)
 #' @param tol the tolerance of convergence, by default is 1e-3
 #' @param maxiter number of iterations, by default is 100
 #'
@@ -204,17 +202,17 @@ sregcell = function(y,x, betahat = NULL, intercept = NULL,
 
 #' Cellwise regularized robust sparse regression (with a specific lambda)
 #'
-#' @param y response
-#' @param x design matrix
+#' @param y n-dimensional response vector
+#' @param x nxp design matrix
 #' @param softbeta whether to use soft/hard threshold for beta
-#' @param softdelta whether to use soft/hard threshold for delta(outliers in x)
-#' @param softzeta whether to use soft/hard threshold for zeta(outliers in y)
+#' @param softdelta whether to use soft/hard threshold for delta (outliers in x)
+#' @param softzeta whether to use soft/hard threshold for zeta (outliers in y)
 #' @param lambda_delta tuning parameter of delta
 #' @param lambda_zeta tuning parameter of zeta
 #' @param lambda tuning parameter of beta
 #' @param alpha the importance factor of the regression loss (between 0-1, by default is 0.5)
-#' @param tol the tolerence of convergence
-#' @param maxiter the number of interations
+#' @param tol the tolerance of convergence, by default is 1e-3
+#' @param maxiter number of iterations, by default is 100
 #'
 #' @return
 #'intercept: the estimated intercept
@@ -284,26 +282,27 @@ robstd = function(x, centerf = median, scalef = qnscale, df = df){
 
 #' robust sparse regression under cellwise contamination with a grid of lambdas (standardize predictors first)
 #'
-#' @param y response
-#' @param x design matrix
+#' @param y n-dimensional response vector
+#' @param x nxp design matrix
 #' @param scale.method method we used to obtain robust scales, by default is qn
-#' @param df degrees of freedom of the assumed distribution
+#' @param df degrees of freedom of the assuming distribution of predictors
 #' @param softbeta whether to use soft/hard threshold for beta
 #' @param softdelta whether to use soft/hard threshold for delta(outliers in x)
 #' @param softzeta whether to use soft/hard threshold for zeta(outliers in y)
 #' @param lambda_delta tuning parameter of delta
 #' @param lambda_zeta tuning parameter of zeta
 #' @param prob probability of quantiles, by default is 0.995
-#' @param the importance factor of the regression loss (between 0-1, by default is 0.5)
+#' @param alpha the importance factor of the regression loss (between 0-1, by default is 0.5)
 #' @param penal the penalty parameter for model selection (by default is 1, equivalent to BIC )
-#' @param penaldelta the penalty of number of detected outliers (for debug, by default is 0)
-#' @param tol tolerence of convergence
-#' @param maxiter the number of interations
+#' @param penaldelta the penalty of number of detected outliers (for further development, by default is 0)
+#' @param tol the tolerance of convergence, by default is 1e-3
+#' @param maxiter number of iterations, by default is 100
+#'
 #'
 #' @return
 #' betahat: the estimated beta
 #'
-#' intercept_hat: the estiamted intercept
+#' intercept_hat: the estimated intercept
 #'
 #' betahat_opt: the estimated beta with post-cellwise-robust regression
 #'
@@ -318,6 +317,8 @@ robstd = function(x, centerf = median, scalef = qnscale, df = df){
 #' y = data$y
 #' x = data$x
 #' fit = sregcell_std(y,x)
+#'
+#'
 sregcell_std = function(y,x,
                         scale.method = qnscale,  df = Inf,
                         softbeta = TRUE, softdelta = TRUE, softzeta = TRUE,

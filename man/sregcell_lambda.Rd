@@ -19,15 +19,15 @@ sregcell_lambda(
 )
 }
 \arguments{
-\item{y}{response}
+\item{y}{n-dimensional response vector}
 
-\item{x}{design matrix}
+\item{x}{nxp design matrix}
 
 \item{softbeta}{whether to use soft/hard threshold for beta}
 
-\item{softdelta}{whether to use soft/hard threshold for delta(outliers in x)}
+\item{softdelta}{whether to use soft/hard threshold for delta (outliers in x)}
 
-\item{softzeta}{whether to use soft/hard threshold for zeta(outliers in y)}
+\item{softzeta}{whether to use soft/hard threshold for zeta (outliers in y)}
 
 \item{lambda_delta}{tuning parameter of delta}
 
@@ -37,9 +37,9 @@ sregcell_lambda(
 
 \item{alpha}{the importance factor of the regression loss (between 0-1, by default is 0.5)}
 
-\item{tol}{the tolerence of convergence}
+\item{tol}{the tolerance of convergence, by default is 1e-3}
 
-\item{maxiter}{the number of interations}
+\item{maxiter}{number of iterations, by default is 100}
 }
 \value{
 intercept: the estimated intercept

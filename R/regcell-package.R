@@ -1,7 +1,7 @@
 #' Cellwise regularized robust sparse regression
 #'
 #' @keywords package
-#' @author c(person("Peng", "Su", role = c("aut", "cre"), email = "peng.su@sydney.edu.au", comment = c(ORCID = "0000-0002-1031-8675")), person("Garth", "Tarr", role = "aut", email = "garth.tarr@gmail.com", comment = c(ORCID = "0000-0002-6605-7478")), person("Samuel", "Muller", role = "aut", email = "samuel.muller@mq.edu.au", comment = c(ORCID = "0000-0002-3087-8127")),person("Suojin", "Wang", role = "aut", email = "sjwang@stat.tamu.edu", comment = c(ORCID = "0000-0001-6061-0052")))
+#' @author Peng Su (peng.su@sydney.edu.au), Garth Tarr (garth.tarr@gmail.com), Samuel Muller (samuel.muller@mq.edu.au) and Suojin Wang (sjwang@stat.tamu.edu)
 #' @import Rcpp
 #' @importFrom Rcpp evalCpp
 #' @importFrom robustbase Qn

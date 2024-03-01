@@ -44,7 +44,7 @@ sregcell(
 
 \item{penal}{the penalty parameter for model selection (by default is 1, equivalent to BIC )}
 
-\item{penaldelta}{the penalty of number of detected outliers (for debug, by default is 0)}
+\item{penaldelta}{the penalty of number of detected outliers (for further development, by default is 0)}
 
 \item{tol}{the tolerance of convergence, by default is 1e-3}
 

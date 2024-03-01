@@ -47,7 +47,7 @@ Rlars = function(y, x){
 #' data = genevar()
 #' y = data$y
 #' x = data$x
-#' fit = Rlars(y,x)
+#' fit = SLTS(y,x)
 SLTS = function(y, x){
 
   lmin = 0.001

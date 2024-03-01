@@ -22,5 +22,5 @@ Sparse LTS with BIC
 data = genevar()
 y = data$y
 x = data$x
-fit = Rlars(y,x)
+fit = SLTS(y,x)
 }

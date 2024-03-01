@@ -23,13 +23,13 @@ sregcell_std(
 )
 }
 \arguments{
-\item{y}{response}
+\item{y}{n-dimensional response vector}
 
-\item{x}{design matrix}
+\item{x}{nxp design matrix}
 
 \item{scale.method}{method we used to obtain robust scales, by default is qn}
 
-\item{df}{degrees of freedom of the assumed distribution}
+\item{df}{degrees of freedom of the assuming distribution of predictors}
 
 \item{softbeta}{whether to use soft/hard threshold for beta}
 
@@ -43,20 +43,20 @@ sregcell_std(
 
 \item{prob}{probability of quantiles, by default is 0.995}
 
+\item{alpha}{the importance factor of the regression loss (between 0-1, by default is 0.5)}
+
 \item{penal}{the penalty parameter for model selection (by default is 1, equivalent to BIC )}
 
-\item{penaldelta}{the penalty of number of detected outliers (for debug, by default is 0)}
+\item{penaldelta}{the penalty of number of detected outliers (for further development, by default is 0)}
 
-\item{tol}{tolerence of convergence}
+\item{tol}{the tolerance of convergence, by default is 1e-3}
 
-\item{maxiter}{the number of interations}
-
-\item{the}{importance factor of the regression loss (between 0-1, by default is 0.5)}
+\item{maxiter}{number of iterations, by default is 100}
 }
 \value{
 betahat: the estimated beta
 
-intercept_hat: the estiamted intercept
+intercept_hat: the estimated intercept
 
 betahat_opt: the estimated beta with post-cellwise-robust regression
 
@@ -72,4 +72,6 @@ data = genevar()
 y = data$y
 x = data$x
 fit = sregcell_std(y,x)
+
+
 }
