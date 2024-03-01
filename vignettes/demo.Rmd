@@ -47,7 +47,7 @@ x = dat$x
 
 Detect outliers using DDC [@rousseeuw_detecting_2018].
 
-```{r fig.height=3.5, fig.width=10}
+```{r fig.height=3.5, fig.width=10, fig.cap="Outlier cell map of the generated dataset. Cells are flagged as outlying if the observed and predicted values differ too much. Most cells are blank, showing they are not detected as outliers. A red cell means the observed value is significantly higher than the predicted value, and a blue cell means the observed value is significantly lower."}
 
 fit1 <- cellWise::DDC(x)
 p1 = regcell::newcellmap(fit1$stdResid, columnlabels = c(dim(x)[2],rep(" ",dim(x)[2]-2),1), rowlabels = c(dim(x)[1],rep(" ",dim(x)[1]-2),1), columnangle = 0,
