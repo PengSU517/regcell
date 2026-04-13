@@ -218,7 +218,7 @@ registerDoParallel(cores=10)
 getDoParWorkers()
 
 data(datascreen, package = "regcell")
-x = as.matrix(robustHD::robStandardize(datascreen[,-1])[,1:100])
+x = s as.matrix(robustHD::robStandardize(datascreen[,-1])[,1:100])
 ximp = cellWise::DDC(x)$Ximp
 
 result <- foreach(mtd = 1:length(mtds),
@@ -249,44 +249,54 @@ result <- foreach(mtd = 1:length(mtds),
     res = ytest - betahat[1] - xtest%*%betahat[-1]
     mape = mean(abs(res))
     rmspe = sqrt(mean(res^2))
-    rst = list(m = m, mtd = names(mtds)[mtd], pr = pr, sigma = sigma,
+    rst = list(m = m, mtd = names(mtds)[mtd], pr = pr, sigma = sigma, 
             tp = tp, tn = tn, rmspe = rmspe, mape = mape)
 
     rst
   }
 
-
-save(result, file = "result_realdata_artificial.rds")
+result_realdata_artificial = result
+saveRDS(result_realdata_artificial, file = "result_realdata_artificial.rds")
 
 ```
 
 For each method, we show MAPE (mean absolute prediction error) and RMSPE values, as well as their True positive numbers (TP), true negative numbers (TN) and F$_1$ scores.
 
-```{r}
-result = readr::read_rds("result_realdata_fakey.rds")|>
-  data.frame()|>
-  t()|>
-  data.frame()|>
+```{r, eval = FALSE}
+result = readr::read_rds("result_realdata_artificial.rds")
+
+# 1. 加载你之前保存的数据 (假设你还没重新跑，里面依然是 .RData 格式)
+# 2. 剥开 3 层外衣，把 4层嵌套列表 变成 1层列表（里面包含 120 个只含 8 个变量的单层列表）
+flat_list <- unlist(unlist(unlist(result, recursive = FALSE), recursive = FALSE), recursive = FALSE)
+
+# 3. 将其按行合并为标准的数据框 (这一步会自动对齐列名: m, mtd, pr, sigma, tp, tn, rmspe, mape)
+df <- bind_rows(flat_list)
+
+# 4. 执行你的清洗管道 (建议把 c(3:8) 改为具体的列名更安全)
+final_result <- df |>
   mutate(method = recode(mtd, 
                          cell_lasso_post = "CR-Lasso",
                          sss = "SSS",
                          rlars = "RLars",
                          mmlasso = "MM-Lasso",
                          slts = "SLTS",
-                         lasso = "Lasso")) |>
-  mutate(method = factor(method, levels = c("CR-Lasso", "SSS", "RLars", "MM-Lasso", "SLTS", "Lasso")))|>
-  mutate(across(c(3:8), as.numeric), 
+                         lasso = "Lasso")) |> 
+  mutate(method = factor(method, levels = c("CR-Lasso", "SSS", "RLars", "MM-Lasso", "SLTS", "Lasso"))) |> 
+  mutate(across(c(pr, sigma, tp, tn, rmspe, mape), as.numeric), # 用列名代替下标更稳妥
          TP = tp,
          TN = tn,
-         FP = 100-pr-TN,
+         FP = 100 - pr - TN,
          FN = pr - TP,
          BACC = (TP/pr + TN/(100-pr))/2,
          F1 = 2*TP/(2*TP + FP + FN),
          RMSPE = rmspe,
-         MAPE = mape)|>
+         MAPE = mape) |> 
   select(method, RMSPE, MAPE, TP, TN, F1)
 
-summ = result %>% group_by(method) %>% summarise(
+# 查看最终结果
+head(final_result)
+
+summ = final_result %>% group_by(method) %>% summarise(
   RMSPE = round(mean(RMSPE, na.rm = T),2),
   MAPE = round(mean(MAPE, na.rm = T),2),
   TP = round(mean(TP, na.rm = T),2),
@@ -333,15 +343,16 @@ result <- foreach(mtd = 1:length(mtds),
     rst
   }
 
+result_realdata = result
+saveRDS(result_realdata, file = "result_realdata.rds")
 
-save(result, file = "result_realdata.rds")
 ```
 
 
 The RMSPE and MAPE from Leave-one-out prediction residuals are also shown in table.
 
-```{r}
-result = readr::read_rds("result_realdata.rds") |>
+```{r, eval = FALSE}
+result = result_realdata |> ## readr::read_rds("result_realdata.rds") |>
   data.frame() |>
   t() |>
   data.frame() |>
@@ -364,7 +375,7 @@ summ = result %>% group_by(method) %>% summarise(
 gt(summ)
 ```
 
-```{r, fig.height=6, fig.width=10, fig.cap= "Leave-one-out prediction residuals of the Bone mineral density data"}
+```{r, fig.height=6, fig.width=10, fig.cap= "Leave-one-out prediction residuals of the Bone mineral density data", eval = FALSE}
 boxplot(res~method, data = result,  ylab="", xlab = "")
 ```
 

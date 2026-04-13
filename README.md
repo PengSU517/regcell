@@ -6,7 +6,7 @@ We have included a demo (Quick demo), a simu (Simulation) and a realdata (Bone m
 
 We also created an [online R repository](https://posit.cloud/content/7571075) with some example scripts.
 
-### Installation
+## Installation
 
 You can install the package using:
 
@@ -31,5 +31,31 @@ If that happens, please install the GNU Fortran compiler from this page: https:/
 remotes::install_github("PengSU517/regcell", build = TRUE)
 ```
 
+
+
+## ⚠️ Important Note on Dependencies & Reproducibility
+Due to recent major updates in underlying packages (specifically robustHD v0.8.x and related robust statistics libraries), some methods (e.g., CR-Lasso, RLars, SSS) may produce different results or encounter errors on real-world datasets.
+
+To perfectly reproduce the empirical results and ensure stability, please install the exact dependency versions from 2023 before installing regcell:
+
+```
+if (!requireNamespace("remotes", quietly = TRUE)) install.packages("remotes")
+
+# Lock core dependencies to their stable 2023 versions
+remotes::install_version("Rcpp", version = "1.0.10")
+remotes::install_version("robustbase", version = "0.95-1")
+remotes::install_version("robustHD", version = "0.7.4")
+
+
+# remotes::install_version("mvtnorm", version = "1.2-2")
+# remotes::install_version("glmnet", version = "4.1-7")
+# remotes::install_version("caret", version = "6.0-94")
+# remotes::install_version("cellWise", version = "2.2.8")
+
+
+# Install regcell
+remotes::install_github("PengSU517/regcell")
+```
+(Please restart your R session after installation.)
 
 
